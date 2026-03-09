@@ -14,6 +14,19 @@ export function startOfNextDay(date: Date): Date {
   return d;
 }
 
+// ─── User Day State ──────────────────────────
+
+export async function getUserDayState(userId: string): Promise<{
+  timezone: string;
+  lastProcessedDate: Date | null;
+}> {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { timezone: true, lastProcessedDate: true },
+  });
+  return user;
+}
+
 // ─── Recurring Tasks ──────────────────────────
 
 export async function getRecurringTasks(userId: string) {

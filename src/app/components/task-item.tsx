@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { formatShortDate } from "@/lib/dates/format";
 import { completeTaskAction, uncompleteTaskAction } from "../actions";
 
 export type Task = {
@@ -8,13 +9,17 @@ export type Task = {
   title: string;
   description: string | null;
   category: string | null;
-  sourceType: string;
-  status: string;
+  sourceType: "MANUAL" | "RECURRING";
+  status: "PENDING" | "COMPLETED" | "SKIPPED";
+  originalDate: string | null;
+  scheduledDate: string;
 };
 
 export function TaskItem({ task }: { task: Task }) {
   const [isPending, startTransition] = useTransition();
   const isCompleted = task.status === "COMPLETED";
+  const isCarryOver =
+    task.originalDate && task.originalDate !== task.scheduledDate;
 
   function handleToggle() {
     startTransition(async () => {
@@ -65,6 +70,14 @@ export function TaskItem({ task }: { task: Task }) {
       </div>
 
       <div className="flex items-center gap-2">
+        {isCarryOver && (
+          <span
+            className="task-badge carryover"
+            title={`Originalmente em ${formatShortDate(task.originalDate!)}`}
+          >
+            ↗ {formatShortDate(task.originalDate!)}
+          </span>
+        )}
         {task.category && <span className="task-badge">{task.category}</span>}
         {task.sourceType === "RECURRING" && (
           <span className="task-badge recurring" title="Tarefa recorrente">↻</span>
