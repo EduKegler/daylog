@@ -75,6 +75,12 @@ export default async function DashboardPage() {
             History
           </Link>
           <Link
+            href="/upcoming"
+            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
+          >
+            Upcoming
+          </Link>
+          <Link
             href="/recurring"
             className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
           >

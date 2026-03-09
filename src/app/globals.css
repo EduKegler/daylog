@@ -353,3 +353,35 @@ button:disabled {
 .pagination-link:hover {
   color: var(--color-accent);
 }
+
+/* ─── Upcoming Page ─────────────────────────── */
+
+.upcoming-day-card {
+  margin-top: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.upcoming-day-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.upcoming-relative {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  font-weight: 500;
+  margin-top: 0.125rem;
+  display: block;
+}
+
+.upcoming-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-border);
+  flex-shrink: 0;
+  margin-top: 0.4375rem;
+}
