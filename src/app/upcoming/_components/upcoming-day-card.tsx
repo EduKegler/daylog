@@ -1,6 +1,20 @@
 import type { UpcomingDay } from "@/lib/upcoming/queries";
 import { formatLongDate } from "@/lib/dates/format";
 import { formatRelativeDate } from "@/lib/dates/relative";
+import { TaskItem, type Task } from "@/app/components/task-item";
+
+function serializeTask(t: UpcomingDay["tasks"][number]): Task {
+  return {
+    id: t.id,
+    title: t.title,
+    description: t.description,
+    category: t.category,
+    sourceType: t.sourceType as Task["sourceType"],
+    status: t.status as Task["status"],
+    originalDate: t.originalDate?.toISOString() ?? null,
+    scheduledDate: t.scheduledDate.toISOString(),
+  };
+}
 
 export function UpcomingDayCard({
   day,
@@ -25,24 +39,7 @@ export function UpcomingDayCard({
 
       <div className="task-list">
         {day.tasks.map((task) => (
-          <div key={task.id} className="task-item history-task-item">
-            <span className="upcoming-dot" />
-
-            <div className="flex-1 min-w-0">
-              <span className="task-title">{task.title}</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {task.category && (
-                <span className="task-badge">{task.category}</span>
-              )}
-              {task.sourceType === "RECURRING" && (
-                <span className="task-badge recurring" title="Recurring">
-                  ↻
-                </span>
-              )}
-            </div>
-          </div>
+          <TaskItem key={task.id} task={serializeTask(task)} />
         ))}
       </div>
     </section>

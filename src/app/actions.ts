@@ -29,6 +29,7 @@ export async function createTaskAction(formData: FormData): Promise<ActionResult
   });
 
   revalidatePath("/");
+  revalidatePath("/upcoming");
   return { success: true };
 }
 
@@ -61,10 +62,12 @@ export async function updateTaskAction(
   const user = await getCurrentUser();
   await updateDailyTask(taskId, user.id, { title, description, category });
   revalidatePath("/");
+  revalidatePath("/upcoming");
 }
 
 export async function deleteTaskAction(taskId: string) {
   const user = await getCurrentUser();
   await deleteTask(taskId, user.id);
   revalidatePath("/");
+  revalidatePath("/upcoming");
 }
