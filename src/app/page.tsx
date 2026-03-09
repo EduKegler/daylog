@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DaylogIcon } from "./components/daylog-icon";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDailyTasksForDate, getUserDayState } from "@/lib/tasks/queries";
 import { ensureRecurringInstances } from "@/lib/tasks/ensure-recurring-instances";
@@ -58,7 +59,10 @@ export default async function DashboardPage() {
     <main className="dashboard">
       <header className="dashboard-header flex items-start justify-between">
         <div>
-          <h1 className="app-title">daylog</h1>
+          <div className="flex items-center gap-2">
+            <DaylogIcon size={28} />
+            <h1 className="app-title">daylog</h1>
+          </div>
           <time className="today-date" dateTime={today.toISOString()}>
             {formatLongDate(today)}
           </time>

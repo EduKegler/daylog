@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
-import { createTask, deleteTask } from "@/lib/tasks/mutations";
-import { completeTask, uncompleteTask } from "@/lib/tasks/mutations";
-import { validateTaskInput } from "@/lib/tasks/validation";
+import { createTask, deleteTask, updateDailyTask, completeTask, uncompleteTask } from "@/lib/tasks/mutations";
+import { validateTaskInput, validateCommonFields } from "@/lib/tasks/validation";
 import type { ActionResult } from "@/lib/tasks/actions";
 
 export async function createTaskAction(formData: FormData): Promise<ActionResult> {
@@ -42,6 +41,25 @@ export async function completeTaskAction(taskId: string) {
 export async function uncompleteTaskAction(taskId: string) {
   const user = await getCurrentUser();
   await uncompleteTask(taskId, user.id);
+  revalidatePath("/");
+}
+
+export async function updateTaskAction(
+  taskId: string,
+  data: { title: string; description: string | null; category: string | null },
+) {
+  const { title, description, category, errors } = validateCommonFields({
+    title: data.title,
+    description: data.description ?? undefined,
+    category: data.category ?? undefined,
+  });
+
+  if (Object.keys(errors).length > 0) {
+    throw new Error(Object.values(errors)[0] as string);
+  }
+
+  const user = await getCurrentUser();
+  await updateDailyTask(taskId, user.id, { title, description, category });
   revalidatePath("/");
 }
 

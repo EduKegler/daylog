@@ -24,6 +24,12 @@ prisma/dev.db
 prisma/dev.db-journal
 src/generated
 
+# coverage
+/coverage
+
+# dev database
+dev.db
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -13,7 +13,7 @@ export type RecurringTaskInput = {
   recurrenceConfig: string | null;
 };
 
-function validateCommonFields(data: {
+export function validateCommonFields(data: {
   title?: string;
   description?: string;
   category?: string;

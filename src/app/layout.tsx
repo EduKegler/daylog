@@ -16,8 +16,27 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Daylog",
-  description: "Daily task tracker",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"
+  ),
+  title: {
+    default: "Daylog",
+    template: "%s | Daylog",
+  },
+  description:
+    "Track your daily tasks, build streaks, and stay on top of what matters.",
+  openGraph: {
+    title: "Daylog",
+    description:
+      "Track your daily tasks, build streaks, and stay on top of what matters.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Daylog",
+    description:
+      "Track your daily tasks, build streaks, and stay on top of what matters.",
+  },
 };
 
 export default function RootLayout({

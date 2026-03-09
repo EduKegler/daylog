@@ -63,6 +63,26 @@ export async function uncompleteTask(
   });
 }
 
+export async function updateDailyTask(
+  taskId: string,
+  userId: string,
+  data: { title: string; description: string | null; category: string | null },
+): Promise<void> {
+  const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
+
+  if (!task) throw new Error("Task not found");
+  if (task.userId !== userId) throw new Error("Unauthorized");
+
+  await prisma.dailyTask.update({
+    where: { id: taskId },
+    data: {
+      title: data.title,
+      description: data.description,
+      category: data.category,
+    },
+  });
+}
+
 export async function deleteTask(
   taskId: string,
   userId: string,
