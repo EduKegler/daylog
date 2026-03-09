@@ -5,7 +5,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center">
       <div className="text-center">
-        <div className="mb-4">
+        <div className="mb-4 flex justify-center">
           <DaylogIcon size={64} />
         </div>
         <h1 className="font-display text-5xl text-stone-900 mb-2">Daylog</h1>
