@@ -36,12 +36,6 @@ export async function getRecurringTasks(userId: string) {
   });
 }
 
-export async function getRecurringTaskById(userId: string, taskId: string) {
-  return prisma.recurringTask.findFirst({
-    where: { id: taskId, userId },
-  });
-}
-
 export async function getActiveRecurringTasks(userId: string) {
   return prisma.recurringTask.findMany({
     where: { userId, isActive: true },

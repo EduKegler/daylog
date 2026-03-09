@@ -4,29 +4,33 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { createTask } from "@/lib/tasks/mutations";
 import { completeTask, uncompleteTask } from "@/lib/tasks/mutations";
+import { validateTaskInput } from "@/lib/tasks/validation";
+import type { ActionResult } from "@/lib/tasks/actions";
 
-export async function createTaskAction(formData: FormData) {
+export async function createTaskAction(formData: FormData): Promise<ActionResult> {
   const user = await getCurrentUser();
 
-  const title = formData.get("title") as string;
-  const description = (formData.get("description") as string) || undefined;
-  const category = (formData.get("category") as string) || undefined;
-  const dateStr = formData.get("scheduledDate") as string;
-  const scheduledDate = dateStr ? new Date(dateStr + "T12:00:00") : new Date();
+  const result = validateTaskInput({
+    title: formData.get("title") as string,
+    description: formData.get("description") as string,
+    category: formData.get("category") as string,
+    scheduledDate: formData.get("scheduledDate") as string,
+  });
 
-  if (!title?.trim()) {
-    throw new Error("Title is required");
+  if (!result.success) {
+    return { success: false, errors: result.errors };
   }
 
   await createTask({
     userId: user.id,
-    title: title.trim(),
-    description: description?.trim(),
-    category: category?.trim(),
-    scheduledDate,
+    title: result.data.title,
+    description: result.data.description ?? undefined,
+    category: result.data.category ?? undefined,
+    scheduledDate: result.data.scheduledDate,
   });
 
   revalidatePath("/");
+  return { success: true };
 }
 
 export async function completeTaskAction(taskId: string) {

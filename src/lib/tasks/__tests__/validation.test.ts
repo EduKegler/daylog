@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validateRecurringTaskInput } from "../validation";
+import { validateRecurringTaskInput, validateTaskInput } from "../validation";
 
 describe("validateRecurringTaskInput", () => {
   const validInput = {
@@ -233,5 +233,92 @@ describe("validateRecurringTaskInput", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.errors.recurrenceConfig).toContain("JSON");
+  });
+});
+
+describe("validateTaskInput", () => {
+  it("aceita input válido", () => {
+    const result = validateTaskInput({
+      title: "Minha tarefa",
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.title).toBe("Minha tarefa");
+      expect(result.data.scheduledDate).toBeInstanceOf(Date);
+    }
+  });
+
+  it("faz trim no título", () => {
+    const result = validateTaskInput({
+      title: "  Tarefa  ",
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.title).toBe("Tarefa");
+  });
+
+  it("rejeita título vazio", () => {
+    const result = validateTaskInput({ title: "", scheduledDate: "2026-03-09" });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.errors.title).toBeDefined();
+  });
+
+  it("rejeita título > 200 caracteres", () => {
+    const result = validateTaskInput({
+      title: "a".repeat(201),
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.errors.title).toContain("200");
+  });
+
+  it("rejeita descrição > 2000 caracteres", () => {
+    const result = validateTaskInput({
+      title: "Task",
+      description: "a".repeat(2001),
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.errors.description).toContain("2000");
+  });
+
+  it("rejeita categoria > 50 caracteres", () => {
+    const result = validateTaskInput({
+      title: "Task",
+      category: "a".repeat(51),
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.errors.category).toContain("50");
+  });
+
+  it("rejeita data inválida", () => {
+    const result = validateTaskInput({
+      title: "Task",
+      scheduledDate: "not-a-date",
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.errors.scheduledDate).toBeDefined();
+  });
+
+  it("aceita sem data (usa data atual)", () => {
+    const result = validateTaskInput({ title: "Task" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.scheduledDate).toBeInstanceOf(Date);
+  });
+
+  it("converte campos opcionais vazios para null", () => {
+    const result = validateTaskInput({
+      title: "Task",
+      description: "",
+      category: "",
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.description).toBeNull();
+      expect(result.data.category).toBeNull();
+    }
   });
 });

@@ -19,13 +19,7 @@ type RecurringTask = {
 
 export function RecurringTaskList({ tasks }: { tasks: RecurringTask[] }) {
   if (tasks.length === 0) {
-    return (
-      <div className="py-12 text-center">
-        <p className="text-sm text-[var(--color-muted)]">
-          Nenhuma tarefa recorrente ainda.
-        </p>
-      </div>
-    );
+    return <p className="empty-message">Nenhuma tarefa recorrente ainda.</p>;
   }
 
   return (

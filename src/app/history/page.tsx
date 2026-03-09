@@ -30,7 +30,7 @@ export default async function HistoryPage({
           href="/"
           className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
         >
-          Voltar
+          ← Voltar
         </Link>
       </header>
 

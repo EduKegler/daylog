@@ -119,5 +119,5 @@ model DailyTask {
   recurringTask RecurringTask? @relation(fields: [recurringTaskId], references: [id], onDelete: SetNull)
 
   @@index([userId, scheduledDate])
-  @@index([recurringTaskId, scheduledDate])
+  @@unique([recurringTaskId, scheduledDate])
 }

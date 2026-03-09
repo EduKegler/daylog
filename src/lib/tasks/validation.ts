@@ -13,16 +13,18 @@ export type RecurringTaskInput = {
   recurrenceConfig: string | null;
 };
 
-export function validateRecurringTaskInput(data: {
+function validateCommonFields(data: {
   title?: string;
   description?: string;
   category?: string;
-  recurrenceType?: string;
-  recurrenceConfig?: string;
-}): ValidationResult<RecurringTaskInput> {
+}): {
+  title: string;
+  description: string | null;
+  category: string | null;
+  errors: Record<string, string>;
+} {
   const errors: Record<string, string> = {};
 
-  // Title
   const title = data.title?.trim() ?? "";
   if (!title) {
     errors.title = "Título é obrigatório";
@@ -30,17 +32,27 @@ export function validateRecurringTaskInput(data: {
     errors.title = "Título deve ter no máximo 200 caracteres";
   }
 
-  // Description
   const description = data.description?.trim() || null;
   if (description && description.length > 2000) {
     errors.description = "Descrição deve ter no máximo 2000 caracteres";
   }
 
-  // Category
   const category = data.category?.trim() || null;
   if (category && category.length > 50) {
     errors.category = "Categoria deve ter no máximo 50 caracteres";
   }
+
+  return { title, description, category, errors };
+}
+
+export function validateRecurringTaskInput(data: {
+  title?: string;
+  description?: string;
+  category?: string;
+  recurrenceType?: string;
+  recurrenceConfig?: string;
+}): ValidationResult<RecurringTaskInput> {
+  const { title, description, category, errors } = validateCommonFields(data);
 
   // RecurrenceType
   const recurrenceType = data.recurrenceType as RecurrenceType;
@@ -135,4 +147,36 @@ function validateRecurrenceConfig(
 function normalizeConfig(type: RecurrenceType, configStr: string | null): string | null {
   if (type === "DAILY" || type === "WEEKDAYS") return null;
   return configStr;
+}
+
+export type TaskInput = {
+  title: string;
+  description: string | null;
+  category: string | null;
+  scheduledDate: Date;
+};
+
+export function validateTaskInput(data: {
+  title?: string;
+  description?: string;
+  category?: string;
+  scheduledDate?: string;
+}): ValidationResult<TaskInput> {
+  const { title, description, category, errors } = validateCommonFields(data);
+
+  // ScheduledDate
+  const dateStr = data.scheduledDate ?? "";
+  const scheduledDate = dateStr ? new Date(dateStr + "T12:00:00") : new Date();
+  if (dateStr && isNaN(scheduledDate.getTime())) {
+    errors.scheduledDate = "Data inválida";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return { success: false, errors };
+  }
+
+  return {
+    success: true,
+    data: { title, description, category, scheduledDate },
+  };
 }
