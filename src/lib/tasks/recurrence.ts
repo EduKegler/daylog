@@ -1,5 +1,5 @@
 export type SpecificWeekdaysConfig = {
-  days: number[]; // 0=Dom, 1=Seg, ..., 6=Sáb
+  days: number[]; // 0=Sun, 1=Mon, ..., 6=Sat
 };
 
 export type MonthlyConfig = {
@@ -19,14 +19,14 @@ export function parseRecurrenceConfig(
   }
 
   if (!configStr) {
-    throw new Error(`recurrenceConfig é obrigatório para tipo ${type}`);
+    throw new Error(`recurrenceConfig is required for type ${type}`);
   }
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(configStr);
   } catch {
-    throw new Error(`recurrenceConfig JSON inválido: ${configStr}`);
+    throw new Error(`Invalid recurrenceConfig JSON: ${configStr}`);
   }
 
   if (type === "SPECIFIC_WEEKDAYS") {
@@ -36,15 +36,15 @@ export function parseRecurrenceConfig(
       !("days" in parsed) ||
       !Array.isArray((parsed as SpecificWeekdaysConfig).days)
     ) {
-      throw new Error("SPECIFIC_WEEKDAYS requer { days: number[] }");
+      throw new Error("SPECIFIC_WEEKDAYS requires { days: number[] }");
     }
     const days = (parsed as SpecificWeekdaysConfig).days;
     if (days.length === 0) {
-      throw new Error("SPECIFIC_WEEKDAYS requer ao menos um dia");
+      throw new Error("SPECIFIC_WEEKDAYS requires at least one day");
     }
     for (const d of days) {
       if (!Number.isInteger(d) || d < 0 || d > 6) {
-        throw new Error(`Dia inválido: ${d}. Deve ser 0-6`);
+        throw new Error(`Invalid day: ${d}. Must be 0-6`);
       }
     }
     return { days } as SpecificWeekdaysConfig;
@@ -57,16 +57,16 @@ export function parseRecurrenceConfig(
       !("dayOfMonth" in parsed) ||
       typeof (parsed as MonthlyConfig).dayOfMonth !== "number"
     ) {
-      throw new Error("MONTHLY requer { dayOfMonth: number }");
+      throw new Error("MONTHLY requires { dayOfMonth: number }");
     }
     const { dayOfMonth } = parsed as MonthlyConfig;
     if (!Number.isInteger(dayOfMonth) || dayOfMonth < 1 || dayOfMonth > 31) {
-      throw new Error(`dayOfMonth inválido: ${dayOfMonth}. Deve ser 1-31`);
+      throw new Error(`Invalid dayOfMonth: ${dayOfMonth}. Must be 1-31`);
     }
     return { dayOfMonth } as MonthlyConfig;
   }
 
-  throw new Error(`Tipo de recorrência desconhecido: ${type}`);
+  throw new Error(`Unknown recurrence type: ${type}`);
 }
 
 export function shouldTaskOccurOnDate(
@@ -74,7 +74,7 @@ export function shouldTaskOccurOnDate(
   config: RecurrenceConfig,
   date: Date,
 ): boolean {
-  const dayOfWeek = date.getUTCDay(); // 0=Dom, 6=Sáb
+  const dayOfWeek = date.getUTCDay(); // 0=Sun, 6=Sat
 
   switch (type) {
     case "DAILY":
@@ -102,7 +102,7 @@ export function shouldTaskOccurOnDate(
   }
 }
 
-const WEEKDAY_NAMES_SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const WEEKDAY_NAMES_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function getRecurrenceLabel(
   type: RecurrenceType,
@@ -110,9 +110,9 @@ export function getRecurrenceLabel(
 ): string {
   switch (type) {
     case "DAILY":
-      return "Todos os dias";
+      return "Every day";
     case "WEEKDAYS":
-      return "Dias úteis";
+      return "Weekdays";
     case "SPECIFIC_WEEKDAYS": {
       const { days } = config as SpecificWeekdaysConfig;
       const sorted = [...days].sort((a, b) => a - b);
@@ -120,7 +120,7 @@ export function getRecurrenceLabel(
     }
     case "MONTHLY": {
       const { dayOfMonth } = config as MonthlyConfig;
-      return `Dia ${dayOfMonth} de cada mês`;
+      return `Day ${dayOfMonth} of each month`;
     }
     default:
       return type;

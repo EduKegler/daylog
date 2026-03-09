@@ -19,7 +19,7 @@ type RecurringTask = {
 
 export function RecurringTaskList({ tasks }: { tasks: RecurringTask[] }) {
   if (tasks.length === 0) {
-    return <p className="empty-message">Nenhuma tarefa recorrente ainda.</p>;
+    return <p className="empty-message">No recurring tasks yet.</p>;
   }
 
   return (
@@ -82,7 +82,7 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
             : "bg-[var(--color-border)] text-[var(--color-muted)] hover:bg-stone-300"
         }`}
       >
-        {task.isActive ? "Ativa" : "Inativa"}
+        {task.isActive ? "Active" : "Inactive"}
       </button>
     </div>
   );

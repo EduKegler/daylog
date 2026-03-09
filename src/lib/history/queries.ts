@@ -14,7 +14,7 @@ export async function getHistory(
   page: number,
   pageSize: number,
 ): Promise<{ days: HistoryDay[]; hasMore: boolean }> {
-  // Query 1: datas distintas paginadas diretamente no banco
+  // Query 1: distinct dates paginated directly in the database
   const groupedDates = await prisma.dailyTask.groupBy({
     by: ["scheduledDate"],
     where: { userId, scheduledDate: { lt: beforeDate } },
@@ -32,7 +32,7 @@ export async function getHistory(
     return { days: [], hasMore: false };
   }
 
-  // Query 2: buscar todas as tarefas dessas datas
+  // Query 2: fetch all tasks for these dates
   const tasks = await prisma.dailyTask.findMany({
     where: {
       userId,
@@ -41,7 +41,7 @@ export async function getHistory(
     orderBy: [{ status: "asc" }, { createdAt: "asc" }],
   });
 
-  // Agrupar por data e computar stats
+  // Group by date and compute stats
   const tasksByDate = new Map<number, DailyTask[]>();
   for (const task of tasks) {
     const time = task.scheduledDate.getTime();

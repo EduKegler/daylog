@@ -12,14 +12,14 @@ export default async function RecurringPage() {
     <main className="dashboard">
       <header className="dashboard-header flex items-start justify-between">
         <div>
-          <h1 className="app-title">recorrentes</h1>
-          <p className="today-date">Tarefas que se repetem automaticamente</p>
+          <h1 className="app-title">recurring</h1>
+          <p className="today-date">Tasks that repeat automatically</p>
         </div>
         <Link
           href="/"
           className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
         >
-          ← Voltar
+          ← Back
         </Link>
       </header>
 

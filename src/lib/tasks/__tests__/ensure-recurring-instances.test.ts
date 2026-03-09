@@ -38,7 +38,7 @@ const baseRecurring = {
 describe("ensureRecurringInstances", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("não cria nada quando não há recorrentes ativas", async () => {
+  it("does not create anything when there are no active recurring tasks", async () => {
     mockQueries.getActiveRecurringTasks.mockResolvedValue([]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
@@ -47,7 +47,7 @@ describe("ensureRecurringInstances", () => {
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });
 
-  it("não duplica quando recorrente já foi gerada hoje", async () => {
+  it("does not duplicate when recurring task was already generated today", async () => {
     mockQueries.getActiveRecurringTasks.mockResolvedValue([
       { ...baseRecurring, id: "rt1", title: "Daily", recurrenceType: "DAILY" },
     ]);
@@ -58,7 +58,7 @@ describe("ensureRecurringInstances", () => {
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });
 
-  it("cria instância para recorrente que deve ocorrer hoje", async () => {
+  it("creates instance for recurring task that should occur today", async () => {
     mockQueries.getActiveRecurringTasks.mockResolvedValue([
       { ...baseRecurring, id: "rt1", title: "Daily Task", recurrenceType: "DAILY" },
     ]);
@@ -78,8 +78,8 @@ describe("ensureRecurringInstances", () => {
     });
   });
 
-  it("não cria WEEKDAYS em sábado", async () => {
-    // 2026-03-14 = Sábado
+  it("does not create WEEKDAYS on Saturday", async () => {
+    // 2026-03-14 = Saturday
     mockQueries.getActiveRecurringTasks.mockResolvedValue([
       { ...baseRecurring, id: "rt1", title: "Weekday Task", recurrenceType: "WEEKDAYS" },
     ]);
@@ -90,7 +90,7 @@ describe("ensureRecurringInstances", () => {
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });
 
-  it("cria apenas as novas quando algumas já existem", async () => {
+  it("creates only new ones when some already exist", async () => {
     mockQueries.getActiveRecurringTasks.mockResolvedValue([
       { ...baseRecurring, id: "rt1", title: "Task 1", recurrenceType: "DAILY" },
       { ...baseRecurring, id: "rt2", title: "Task 2", recurrenceType: "DAILY" },
@@ -106,26 +106,26 @@ describe("ensureRecurringInstances", () => {
     expect(call.data.map((d: { recurringTaskId: string }) => d.recurringTaskId)).toEqual(["rt1", "rt3"]);
   });
 
-  it("cria SPECIFIC_WEEKDAYS apenas nos dias corretos", async () => {
+  it("creates SPECIFIC_WEEKDAYS only on the correct days", async () => {
     const config = JSON.stringify({ days: [1, 3, 5] });
     mockQueries.getActiveRecurringTasks.mockResolvedValue([
       { ...baseRecurring, id: "rt1", title: "MWF", recurrenceType: "SPECIFIC_WEEKDAYS", recurrenceConfig: config },
     ]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
-    // 2026-03-09 = Segunda (day 1) → deve criar
+    // 2026-03-09 = Monday (day 1) → should create
     await ensureRecurringInstances("user1", utcDate(2026, 3, 9));
     expect(mockPrisma.dailyTask.createMany).toHaveBeenCalledTimes(1);
   });
 
-  it("não cria SPECIFIC_WEEKDAYS em dia não incluído", async () => {
+  it("does not create SPECIFIC_WEEKDAYS on a non-included day", async () => {
     const config = JSON.stringify({ days: [1, 3, 5] });
     mockQueries.getActiveRecurringTasks.mockResolvedValue([
       { ...baseRecurring, id: "rt1", title: "MWF", recurrenceType: "SPECIFIC_WEEKDAYS", recurrenceConfig: config },
     ]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
-    // 2026-03-10 = Terça (day 2) → não cria
+    // 2026-03-10 = Tuesday (day 2) → should not create
     await ensureRecurringInstances("user1", utcDate(2026, 3, 10));
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });

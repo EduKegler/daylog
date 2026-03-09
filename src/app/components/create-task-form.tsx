@@ -27,7 +27,7 @@ export function CreateTaskForm() {
     return (
       <button onClick={() => setIsOpen(true)} className="add-task-btn">
         <span className="add-icon">+</span>
-        Nova tarefa
+        New task
       </button>
     );
   }
@@ -37,7 +37,7 @@ export function CreateTaskForm() {
       <input
         name="title"
         type="text"
-        placeholder="O que precisa fazer?"
+        placeholder="What do you need to do?"
         required
         autoFocus
         className="task-input"
@@ -50,7 +50,7 @@ export function CreateTaskForm() {
         <input
           name="category"
           type="text"
-          placeholder="Categoria (opcional)"
+          placeholder="Category (optional)"
           className="task-input small"
         />
         <input
@@ -76,10 +76,10 @@ export function CreateTaskForm() {
           }}
           className="btn-cancel"
         >
-          Cancelar
+          Cancel
         </button>
         <button type="submit" disabled={isPending} className="btn-submit">
-          {isPending ? "Criando..." : "Criar"}
+          {isPending ? "Creating..." : "Create"}
         </button>
       </div>
     </form>

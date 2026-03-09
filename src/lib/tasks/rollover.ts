@@ -18,12 +18,12 @@ export async function processRollover(
     return { carriedOver: 0 };
   }
 
-  // Já processou hoje: no-op
+  // Already processed today: no-op
   if (lastProcessedDate.getTime() >= today.getTime()) {
     return { carriedOver: 0 };
   }
 
-  // Buscar tarefas manuais pendentes do último dia processado
+  // Fetch pending manual tasks from the last processed date
   const pendingManual = await prisma.dailyTask.findMany({
     where: {
       userId,
@@ -41,7 +41,7 @@ export async function processRollover(
     return { carriedOver: 0 };
   }
 
-  // Montar carry-overs preservando originalDate
+  // Build carry-overs preserving originalDate
   const carryOvers = pendingManual.map((task) => ({
     userId,
     sourceType: "MANUAL" as const,
@@ -52,7 +52,7 @@ export async function processRollover(
     originalDate: task.originalDate ?? task.scheduledDate,
   }));
 
-  // Transação atômica: criar carry-overs + marcar fontes como SKIPPED + atualizar lastProcessedDate
+  // Atomic transaction: create carry-overs + mark sources as SKIPPED + update lastProcessedDate
   await prisma.$transaction([
     prisma.dailyTask.createMany({ data: carryOvers }),
     prisma.dailyTask.updateMany({

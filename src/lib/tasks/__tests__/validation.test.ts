@@ -3,54 +3,54 @@ import { validateRecurringTaskInput, validateTaskInput } from "../validation";
 
 describe("validateRecurringTaskInput", () => {
   const validInput = {
-    title: "Minha tarefa",
+    title: "My task",
     recurrenceType: "DAILY",
   };
 
-  it("aceita input válido DAILY", () => {
+  it("accepts valid DAILY input", () => {
     const result = validateRecurringTaskInput(validInput);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.title).toBe("Minha tarefa");
+      expect(result.data.title).toBe("My task");
       expect(result.data.recurrenceType).toBe("DAILY");
       expect(result.data.recurrenceConfig).toBeNull();
     }
   });
 
-  it("aceita input com todos os campos", () => {
+  it("accepts input with all fields", () => {
     const result = validateRecurringTaskInput({
-      title: "Tarefa completa",
-      description: "Uma descrição",
-      category: "Trabalho",
+      title: "Complete task",
+      description: "A description",
+      category: "Work",
       recurrenceType: "DAILY",
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.description).toBe("Uma descrição");
-      expect(result.data.category).toBe("Trabalho");
+      expect(result.data.description).toBe("A description");
+      expect(result.data.category).toBe("Work");
     }
   });
 
   // Title validation
-  it("rejeita título vazio", () => {
+  it("rejects empty title", () => {
     const result = validateRecurringTaskInput({ ...validInput, title: "" });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.errors.title).toBeDefined();
   });
 
-  it("rejeita título só com espaços", () => {
+  it("rejects whitespace-only title", () => {
     const result = validateRecurringTaskInput({ ...validInput, title: "   " });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.errors.title).toBeDefined();
   });
 
-  it("rejeita título sem título", () => {
+  it("rejects missing title", () => {
     const result = validateRecurringTaskInput({ recurrenceType: "DAILY" });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.errors.title).toBeDefined();
   });
 
-  it("rejeita título > 200 caracteres", () => {
+  it("rejects title > 200 characters", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       title: "a".repeat(201),
@@ -59,23 +59,23 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.title).toContain("200");
   });
 
-  it("faz trim do título", () => {
+  it("trims the title", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
-      title: "  Minha tarefa  ",
+      title: "  My task  ",
     });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.title).toBe("Minha tarefa");
+    if (result.success) expect(result.data.title).toBe("My task");
   });
 
   // Description validation
-  it("aceita descrição null/vazia", () => {
+  it("accepts null/empty description", () => {
     const result = validateRecurringTaskInput({ ...validInput, description: "" });
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.description).toBeNull();
   });
 
-  it("rejeita descrição > 2000 caracteres", () => {
+  it("rejects description > 2000 characters", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       description: "a".repeat(2001),
@@ -85,13 +85,13 @@ describe("validateRecurringTaskInput", () => {
   });
 
   // Category validation
-  it("aceita categoria vazia", () => {
+  it("accepts empty category", () => {
     const result = validateRecurringTaskInput({ ...validInput, category: "" });
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.category).toBeNull();
   });
 
-  it("rejeita categoria > 50 caracteres", () => {
+  it("rejects category > 50 characters", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       category: "a".repeat(51),
@@ -101,7 +101,7 @@ describe("validateRecurringTaskInput", () => {
   });
 
   // RecurrenceType validation
-  it("rejeita tipo inválido", () => {
+  it("rejects invalid type", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "INVALID",
@@ -110,14 +110,14 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceType).toBeDefined();
   });
 
-  it("rejeita tipo ausente", () => {
-    const result = validateRecurringTaskInput({ title: "Tarefa" });
+  it("rejects missing type", () => {
+    const result = validateRecurringTaskInput({ title: "Task" });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.errors.recurrenceType).toBeDefined();
   });
 
   // RecurrenceConfig validation
-  it("aceita WEEKDAYS sem config", () => {
+  it("accepts WEEKDAYS without config", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "WEEKDAYS",
@@ -125,7 +125,7 @@ describe("validateRecurringTaskInput", () => {
     expect(result.success).toBe(true);
   });
 
-  it("aceita SPECIFIC_WEEKDAYS com config válida", () => {
+  it("accepts SPECIFIC_WEEKDAYS with valid config", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "SPECIFIC_WEEKDAYS",
@@ -137,7 +137,7 @@ describe("validateRecurringTaskInput", () => {
     }
   });
 
-  it("rejeita SPECIFIC_WEEKDAYS sem config", () => {
+  it("rejects SPECIFIC_WEEKDAYS without config", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "SPECIFIC_WEEKDAYS",
@@ -146,7 +146,7 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  it("rejeita SPECIFIC_WEEKDAYS com days vazio", () => {
+  it("rejects SPECIFIC_WEEKDAYS with empty days", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "SPECIFIC_WEEKDAYS",
@@ -156,7 +156,7 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  it("aceita MONTHLY com config válida", () => {
+  it("accepts MONTHLY with valid config", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "MONTHLY",
@@ -165,7 +165,7 @@ describe("validateRecurringTaskInput", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejeita MONTHLY sem config", () => {
+  it("rejects MONTHLY without config", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "MONTHLY",
@@ -174,7 +174,7 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  it("rejeita MONTHLY com dayOfMonth fora do range", () => {
+  it("rejects MONTHLY with dayOfMonth out of range", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "MONTHLY",
@@ -184,8 +184,8 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  // Múltiplos erros
-  it("retorna múltiplos erros", () => {
+  // Multiple errors
+  it("returns multiple errors", () => {
     const result = validateRecurringTaskInput({});
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -194,8 +194,8 @@ describe("validateRecurringTaskInput", () => {
     }
   });
 
-  // Edge: config inválida (objeto sem as props certas)
-  it("rejeita SPECIFIC_WEEKDAYS com config sem days", () => {
+  // Edge: invalid config (object without the right props)
+  it("rejects SPECIFIC_WEEKDAYS with config missing days", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "SPECIFIC_WEEKDAYS",
@@ -205,7 +205,7 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  it("rejeita SPECIFIC_WEEKDAYS com dia inválido", () => {
+  it("rejects SPECIFIC_WEEKDAYS with invalid day", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "SPECIFIC_WEEKDAYS",
@@ -215,7 +215,7 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toContain("8");
   });
 
-  it("rejeita MONTHLY com config sem dayOfMonth", () => {
+  it("rejects MONTHLY with config missing dayOfMonth", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "MONTHLY",
@@ -225,7 +225,7 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  it("rejeita config JSON inválido", () => {
+  it("rejects invalid JSON config", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "SPECIFIC_WEEKDAYS",
@@ -237,34 +237,34 @@ describe("validateRecurringTaskInput", () => {
 });
 
 describe("validateTaskInput", () => {
-  it("aceita input válido", () => {
+  it("accepts valid input", () => {
     const result = validateTaskInput({
-      title: "Minha tarefa",
+      title: "My task",
       scheduledDate: "2026-03-09",
     });
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.title).toBe("Minha tarefa");
+      expect(result.data.title).toBe("My task");
       expect(result.data.scheduledDate).toBeInstanceOf(Date);
     }
   });
 
-  it("faz trim no título", () => {
+  it("trims the title", () => {
     const result = validateTaskInput({
-      title: "  Tarefa  ",
+      title: "  Task  ",
       scheduledDate: "2026-03-09",
     });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.title).toBe("Tarefa");
+    if (result.success) expect(result.data.title).toBe("Task");
   });
 
-  it("rejeita título vazio", () => {
+  it("rejects empty title", () => {
     const result = validateTaskInput({ title: "", scheduledDate: "2026-03-09" });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.errors.title).toBeDefined();
   });
 
-  it("rejeita título > 200 caracteres", () => {
+  it("rejects title > 200 characters", () => {
     const result = validateTaskInput({
       title: "a".repeat(201),
       scheduledDate: "2026-03-09",
@@ -273,7 +273,7 @@ describe("validateTaskInput", () => {
     if (!result.success) expect(result.errors.title).toContain("200");
   });
 
-  it("rejeita descrição > 2000 caracteres", () => {
+  it("rejects description > 2000 characters", () => {
     const result = validateTaskInput({
       title: "Task",
       description: "a".repeat(2001),
@@ -283,7 +283,7 @@ describe("validateTaskInput", () => {
     if (!result.success) expect(result.errors.description).toContain("2000");
   });
 
-  it("rejeita categoria > 50 caracteres", () => {
+  it("rejects category > 50 characters", () => {
     const result = validateTaskInput({
       title: "Task",
       category: "a".repeat(51),
@@ -293,7 +293,7 @@ describe("validateTaskInput", () => {
     if (!result.success) expect(result.errors.category).toContain("50");
   });
 
-  it("rejeita data inválida", () => {
+  it("rejects invalid date", () => {
     const result = validateTaskInput({
       title: "Task",
       scheduledDate: "not-a-date",
@@ -302,13 +302,13 @@ describe("validateTaskInput", () => {
     if (!result.success) expect(result.errors.scheduledDate).toBeDefined();
   });
 
-  it("aceita sem data (usa data atual)", () => {
+  it("accepts missing date (uses current date)", () => {
     const result = validateTaskInput({ title: "Task" });
     expect(result.success).toBe(true);
     if (result.success) expect(result.data.scheduledDate).toBeInstanceOf(Date);
   });
 
-  it("converte campos opcionais vazios para null", () => {
+  it("converts empty optional fields to null", () => {
     const result = validateTaskInput({
       title: "Task",
       description: "",

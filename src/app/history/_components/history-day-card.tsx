@@ -41,7 +41,7 @@ export function HistoryDayCard({ day }: { day: HistoryDay }) {
                 <span className="task-badge">{task.category}</span>
               )}
               {task.sourceType === "RECURRING" && (
-                <span className="task-badge recurring" title="Recorrente">
+                <span className="task-badge recurring" title="Recurring">
                   ↻
                 </span>
               )}
@@ -49,7 +49,7 @@ export function HistoryDayCard({ day }: { day: HistoryDay }) {
                 task.originalDate === null && (
                   <span
                     className="task-badge carryover"
-                    title="Carregada para o próximo dia"
+                    title="Carried over to the next day"
                   >
                     ↗
                   </span>
@@ -59,7 +59,7 @@ export function HistoryDayCard({ day }: { day: HistoryDay }) {
                   task.scheduledDate.getTime() && (
                   <span
                     className="task-badge carryover"
-                    title={`Originalmente em ${formatShortDate(task.originalDate)}`}
+                    title={`Originally on ${formatShortDate(task.originalDate)}`}
                   >
                     ↗ {formatShortDate(task.originalDate)}
                   </span>

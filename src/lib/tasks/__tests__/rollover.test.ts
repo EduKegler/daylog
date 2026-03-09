@@ -23,7 +23,7 @@ const fiveDaysAgo = new Date("2026-03-04T00:00:00.000Z");
 describe("processRollover", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("primeiro acesso: seta lastProcessedDate, carriedOver = 0", async () => {
+  it("first access: sets lastProcessedDate, carriedOver = 0", async () => {
     mockPrisma.user.update.mockResolvedValue({});
 
     const result = await processRollover("user-1", null, today);
@@ -35,7 +35,7 @@ describe("processRollover", () => {
     });
   });
 
-  it("mesmo dia: no-op, carriedOver = 0", async () => {
+  it("same day: no-op, carriedOver = 0", async () => {
     const result = await processRollover("user-1", today, today);
 
     expect(result).toEqual({ carriedOver: 0 });
@@ -43,14 +43,14 @@ describe("processRollover", () => {
     expect(mockPrisma.dailyTask.findMany).not.toHaveBeenCalled();
   });
 
-  it("dia normal — manual pendente: cria carry-over e marca SKIPPED", async () => {
+  it("normal day — pending manual task: creates carry-over and marks SKIPPED", async () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([
       {
         id: "task-1",
         userId: "user-1",
-        title: "Comprar café",
+        title: "Buy coffee",
         description: null,
-        category: "Pessoal",
+        category: "Personal",
         sourceType: "MANUAL",
         status: "PENDING",
         scheduledDate: yesterday,
@@ -64,21 +64,21 @@ describe("processRollover", () => {
     expect(result).toEqual({ carriedOver: 1 });
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
 
-    // Verificar args do createMany
+    // Verify createMany args
     const createManyCall = mockPrisma.dailyTask.createMany.mock.calls[0][0];
     expect(createManyCall.data).toEqual([
       {
         userId: "user-1",
         sourceType: "MANUAL",
-        title: "Comprar café",
+        title: "Buy coffee",
         description: null,
-        category: "Pessoal",
+        category: "Personal",
         scheduledDate: today,
-        originalDate: yesterday, // preserva scheduledDate como originalDate
+        originalDate: yesterday, // preserves scheduledDate as originalDate
       },
     ]);
 
-    // Verificar args do updateMany
+    // Verify updateMany args
     const updateManyCall = mockPrisma.dailyTask.updateMany.mock.calls[0][0];
     expect(updateManyCall).toEqual({
       where: { id: { in: ["task-1"] } },
@@ -86,7 +86,7 @@ describe("processRollover", () => {
     });
   });
 
-  it("dia normal — manual concluída: nada carregado", async () => {
+  it("normal day — completed manual task: nothing carried over", async () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([]);
     mockPrisma.user.update.mockResolvedValue({});
 
@@ -96,8 +96,8 @@ describe("processRollover", () => {
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
   });
 
-  it("dia normal — recorrente pendente: nada carregado", async () => {
-    // Recorrentes pendentes não são buscadas (filtro sourceType=MANUAL)
+  it("normal day — pending recurring task: nothing carried over", async () => {
+    // Pending recurring tasks are not fetched (sourceType=MANUAL filter)
     mockPrisma.dailyTask.findMany.mockResolvedValue([]);
     mockPrisma.user.update.mockResolvedValue({});
 
@@ -114,20 +114,20 @@ describe("processRollover", () => {
     });
   });
 
-  it("idempotência: segunda execução não carrega nada", async () => {
-    // Na segunda execução, lastProcessedDate já é today
+  it("idempotency: second execution carries nothing", async () => {
+    // On second execution, lastProcessedDate is already today
     const result = await processRollover("user-1", today, today);
 
     expect(result).toEqual({ carriedOver: 0 });
     expect(mockPrisma.dailyTask.findMany).not.toHaveBeenCalled();
   });
 
-  it("gap multi-dia: carrega tarefas do lastProcessedDate", async () => {
+  it("multi-day gap: carries tasks from lastProcessedDate", async () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([
       {
         id: "task-1",
         userId: "user-1",
-        title: "Tarefa antiga 1",
+        title: "Old task 1",
         description: null,
         category: null,
         sourceType: "MANUAL",
@@ -138,7 +138,7 @@ describe("processRollover", () => {
       {
         id: "task-2",
         userId: "user-1",
-        title: "Tarefa antiga 2",
+        title: "Old task 2",
         description: "Desc",
         category: "Work",
         sourceType: "MANUAL",
@@ -160,7 +160,7 @@ describe("processRollover", () => {
     expect(createManyCall.data[1].originalDate).toEqual(fiveDaysAgo);
   });
 
-  it("preserva originalDate em cadeia de carry-overs", async () => {
+  it("preserves originalDate in chain of carry-overs", async () => {
     const monday = new Date("2026-03-02T00:00:00.000Z");
     const wednesday = new Date("2026-03-04T00:00:00.000Z");
     const friday = new Date("2026-03-06T00:00:00.000Z");
@@ -169,13 +169,13 @@ describe("processRollover", () => {
       {
         id: "task-chain",
         userId: "user-1",
-        title: "Tarefa em cadeia",
+        title: "Chained task",
         description: null,
         category: null,
         sourceType: "MANUAL",
         status: "PENDING",
         scheduledDate: wednesday,
-        originalDate: monday, // já foi carregada de segunda para quarta
+        originalDate: monday, // already carried from Monday to Wednesday
       },
     ]);
     mockPrisma.$transaction.mockResolvedValue([]);
@@ -184,17 +184,17 @@ describe("processRollover", () => {
 
     expect(result).toEqual({ carriedOver: 1 });
     const createManyCall = mockPrisma.dailyTask.createMany.mock.calls[0][0];
-    expect(createManyCall.data[0].originalDate).toEqual(monday); // preserva a original
+    expect(createManyCall.data[0].originalDate).toEqual(monday); // preserves the original
     expect(createManyCall.data[0].scheduledDate).toEqual(friday);
   });
 
-  it("múltiplas tarefas mistas: apenas manuais pendentes são carregadas", async () => {
-    // O mock findMany só retorna MANUAL+PENDING (filtro do Prisma)
+  it("mixed tasks: only pending manual tasks are carried over", async () => {
+    // The findMany mock only returns MANUAL+PENDING (Prisma filter)
     mockPrisma.dailyTask.findMany.mockResolvedValue([
       {
         id: "manual-pending-1",
         userId: "user-1",
-        title: "Manual Pendente 1",
+        title: "Manual Pending 1",
         description: null,
         category: null,
         sourceType: "MANUAL",
@@ -205,7 +205,7 @@ describe("processRollover", () => {
       {
         id: "manual-pending-2",
         userId: "user-1",
-        title: "Manual Pendente 2",
+        title: "Manual Pending 2",
         description: null,
         category: null,
         sourceType: "MANUAL",
@@ -221,12 +221,12 @@ describe("processRollover", () => {
     expect(result).toEqual({ carriedOver: 2 });
   });
 
-  it("transação atômica: todas operações dentro de $transaction", async () => {
+  it("atomic transaction: all operations inside $transaction", async () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([
       {
         id: "task-1",
         userId: "user-1",
-        title: "Tarefa",
+        title: "Task",
         description: null,
         category: null,
         sourceType: "MANUAL",
@@ -240,7 +240,7 @@ describe("processRollover", () => {
     await processRollover("user-1", yesterday, today);
 
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
-    // Verifica que createMany, updateMany e user.update foram chamados
+    // Verify that createMany, updateMany and user.update were called
     expect(mockPrisma.dailyTask.createMany).toHaveBeenCalledTimes(1);
     expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledTimes(1);
     expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);

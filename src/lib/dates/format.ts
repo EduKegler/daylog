@@ -1,5 +1,5 @@
 export function formatLongDate(date: Date): string {
-  return date.toLocaleDateString("pt-BR", {
+  return date.toLocaleDateString("en-US", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -9,7 +9,7 @@ export function formatLongDate(date: Date): string {
 
 export function formatShortDate(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("pt-BR", {
+  return d.toLocaleDateString("en-US", {
     day: "2-digit",
     month: "2-digit",
     timeZone: "UTC",

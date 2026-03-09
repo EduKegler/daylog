@@ -19,7 +19,7 @@ const threeDaysAgo = new Date("2026-03-06T00:00:00.000Z");
 describe("getHistory", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("sem tarefas: retorna vazio", async () => {
+  it("no tasks: returns empty", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 
     const result = await getHistory("user-1", today, 0, 7);
@@ -27,7 +27,7 @@ describe("getHistory", () => {
     expect(result).toEqual({ days: [], hasMore: false });
   });
 
-  it("dias com tarefas: agrupados corretamente com stats", async () => {
+  it("days with tasks: correctly grouped with stats", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([
       { scheduledDate: yesterday },
       { scheduledDate: twoDaysAgo },
@@ -36,7 +36,7 @@ describe("getHistory", () => {
       {
         id: "t1",
         userId: "user-1",
-        title: "Tarefa 1",
+        title: "Task 1",
         status: "COMPLETED",
         scheduledDate: yesterday,
         sourceType: "MANUAL",
@@ -44,7 +44,7 @@ describe("getHistory", () => {
       {
         id: "t2",
         userId: "user-1",
-        title: "Tarefa 2",
+        title: "Task 2",
         status: "PENDING",
         scheduledDate: yesterday,
         sourceType: "RECURRING",
@@ -52,7 +52,7 @@ describe("getHistory", () => {
       {
         id: "t3",
         userId: "user-1",
-        title: "Tarefa 3",
+        title: "Task 3",
         status: "COMPLETED",
         scheduledDate: twoDaysAgo,
         sourceType: "MANUAL",
@@ -76,8 +76,8 @@ describe("getHistory", () => {
     expect(result.days[1].stats.completed).toBe(1);
   });
 
-  it("paginação: page 0 com hasMore = true", async () => {
-    // pageSize=2, retorna 3 (take: pageSize+1) → hasMore = true
+  it("pagination: page 0 with hasMore = true", async () => {
+    // pageSize=2, returns 3 (take: pageSize+1) → hasMore = true
     mockPrisma.dailyTask.groupBy.mockResolvedValue([
       { scheduledDate: yesterday },
       { scheduledDate: twoDaysAgo },
@@ -96,7 +96,7 @@ describe("getHistory", () => {
     expect(result.days[1].date).toEqual(twoDaysAgo);
   });
 
-  it("paginação: page 1 retorna próxima página", async () => {
+  it("pagination: page 1 returns next page", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([
       { scheduledDate: threeDaysAgo },
     ]);
@@ -111,7 +111,7 @@ describe("getHistory", () => {
     expect(result.days[0].date).toEqual(threeDaysAgo);
   });
 
-  it("exclui dia atual: groupBy filtra por lt beforeDate", async () => {
+  it("excludes current day: groupBy filters by lt beforeDate", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 
     await getHistory("user-1", today, 0, 7);
@@ -128,7 +128,7 @@ describe("getHistory", () => {
     });
   });
 
-  it("ownership: filtra por userId", async () => {
+  it("ownership: filters by userId", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 
     await getHistory("user-42", today, 0, 7);

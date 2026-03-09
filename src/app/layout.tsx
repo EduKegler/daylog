@@ -17,7 +17,7 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: "Daylog",
-  description: "Tracker diário de tarefas",
+  description: "Daily task tracker",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={`${instrumentSerif.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable}`}>
       <body>{children}</body>
     </html>
   );

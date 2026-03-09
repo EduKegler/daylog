@@ -1,6 +1,6 @@
 # Daylog
 
-Gerenciador pessoal de tarefas diárias com suporte a tarefas recorrentes, rollover automático e histórico.
+Personal daily task manager with support for recurring tasks, automatic rollover, and history.
 
 ## Stack
 
@@ -10,96 +10,96 @@ Gerenciador pessoal de tarefas diárias com suporte a tarefas recorrentes, rollo
 - **Prisma 7** + SQLite
 - **NextAuth** (Auth.js v5)
 
-## Arquitetura
+## Architecture
 
-- **Server Components** para páginas (dashboard, histórico, recorrentes)
-- **Client Components** para interação (forms, toggles, botões)
-- **Server Actions** para mutações (criar tarefa, completar, toggle)
-- **Prisma** como ORM com SQLite local
+- **Server Components** for pages (dashboard, history, recurring)
+- **Client Components** for interaction (forms, toggles, buttons)
+- **Server Actions** for mutations (create task, complete, toggle)
+- **Prisma** as ORM with local SQLite
 
-## Modelagem
+## Data Model
 
-### Entidades
+### Entities
 
-- **User** — autenticação via OAuth (Google)
-- **RecurringTask** — template de tarefa recorrente (DAILY, WEEKDAYS, SPECIFIC_WEEKDAYS, MONTHLY)
-- **DailyTask** — instância concreta de tarefa para um dia específico
+- **User** — authentication via OAuth (Google)
+- **RecurringTask** — recurring task template (DAILY, WEEKDAYS, SPECIFIC_WEEKDAYS, MONTHLY)
+- **DailyTask** — concrete task instance for a specific day
 
-### Status de tarefa
+### Task Status
 
-| Status | Significado |
-|--------|-------------|
-| `PENDING` | Tarefa aguardando conclusão |
-| `COMPLETED` | Tarefa concluída |
-| `SKIPPED` | Tarefa recorrente pulada no rollover (ficou pendente no dia anterior) |
+| Status | Meaning |
+|--------|---------|
+| `PENDING` | Task awaiting completion |
+| `COMPLETED` | Task completed |
+| `SKIPPED` | Recurring task skipped during rollover (was left pending on the previous day) |
 
 ### Source types
 
-- `RECURRING` — gerada automaticamente a partir de RecurringTask
-- `MANUAL` — criada diretamente pelo usuário
+- `RECURRING` — automatically generated from RecurringTask
+- `MANUAL` — created directly by the user
 
-## Como funciona o rollover
+## How rollover works
 
-1. No início de cada dia, o sistema verifica se existem tarefas pendentes de dias anteriores
-2. Tarefas **manuais** pendentes são movidas para o dia atual (carry-over), preservando a `originalDate`
-3. Tarefas **recorrentes** pendentes são marcadas como `SKIPPED` (pois uma nova instância será gerada)
-4. Novas instâncias de recorrentes são criadas via `ensureRecurringInstances`
+1. At the start of each day, the system checks for pending tasks from previous days
+2. Pending **manual** tasks are moved to the current day (carry-over), preserving the `originalDate`
+3. Pending **recurring** tasks are marked as `SKIPPED` (since a new instance will be generated)
+4. New recurring instances are created via `ensureRecurringInstances`
 
-## Rodando localmente
+## Running locally
 
 ```bash
 # Clone
 git clone <repo-url> && cd daylog
 
-# Instale dependências
+# Install dependencies
 npm install
 
-# Configure variáveis de ambiente
+# Set up environment variables
 cp .env.example .env
-# Edite .env com suas credenciais OAuth e secret
+# Edit .env with your OAuth credentials and secret
 
-# Crie o banco e rode migrações
+# Create the database and run migrations
 npx prisma migrate dev
 
-# Inicie o servidor de desenvolvimento
+# Start the development server
 npm run dev
 ```
 
-## Migrações e seed
+## Migrations and seed
 
 ```bash
-# Criar nova migração
-npx prisma migrate dev --name nome-da-migracao
+# Create a new migration
+npx prisma migrate dev --name migration-name
 
-# Seed (se disponível)
+# Seed (if available)
 npx prisma db seed
 ```
 
-## Testes
+## Tests
 
 ```bash
-# Modo watch
+# Watch mode
 npm test
 
-# Rodar uma vez
+# Run once
 npm run test:run
 
-# Com cobertura
+# With coverage
 npx vitest run --coverage
 ```
 
-## Limitações do MVP
+## MVP Limitations
 
-- UX otimizada para single-user (sem multi-tenant)
-- Sem notificações (push/email)
-- Sem mobile-first design
-- Sem drag-and-drop para reordenar tarefas
-- Sem subtarefas ou dependências entre tarefas
+- UX optimized for single-user (no multi-tenant)
+- No notifications (push/email)
+- No mobile-first design
+- No drag-and-drop for reordering tasks
+- No subtasks or task dependencies
 
-## Próximos passos
+## Next steps
 
-- Edição de tarefas manuais
-- Notas/comentários por tarefa
-- Visualização de streaks e métricas
-- Temas (dark/light mode)
-- PWA para uso offline
+- Edit manual tasks
+- Notes/comments per task
+- Streak and metrics visualization
+- Themes (dark/light mode)
+- PWA for offline use

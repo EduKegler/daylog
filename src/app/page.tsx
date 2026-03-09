@@ -39,7 +39,7 @@ export default async function DashboardPage() {
   const { timezone, lastProcessedDate } = await getUserDayState(user.id);
   const today = getUserLocalDate(timezone);
 
-  // Rollover: carry-over de tarefas manuais pendentes
+  // Rollover: carry-over pending manual tasks
   if (!lastProcessedDate || lastProcessedDate.getTime() < today.getTime()) {
     await processRollover(user.id, lastProcessedDate, today);
   }
@@ -68,13 +68,13 @@ export default async function DashboardPage() {
             href="/history"
             className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
           >
-            Histórico
+            History
           </Link>
           <Link
             href="/recurring"
             className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
           >
-            Recorrentes
+            Recurring
           </Link>
           <form
             action={async () => {
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
               type="submit"
               className="text-xs text-[var(--color-muted)] hover:text-stone-600 transition-colors duration-200"
             >
-              Sair
+              Sign out
             </button>
           </form>
         </div>
@@ -96,17 +96,17 @@ export default async function DashboardPage() {
 
       <div className="dashboard-content">
         <TaskList
-          title="Pendentes"
+          title="Pending"
           tasks={serializedPending}
-          emptyMessage="Nenhuma tarefa pendente. Bom trabalho!"
+          emptyMessage="No pending tasks. Good job!"
         />
 
         <CreateTaskForm />
 
         <TaskList
-          title="Concluídas"
+          title="Completed"
           tasks={serializedCompleted}
-          emptyMessage="Nenhuma tarefa concluída ainda."
+          emptyMessage="No completed tasks yet."
         />
       </div>
     </main>

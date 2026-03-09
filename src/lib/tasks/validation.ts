@@ -27,19 +27,19 @@ function validateCommonFields(data: {
 
   const title = data.title?.trim() ?? "";
   if (!title) {
-    errors.title = "Título é obrigatório";
+    errors.title = "Title is required";
   } else if (title.length > 200) {
-    errors.title = "Título deve ter no máximo 200 caracteres";
+    errors.title = "Title must be at most 200 characters";
   }
 
   const description = data.description?.trim() || null;
   if (description && description.length > 2000) {
-    errors.description = "Descrição deve ter no máximo 2000 caracteres";
+    errors.description = "Description must be at most 2000 characters";
   }
 
   const category = data.category?.trim() || null;
   if (category && category.length > 50) {
-    errors.category = "Categoria deve ter no máximo 50 caracteres";
+    errors.category = "Category must be at most 50 characters";
   }
 
   return { title, description, category, errors };
@@ -57,7 +57,7 @@ export function validateRecurringTaskInput(data: {
   // RecurrenceType
   const recurrenceType = data.recurrenceType as RecurrenceType;
   if (!recurrenceType || !RECURRENCE_TYPES.includes(recurrenceType)) {
-    errors.recurrenceType = "Tipo de recorrência inválido";
+    errors.recurrenceType = "Invalid recurrence type";
   }
 
   // RecurrenceConfig
@@ -92,18 +92,18 @@ function validateRecurrenceConfig(
   configStr: string | null,
 ): string | null {
   if (type === "DAILY" || type === "WEEKDAYS") {
-    return null; // config não necessária
+    return null; // config not required
   }
 
   if (!configStr) {
-    return `Configuração é obrigatória para ${type}`;
+    return `Configuration is required for ${type}`;
   }
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(configStr);
   } catch {
-    return "Configuração JSON inválida";
+    return "Invalid JSON configuration";
   }
 
   if (type === "SPECIFIC_WEEKDAYS") {
@@ -113,13 +113,13 @@ function validateRecurrenceConfig(
       !("days" in parsed) ||
       !Array.isArray((parsed as { days: unknown }).days)
     ) {
-      return "Selecione ao menos um dia da semana";
+      return "Select at least one day of the week";
     }
     const days = (parsed as { days: number[] }).days;
-    if (days.length === 0) return "Selecione ao menos um dia da semana";
+    if (days.length === 0) return "Select at least one day of the week";
     for (const d of days) {
       if (!Number.isInteger(d) || d < 0 || d > 6) {
-        return `Dia inválido: ${d}`;
+        return `Invalid day: ${d}`;
       }
     }
     return null;
@@ -132,16 +132,16 @@ function validateRecurrenceConfig(
       !("dayOfMonth" in parsed) ||
       typeof (parsed as { dayOfMonth: unknown }).dayOfMonth !== "number"
     ) {
-      return "Selecione o dia do mês";
+      return "Select the day of the month";
     }
     const { dayOfMonth } = parsed as { dayOfMonth: number };
     if (!Number.isInteger(dayOfMonth) || dayOfMonth < 1 || dayOfMonth > 31) {
-      return "Dia do mês deve ser entre 1 e 31";
+      return "Day of the month must be between 1 and 31";
     }
     return null;
   }
 
-  return "Tipo de recorrência inválido";
+  return "Invalid recurrence type";
 }
 
 function normalizeConfig(type: RecurrenceType, configStr: string | null): string | null {
@@ -168,7 +168,7 @@ export function validateTaskInput(data: {
   const dateStr = data.scheduledDate ?? "";
   const scheduledDate = dateStr ? new Date(dateStr + "T12:00:00") : new Date();
   if (dateStr && isNaN(scheduledDate.getTime())) {
-    errors.scheduledDate = "Data inválida";
+    errors.scheduledDate = "Invalid date";
   }
 
   if (Object.keys(errors).length > 0) {

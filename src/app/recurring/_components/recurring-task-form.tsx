@@ -4,13 +4,13 @@ import { useRef, useState, useTransition } from "react";
 import { createRecurringTask, type ActionResult } from "@/lib/tasks/actions";
 
 const WEEKDAYS = [
-  { value: 0, label: "Dom" },
-  { value: 1, label: "Seg" },
-  { value: 2, label: "Ter" },
-  { value: 3, label: "Qua" },
-  { value: 4, label: "Qui" },
-  { value: 5, label: "Sex" },
-  { value: 6, label: "Sáb" },
+  { value: 0, label: "Sun" },
+  { value: 1, label: "Mon" },
+  { value: 2, label: "Tue" },
+  { value: 3, label: "Wed" },
+  { value: 4, label: "Thu" },
+  { value: 5, label: "Fri" },
+  { value: 6, label: "Sat" },
 ];
 
 export function RecurringTaskForm() {
@@ -64,7 +64,7 @@ export function RecurringTaskForm() {
     return (
       <button onClick={() => setIsOpen(true)} className="add-task-btn">
         <span className="add-icon">+</span>
-        Nova tarefa recorrente
+        New recurring task
       </button>
     );
   }
@@ -73,12 +73,12 @@ export function RecurringTaskForm() {
     <form ref={formRef} action={handleSubmit} className="create-task-form">
       <div>
         <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
-          Título
+          Title
         </label>
         <input
           name="title"
           type="text"
-          placeholder="O que se repete?"
+          placeholder="What recurs?"
           required
           autoFocus
           className="task-input"
@@ -90,12 +90,12 @@ export function RecurringTaskForm() {
 
       <div>
         <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
-          Descrição (opcional)
+          Description (optional)
         </label>
         <input
           name="description"
           type="text"
-          placeholder="Detalhes adicionais"
+          placeholder="Additional details"
           className="task-input"
         />
       </div>
@@ -103,29 +103,29 @@ export function RecurringTaskForm() {
       <div className="form-row">
         <div className="flex-1">
           <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
-            Categoria
+            Category
           </label>
           <input
             name="category"
             type="text"
-            placeholder="Opcional"
+            placeholder="Optional"
             className="task-input small"
           />
         </div>
 
         <div className="flex-1">
           <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
-            Recorrência
+            Recurrence
           </label>
           <select
             value={recurrenceType}
             onChange={(e) => setRecurrenceType(e.target.value)}
             className="task-input small"
           >
-            <option value="DAILY">Todos os dias</option>
-            <option value="WEEKDAYS">Dias úteis</option>
-            <option value="SPECIFIC_WEEKDAYS">Dias específicos</option>
-            <option value="MONTHLY">Mensal</option>
+            <option value="DAILY">Every day</option>
+            <option value="WEEKDAYS">Weekdays</option>
+            <option value="SPECIFIC_WEEKDAYS">Specific days</option>
+            <option value="MONTHLY">Monthly</option>
           </select>
           {errors.recurrenceType && (
             <p className="text-xs text-red-600 mt-1">{errors.recurrenceType}</p>
@@ -136,7 +136,7 @@ export function RecurringTaskForm() {
       {recurrenceType === "SPECIFIC_WEEKDAYS" && (
         <div>
           <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium mb-2 block">
-            Dias da semana
+            Days of the week
           </label>
           <div className="flex gap-1">
             {WEEKDAYS.map((wd) => (
@@ -163,7 +163,7 @@ export function RecurringTaskForm() {
       {recurrenceType === "MONTHLY" && (
         <div>
           <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
-            Dia do mês
+            Day of the month
           </label>
           <input
             type="number"
@@ -189,10 +189,10 @@ export function RecurringTaskForm() {
           }}
           className="btn-cancel"
         >
-          Cancelar
+          Cancel
         </button>
         <button type="submit" disabled={isPending} className="btn-submit">
-          {isPending ? "Criando..." : "Criar"}
+          {isPending ? "Creating..." : "Create"}
         </button>
       </div>
     </form>

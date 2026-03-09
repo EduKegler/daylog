@@ -8,8 +8,8 @@ export function DaySummary({ stats }: { stats: DayStats }) {
   return (
     <div className="grid grid-cols-4 gap-4">
       <StatCard label="Total" value={stats.total} />
-      <StatCard label="Concluídas" value={stats.completed} accent />
-      <StatCard label="Pendentes" value={stats.pending} />
+      <StatCard label="Completed" value={stats.completed} accent />
+      <StatCard label="Pending" value={stats.pending} />
       <div className="stat-card flex flex-col items-center justify-center">
         <div className="relative h-14 w-14">
           <svg className="h-14 w-14 -rotate-90" viewBox="0 0 56 56">
@@ -38,7 +38,7 @@ export function DaySummary({ stats }: { stats: DayStats }) {
           </span>
         </div>
         <span className="mt-1.5 text-xs tracking-wide text-[var(--color-muted)] uppercase">
-          Progresso
+          Progress
         </span>
       </div>
     </div>

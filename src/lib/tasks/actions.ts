@@ -51,7 +51,7 @@ export async function updateRecurringTask(
   });
 
   if (!existing) {
-    return { success: false, errors: { _form: "Tarefa não encontrada" } };
+    return { success: false, errors: { _form: "Task not found" } };
   }
 
   const result = validateRecurringTaskInput({
@@ -89,7 +89,7 @@ export async function toggleRecurringTask(taskId: string): Promise<ActionResult>
   });
 
   if (!task) {
-    return { success: false, errors: { _form: "Tarefa não encontrada" } };
+    return { success: false, errors: { _form: "Task not found" } };
   }
 
   await prisma.recurringTask.update({

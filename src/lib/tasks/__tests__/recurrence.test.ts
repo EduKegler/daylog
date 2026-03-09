@@ -5,25 +5,25 @@ import {
   getRecurrenceLabel,
 } from "../recurrence";
 
-// Helper: cria Date UTC para um dia da semana específico
+// Helper: creates a UTC Date for a specific weekday
 function utcDate(year: number, month: number, day: number): Date {
   return new Date(Date.UTC(year, month - 1, day));
 }
 
 describe("parseRecurrenceConfig", () => {
-  it("retorna null para DAILY", () => {
+  it("returns null for DAILY", () => {
     expect(parseRecurrenceConfig("DAILY", null)).toBeNull();
   });
 
-  it("retorna null para WEEKDAYS", () => {
+  it("returns null for WEEKDAYS", () => {
     expect(parseRecurrenceConfig("WEEKDAYS", null)).toBeNull();
   });
 
-  it("ignora config string para DAILY", () => {
+  it("ignores config string for DAILY", () => {
     expect(parseRecurrenceConfig("DAILY", '{"foo":1}')).toBeNull();
   });
 
-  it("parseia SPECIFIC_WEEKDAYS corretamente", () => {
+  it("parses SPECIFIC_WEEKDAYS correctly", () => {
     const result = parseRecurrenceConfig(
       "SPECIFIC_WEEKDAYS",
       JSON.stringify({ days: [1, 3, 5] }),
@@ -31,7 +31,7 @@ describe("parseRecurrenceConfig", () => {
     expect(result).toEqual({ days: [1, 3, 5] });
   });
 
-  it("parseia MONTHLY corretamente", () => {
+  it("parses MONTHLY correctly", () => {
     const result = parseRecurrenceConfig(
       "MONTHLY",
       JSON.stringify({ dayOfMonth: 15 }),
@@ -39,179 +39,179 @@ describe("parseRecurrenceConfig", () => {
     expect(result).toEqual({ dayOfMonth: 15 });
   });
 
-  it("lança erro se config null para SPECIFIC_WEEKDAYS", () => {
+  it("throws error if config is null for SPECIFIC_WEEKDAYS", () => {
     expect(() => parseRecurrenceConfig("SPECIFIC_WEEKDAYS", null)).toThrow(
-      "obrigatório",
+      "required",
     );
   });
 
-  it("lança erro se config null para MONTHLY", () => {
-    expect(() => parseRecurrenceConfig("MONTHLY", null)).toThrow("obrigatório");
+  it("throws error if config is null for MONTHLY", () => {
+    expect(() => parseRecurrenceConfig("MONTHLY", null)).toThrow("required");
   });
 
-  it("lança erro para JSON malformado", () => {
+  it("throws error for malformed JSON", () => {
     expect(() =>
       parseRecurrenceConfig("SPECIFIC_WEEKDAYS", "not-json"),
-    ).toThrow("JSON inválido");
+    ).toThrow("Invalid");
   });
 
-  it("lança erro se days não é array", () => {
+  it("throws error if days is not an array", () => {
     expect(() =>
       parseRecurrenceConfig("SPECIFIC_WEEKDAYS", JSON.stringify({ days: "1,3" })),
-    ).toThrow("SPECIFIC_WEEKDAYS requer");
+    ).toThrow("SPECIFIC_WEEKDAYS requires");
   });
 
-  it("lança erro se days está vazio", () => {
+  it("throws error if days is empty", () => {
     expect(() =>
       parseRecurrenceConfig("SPECIFIC_WEEKDAYS", JSON.stringify({ days: [] })),
-    ).toThrow("ao menos um dia");
+    ).toThrow("at least one day");
   });
 
-  it("lança erro para dia fora do range 0-6", () => {
+  it("throws error for day outside range 0-6", () => {
     expect(() =>
       parseRecurrenceConfig("SPECIFIC_WEEKDAYS", JSON.stringify({ days: [7] })),
-    ).toThrow("Dia inválido: 7");
+    ).toThrow("Invalid day: 7");
   });
 
-  it("lança erro para dia negativo", () => {
+  it("throws error for negative day", () => {
     expect(() =>
       parseRecurrenceConfig("SPECIFIC_WEEKDAYS", JSON.stringify({ days: [-1] })),
-    ).toThrow("Dia inválido: -1");
+    ).toThrow("Invalid day: -1");
   });
 
-  it("lança erro se dayOfMonth não é número", () => {
+  it("throws error if dayOfMonth is not a number", () => {
     expect(() =>
       parseRecurrenceConfig("MONTHLY", JSON.stringify({ dayOfMonth: "15" })),
-    ).toThrow("MONTHLY requer");
+    ).toThrow("MONTHLY requires");
   });
 
-  it("lança erro para dayOfMonth 0", () => {
+  it("throws error for dayOfMonth 0", () => {
     expect(() =>
       parseRecurrenceConfig("MONTHLY", JSON.stringify({ dayOfMonth: 0 })),
-    ).toThrow("dayOfMonth inválido");
+    ).toThrow("Invalid dayOfMonth");
   });
 
-  it("lança erro para dayOfMonth 32", () => {
+  it("throws error for dayOfMonth 32", () => {
     expect(() =>
       parseRecurrenceConfig("MONTHLY", JSON.stringify({ dayOfMonth: 32 })),
-    ).toThrow("dayOfMonth inválido");
+    ).toThrow("Invalid dayOfMonth");
   });
 
-  it("lança erro para tipo desconhecido", () => {
+  it("throws error for unknown type", () => {
     expect(() =>
       parseRecurrenceConfig("UNKNOWN" as never, "{}"),
-    ).toThrow("Tipo de recorrência desconhecido");
+    ).toThrow("Unknown recurrence type");
   });
 });
 
 describe("shouldTaskOccurOnDate", () => {
   describe("DAILY", () => {
-    it("retorna true para qualquer dia", () => {
-      expect(shouldTaskOccurOnDate("DAILY", null, utcDate(2026, 3, 9))).toBe(true); // Seg
-      expect(shouldTaskOccurOnDate("DAILY", null, utcDate(2026, 3, 14))).toBe(true); // Sáb
-      expect(shouldTaskOccurOnDate("DAILY", null, utcDate(2026, 3, 15))).toBe(true); // Dom
+    it("returns true for any day", () => {
+      expect(shouldTaskOccurOnDate("DAILY", null, utcDate(2026, 3, 9))).toBe(true); // Mon
+      expect(shouldTaskOccurOnDate("DAILY", null, utcDate(2026, 3, 14))).toBe(true); // Sat
+      expect(shouldTaskOccurOnDate("DAILY", null, utcDate(2026, 3, 15))).toBe(true); // Sun
     });
   });
 
   describe("WEEKDAYS", () => {
-    it("retorna true para segunda a sexta", () => {
-      // 2026-03-09 = Segunda
+    it("returns true for Monday through Friday", () => {
+      // 2026-03-09 = Monday
       expect(shouldTaskOccurOnDate("WEEKDAYS", null, utcDate(2026, 3, 9))).toBe(true);
-      // 2026-03-10 = Terça
+      // 2026-03-10 = Tuesday
       expect(shouldTaskOccurOnDate("WEEKDAYS", null, utcDate(2026, 3, 10))).toBe(true);
-      // 2026-03-13 = Sexta
+      // 2026-03-13 = Friday
       expect(shouldTaskOccurOnDate("WEEKDAYS", null, utcDate(2026, 3, 13))).toBe(true);
     });
 
-    it("retorna false para sábado e domingo", () => {
-      // 2026-03-14 = Sábado
+    it("returns false for Saturday and Sunday", () => {
+      // 2026-03-14 = Saturday
       expect(shouldTaskOccurOnDate("WEEKDAYS", null, utcDate(2026, 3, 14))).toBe(false);
-      // 2026-03-15 = Domingo
+      // 2026-03-15 = Sunday
       expect(shouldTaskOccurOnDate("WEEKDAYS", null, utcDate(2026, 3, 15))).toBe(false);
     });
   });
 
   describe("SPECIFIC_WEEKDAYS", () => {
-    const config = { days: [1, 3, 5] }; // Seg, Qua, Sex
+    const config = { days: [1, 3, 5] }; // Mon, Wed, Fri
 
-    it("retorna true para dias incluídos", () => {
-      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 9))).toBe(true);  // Seg
-      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 11))).toBe(true); // Qua
-      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 13))).toBe(true); // Sex
+    it("returns true for included days", () => {
+      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 9))).toBe(true);  // Mon
+      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 11))).toBe(true); // Wed
+      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 13))).toBe(true); // Fri
     });
 
-    it("retorna false para dias não incluídos", () => {
-      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 10))).toBe(false); // Ter
-      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 12))).toBe(false); // Qui
-      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 14))).toBe(false); // Sáb
-      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 15))).toBe(false); // Dom
+    it("returns false for non-included days", () => {
+      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 10))).toBe(false); // Tue
+      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 12))).toBe(false); // Thu
+      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 14))).toBe(false); // Sat
+      expect(shouldTaskOccurOnDate("SPECIFIC_WEEKDAYS", config, utcDate(2026, 3, 15))).toBe(false); // Sun
     });
   });
 
   describe("MONTHLY", () => {
-    it("retorna true no dia correto", () => {
+    it("returns true on the correct day", () => {
       expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 15 }, utcDate(2026, 3, 15))).toBe(true);
     });
 
-    it("retorna false em outro dia", () => {
+    it("returns false on another day", () => {
       expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 15 }, utcDate(2026, 3, 14))).toBe(false);
     });
 
-    it("retorna false para dia 31 em mês com 30 dias", () => {
-      // Abril tem 30 dias
+    it("returns false for day 31 in a month with 30 days", () => {
+      // April has 30 days
       expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 31 }, utcDate(2026, 4, 30))).toBe(false);
     });
 
-    it("retorna true para dia 29 em fevereiro de ano bissexto", () => {
-      // 2028 é ano bissexto
+    it("returns true for day 29 in February of a leap year", () => {
+      // 2028 is a leap year
       expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 29 }, utcDate(2028, 2, 29))).toBe(true);
     });
 
-    it("retorna false para dia 29 em fevereiro de ano não-bissexto", () => {
-      // 2026 não é ano bissexto - fev tem 28 dias
+    it("returns false for day 29 in February of a non-leap year", () => {
+      // 2026 is not a leap year - Feb has 28 days
       expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 29 }, utcDate(2026, 2, 28))).toBe(false);
     });
 
-    it("retorna true para dia 1", () => {
+    it("returns true for day 1", () => {
       expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 1 }, utcDate(2026, 6, 1))).toBe(true);
     });
   });
 
-  describe("tipo desconhecido", () => {
-    it("retorna false", () => {
+  describe("unknown type", () => {
+    it("returns false", () => {
       expect(shouldTaskOccurOnDate("UNKNOWN" as never, null, utcDate(2026, 3, 9))).toBe(false);
     });
   });
 });
 
 describe("getRecurrenceLabel", () => {
-  it("retorna label para DAILY", () => {
-    expect(getRecurrenceLabel("DAILY", null)).toBe("Todos os dias");
+  it("returns label for DAILY", () => {
+    expect(getRecurrenceLabel("DAILY", null)).toBe("Every day");
   });
 
-  it("retorna label para WEEKDAYS", () => {
-    expect(getRecurrenceLabel("WEEKDAYS", null)).toBe("Dias úteis");
+  it("returns label for WEEKDAYS", () => {
+    expect(getRecurrenceLabel("WEEKDAYS", null)).toBe("Weekdays");
   });
 
-  it("retorna label para SPECIFIC_WEEKDAYS", () => {
+  it("returns label for SPECIFIC_WEEKDAYS", () => {
     expect(getRecurrenceLabel("SPECIFIC_WEEKDAYS", { days: [1, 3, 5] })).toBe(
-      "Seg, Qua, Sex",
+      "Mon, Wed, Fri",
     );
   });
 
-  it("ordena os dias no label", () => {
+  it("sorts the days in label", () => {
     expect(getRecurrenceLabel("SPECIFIC_WEEKDAYS", { days: [5, 1, 3] })).toBe(
-      "Seg, Qua, Sex",
+      "Mon, Wed, Fri",
     );
   });
 
-  it("retorna label para MONTHLY", () => {
+  it("returns label for MONTHLY", () => {
     expect(getRecurrenceLabel("MONTHLY", { dayOfMonth: 10 })).toBe(
-      "Dia 10 de cada mês",
+      "Day 10 of each month",
     );
   });
 
-  it("retorna tipo como fallback para tipo desconhecido", () => {
+  it("returns type as fallback for unknown type", () => {
     expect(getRecurrenceLabel("UNKNOWN" as never, null)).toBe("UNKNOWN");
   });
 });

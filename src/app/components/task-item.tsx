@@ -39,7 +39,7 @@ export function TaskItem({ task }: { task: Task }) {
         onClick={handleToggle}
         disabled={isPending}
         className="checkbox-btn"
-        aria-label={isCompleted ? "Desmarcar tarefa" : "Concluir tarefa"}
+        aria-label={isCompleted ? "Uncheck task" : "Complete task"}
       >
         {isCompleted && (
           <svg
@@ -73,14 +73,14 @@ export function TaskItem({ task }: { task: Task }) {
         {isCarryOver && (
           <span
             className="task-badge carryover"
-            title={`Originalmente em ${formatShortDate(task.originalDate!)}`}
+            title={`Originally on ${formatShortDate(task.originalDate!)}`}
           >
             ↗ {formatShortDate(task.originalDate!)}
           </span>
         )}
         {task.category && <span className="task-badge">{task.category}</span>}
         {task.sourceType === "RECURRING" && (
-          <span className="task-badge recurring" title="Tarefa recorrente">↻</span>
+          <span className="task-badge recurring" title="Recurring task">↻</span>
         )}
       </div>
     </div>

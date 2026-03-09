@@ -23,20 +23,20 @@ export default async function HistoryPage({
     <main className="dashboard">
       <header className="dashboard-header flex items-start justify-between">
         <div>
-          <h1 className="app-title">histórico</h1>
-          <p className="today-date">Dias anteriores</p>
+          <h1 className="app-title">history</h1>
+          <p className="today-date">Previous days</p>
         </div>
         <Link
           href="/"
           className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
         >
-          ← Voltar
+          ← Back
         </Link>
       </header>
 
       <div className="dashboard-content">
         {days.length === 0 ? (
-          <p className="empty-message">Nenhum histórico encontrado.</p>
+          <p className="empty-message">No history found.</p>
         ) : (
           days.map((day) => (
             <HistoryDayCard key={day.date.toISOString()} day={day} />
@@ -49,7 +49,7 @@ export default async function HistoryPage({
               href={`/history?page=${page - 1}`}
               className="pagination-link"
             >
-              ← Mais recentes
+              ← Newer
             </Link>
           )}
           {hasMore && (
@@ -57,7 +57,7 @@ export default async function HistoryPage({
               href={`/history?page=${page + 1}`}
               className="pagination-link"
             >
-              Mais antigos →
+              Older →
             </Link>
           )}
         </div>
