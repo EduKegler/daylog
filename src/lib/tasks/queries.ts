@@ -20,10 +20,13 @@ export async function getUserDayState(userId: string): Promise<{
   timezone: string;
   lastProcessedDate: Date | null;
 }> {
-  const user = await prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { timezone: true, lastProcessedDate: true },
   });
+  if (!user) {
+    throw new Error(`User not found: ${userId}. Try clearing cookies and signing in again.`);
+  }
   return user;
 }
 
