@@ -51,20 +51,59 @@ export async function GET() {
     checks.dayStats = { ok: false, error: String(e) };
   }
 
-  // 6. Daily tasks query
+  // 6. processRollover (simulates what dashboard does)
   try {
-    const tasks = await prisma.dailyTask.findMany({ take: 1 });
-    checks.dailyTasks = { ok: true, count: tasks.length };
+    const user = await prisma.user.findFirst({
+      select: { id: true, timezone: true, lastProcessedDate: true },
+    });
+    if (user) {
+      const { processRollover } = await import("@/lib/tasks/rollover");
+      const today = getUserLocalDate(user.timezone);
+      const result = await processRollover(user.id, user.lastProcessedDate, today);
+      checks.rollover = { ok: true, result };
+    } else {
+      checks.rollover = { ok: true, skipped: "no user" };
+    }
+  } catch (e) {
+    checks.rollover = { ok: false, error: String(e) };
+  }
+
+  // 7. ensureRecurringInstances
+  try {
+    const user = await prisma.user.findFirst({ select: { id: true, timezone: true } });
+    if (user) {
+      const { ensureRecurringInstances } = await import("@/lib/tasks/ensure-recurring-instances");
+      const today = getUserLocalDate(user.timezone);
+      await ensureRecurringInstances(user.id, today);
+      checks.recurringInstances = { ok: true };
+    } else {
+      checks.recurringInstances = { ok: true, skipped: "no user" };
+    }
+  } catch (e) {
+    checks.recurringInstances = { ok: false, error: String(e) };
+  }
+
+  // 8. getDailyTasksForDate
+  try {
+    const { getDailyTasksForDate } = await import("@/lib/tasks/queries");
+    const user = await prisma.user.findFirst({ select: { id: true, timezone: true } });
+    if (user) {
+      const today = getUserLocalDate(user.timezone);
+      const tasks = await getDailyTasksForDate(user.id, today);
+      checks.dailyTasks = { ok: true, count: tasks.length };
+    }
   } catch (e) {
     checks.dailyTasks = { ok: false, error: String(e) };
   }
 
-  // 7. Recurring tasks query
+  // 9. formatLongDate
   try {
-    const tasks = await prisma.recurringTask.findMany({ take: 1 });
-    checks.recurringTasks = { ok: true, count: tasks.length };
+    const { formatLongDate } = await import("@/lib/dates/format");
+    const today = getUserLocalDate("America/Sao_Paulo");
+    const formatted = formatLongDate(today);
+    checks.formatDate = { ok: true, formatted };
   } catch (e) {
-    checks.recurringTasks = { ok: false, error: String(e) };
+    checks.formatDate = { ok: false, error: String(e) };
   }
 
   // 8. Environment
