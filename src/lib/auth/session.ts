@@ -1,11 +1,10 @@
-import { redirect } from "next/navigation";
 import { auth } from "./index";
 
 export async function getCurrentUser() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect("/login");
+    throw new Error("Not authenticated");
   }
 
   return session.user;
