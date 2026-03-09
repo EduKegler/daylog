@@ -1,5 +1,3 @@
-"use client";
-
 import type { DayStats } from "@/lib/stats/day-stats";
 
 export function DaySummary({ stats }: { stats: DayStats }) {

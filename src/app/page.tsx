@@ -40,12 +40,17 @@ export default async function DashboardPage() {
   const { timezone, lastProcessedDate } = await getUserDayState(user.id);
   const today = getUserLocalDate(timezone);
 
-  // Rollover: carry-over pending manual tasks
-  if (!lastProcessedDate || lastProcessedDate.getTime() < today.getTime()) {
-    await processRollover(user.id, lastProcessedDate, today);
-  }
+  // Rollover + recurring in parallel (independent operations)
+  const needsRollover =
+    !lastProcessedDate || lastProcessedDate.getTime() < today.getTime();
 
-  await ensureRecurringInstances(user.id, today);
+  await Promise.all([
+    needsRollover
+      ? processRollover(user.id, lastProcessedDate, today)
+      : undefined,
+    ensureRecurringInstances(user.id, today),
+  ]);
+
   const tasks = await getDailyTasksForDate(user.id, today);
 
   const pending = tasks.filter((t) => t.status === "PENDING");

@@ -26,41 +26,33 @@ export async function completeTask(
   taskId: string,
   userId: string,
 ): Promise<void> {
-  const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
-
-  if (!task) throw new Error("Task not found");
-  if (task.userId !== userId) throw new Error("Unauthorized");
-  if (task.status === "COMPLETED") throw new Error("Already completed");
-
-  await prisma.dailyTask.update({
-    where: { id: taskId },
+  const { count } = await prisma.dailyTask.updateMany({
+    where: { id: taskId, userId, status: { not: "COMPLETED" } },
     data: { status: "COMPLETED", completedAt: new Date() },
   });
+
+  if (count === 0) throw new Error("Task not found or already completed");
 }
 
 export async function uncompleteTask(
   taskId: string,
   userId: string,
 ): Promise<void> {
-  const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
-
-  if (!task) throw new Error("Task not found");
-  if (task.userId !== userId) throw new Error("Unauthorized");
-  if (task.status !== "COMPLETED") throw new Error("Task is not completed");
-
   const now = new Date();
   const today = startOfDay(now);
   const tomorrow = startOfNextDay(now);
-  const completedDate = task.completedAt;
 
-  if (completedDate && (completedDate < today || completedDate >= tomorrow)) {
-    throw new Error("Can only uncomplete tasks completed today");
-  }
-
-  await prisma.dailyTask.update({
-    where: { id: taskId },
+  const { count } = await prisma.dailyTask.updateMany({
+    where: {
+      id: taskId,
+      userId,
+      status: "COMPLETED",
+      completedAt: { gte: today, lt: tomorrow },
+    },
     data: { status: "PENDING", completedAt: null },
   });
+
+  if (count === 0) throw new Error("Task not found or cannot be uncompleted");
 }
 
 export async function updateDailyTask(
@@ -68,29 +60,25 @@ export async function updateDailyTask(
   userId: string,
   data: { title: string; description: string | null; category: string | null },
 ): Promise<void> {
-  const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
-
-  if (!task) throw new Error("Task not found");
-  if (task.userId !== userId) throw new Error("Unauthorized");
-
-  await prisma.dailyTask.update({
-    where: { id: taskId },
+  const { count } = await prisma.dailyTask.updateMany({
+    where: { id: taskId, userId },
     data: {
       title: data.title,
       description: data.description,
       category: data.category,
     },
   });
+
+  if (count === 0) throw new Error("Task not found or unauthorized");
 }
 
 export async function deleteTask(
   taskId: string,
   userId: string,
 ): Promise<void> {
-  const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
+  const { count } = await prisma.dailyTask.deleteMany({
+    where: { id: taskId, userId },
+  });
 
-  if (!task) throw new Error("Task not found");
-  if (task.userId !== userId) throw new Error("Unauthorized");
-
-  await prisma.dailyTask.delete({ where: { id: taskId } });
+  if (count === 0) throw new Error("Task not found or unauthorized");
 }

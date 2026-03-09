@@ -25,7 +25,17 @@ export default async function RecurringPage() {
 
       <RecurringTaskForm />
 
-      <RecurringTaskList tasks={JSON.parse(JSON.stringify(tasks))} />
+      <RecurringTaskList
+        tasks={tasks.map((t) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          category: t.category,
+          recurrenceType: t.recurrenceType,
+          recurrenceConfig: t.recurrenceConfig,
+          isActive: t.isActive,
+        }))}
+      />
     </main>
   );
 }

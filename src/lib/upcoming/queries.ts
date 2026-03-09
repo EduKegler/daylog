@@ -9,10 +9,12 @@ export type UpcomingDay = {
 export async function getUpcomingTasks(
   userId: string,
   afterDate: Date,
+  limit = 50,
 ): Promise<UpcomingDay[]> {
   const tasks = await prisma.dailyTask.findMany({
     where: { userId, scheduledDate: { gt: afterDate } },
     orderBy: [{ scheduledDate: "asc" }, { createdAt: "asc" }],
+    take: limit,
   });
 
   const tasksByDate = new Map<number, DailyTask[]>();

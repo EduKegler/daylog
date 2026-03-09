@@ -1,5 +1,3 @@
-"use client";
-
 import { TaskItem, type Task } from "./task-item";
 
 export function TaskList({
