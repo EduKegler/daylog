@@ -63,7 +63,7 @@ export default async function DashboardPage() {
             {formatLongDate(today)}
           </time>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-baseline gap-4">
           <Link
             href="/history"
             className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"

@@ -126,7 +126,7 @@ describe("createTask", () => {
 
   it("creates a manual task for today", async () => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
     mockPrisma.dailyTask.create.mockResolvedValue({ id: "new-1" });
 
     await createTask({
@@ -148,9 +148,8 @@ describe("createTask", () => {
   });
 
   it("creates a task for a specific future date", async () => {
-    const futureDate = new Date("2026-03-15T12:00:00");
-    const expected = new Date("2026-03-15T12:00:00");
-    expected.setHours(0, 0, 0, 0);
+    const futureDate = new Date("2026-03-15T12:00:00Z");
+    const expected = new Date("2026-03-15T00:00:00Z");
     mockPrisma.dailyTask.create.mockResolvedValue({ id: "new-2" });
 
     await createTask({

@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { formatShortDate } from "@/lib/dates/format";
-import { completeTaskAction, uncompleteTaskAction } from "../actions";
+import { completeTaskAction, uncompleteTaskAction, deleteTaskAction } from "../actions";
 
 export type Task = {
   id: string;
@@ -28,6 +28,12 @@ export function TaskItem({ task }: { task: Task }) {
       } else {
         await completeTaskAction(task.id);
       }
+    });
+  }
+
+  function handleDelete() {
+    startTransition(async () => {
+      await deleteTaskAction(task.id);
     });
   }
 
@@ -82,6 +88,14 @@ export function TaskItem({ task }: { task: Task }) {
         {task.sourceType === "RECURRING" && (
           <span className="task-badge recurring" title="Recurring task">↻</span>
         )}
+        <button
+          onClick={handleDelete}
+          disabled={isPending}
+          className="text-[var(--color-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all duration-200 text-sm"
+          aria-label="Delete task"
+        >
+          ×
+        </button>
       </div>
     </div>
   );

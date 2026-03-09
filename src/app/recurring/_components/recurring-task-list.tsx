@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { toggleRecurringTask } from "@/lib/tasks/actions";
+import { toggleRecurringTask, deleteRecurringTask } from "@/lib/tasks/actions";
 import {
   parseRecurrenceConfig,
   getRecurrenceLabel,
@@ -56,6 +56,12 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
     });
   }
 
+  function handleDelete() {
+    startTransition(async () => {
+      await deleteRecurringTask(task.id);
+    });
+  }
+
   return (
     <div
       className={`task-item group ${!task.isActive ? "opacity-50" : ""} ${isPending ? "opacity-30" : ""}`}
@@ -83,6 +89,14 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
         }`}
       >
         {task.isActive ? "Active" : "Inactive"}
+      </button>
+      <button
+        onClick={handleDelete}
+        disabled={isPending}
+        className="text-[var(--color-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all duration-200 text-sm"
+        aria-label="Delete recurring task"
+      >
+        ×
       </button>
     </div>
   );

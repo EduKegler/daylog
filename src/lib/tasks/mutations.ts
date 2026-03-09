@@ -62,3 +62,15 @@ export async function uncompleteTask(
     data: { status: "PENDING", completedAt: null },
   });
 }
+
+export async function deleteTask(
+  taskId: string,
+  userId: string,
+): Promise<void> {
+  const task = await prisma.dailyTask.findUnique({ where: { id: taskId } });
+
+  if (!task) throw new Error("Task not found");
+  if (task.userId !== userId) throw new Error("Unauthorized");
+
+  await prisma.dailyTask.delete({ where: { id: taskId } });
+}

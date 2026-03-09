@@ -4,13 +4,13 @@ import { prisma } from "@/lib/db/prisma";
 
 export function startOfDay(date: Date): Date {
   const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
+  d.setUTCHours(0, 0, 0, 0);
   return d;
 }
 
 export function startOfNextDay(date: Date): Date {
   const d = startOfDay(date);
-  d.setDate(d.getDate() + 1);
+  d.setUTCDate(d.getUTCDate() + 1);
   return d;
 }
 

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
-import { createTask } from "@/lib/tasks/mutations";
+import { createTask, deleteTask } from "@/lib/tasks/mutations";
 import { completeTask, uncompleteTask } from "@/lib/tasks/mutations";
 import { validateTaskInput } from "@/lib/tasks/validation";
 import type { ActionResult } from "@/lib/tasks/actions";
@@ -42,5 +42,11 @@ export async function completeTaskAction(taskId: string) {
 export async function uncompleteTaskAction(taskId: string) {
   const user = await getCurrentUser();
   await uncompleteTask(taskId, user.id);
+  revalidatePath("/");
+}
+
+export async function deleteTaskAction(taskId: string) {
+  const user = await getCurrentUser();
+  await deleteTask(taskId, user.id);
   revalidatePath("/");
 }

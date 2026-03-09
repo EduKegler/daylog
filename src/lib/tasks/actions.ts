@@ -37,6 +37,7 @@ export async function createRecurringTask(formData: FormData): Promise<ActionRes
   });
 
   revalidatePath("/recurring");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -78,6 +79,7 @@ export async function updateRecurringTask(
   });
 
   revalidatePath("/recurring");
+  revalidatePath("/");
   return { success: true };
 }
 
@@ -98,5 +100,24 @@ export async function toggleRecurringTask(taskId: string): Promise<ActionResult>
   });
 
   revalidatePath("/recurring");
+  revalidatePath("/");
+  return { success: true };
+}
+
+export async function deleteRecurringTask(taskId: string): Promise<ActionResult> {
+  const user = await getCurrentUser();
+
+  const task = await prisma.recurringTask.findFirst({
+    where: { id: taskId, userId: user.id! },
+  });
+
+  if (!task) {
+    return { success: false, errors: { _form: "Task not found" } };
+  }
+
+  await prisma.recurringTask.delete({ where: { id: taskId } });
+
+  revalidatePath("/recurring");
+  revalidatePath("/");
   return { success: true };
 }
