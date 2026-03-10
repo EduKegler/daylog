@@ -1,5 +1,17 @@
+import type { Metadata } from "next";
 import { DaylogIcon } from "../components/daylog-icon";
 import { signIn } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description:
+    "Sign in to Daylog — track your daily tasks, build streaks, and stay on top of what matters.",
+  openGraph: {
+    title: "Sign in to Daylog",
+    description:
+      "Track your daily tasks, build streaks, and stay on top of what matters.",
+  },
+};
 
 export default function LoginPage() {
   return (

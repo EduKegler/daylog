@@ -1,4 +1,5 @@
 import type { DefaultSession } from "next-auth";
+import type {} from "next-auth/jwt";
 
 declare module "next-auth" {
   interface Session {
@@ -9,7 +10,7 @@ declare module "next-auth" {
   }
 }
 
-declare module "@auth/core/jwt" {
+declare module "next-auth/jwt" {
   interface JWT {
     timezone?: string;
   }
