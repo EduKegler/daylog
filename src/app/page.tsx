@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { DaylogIcon } from "./components/daylog-icon";
 import { getCurrentUser } from "@/lib/auth/session";
-import { getDailyTasksForDate, getUserDayState } from "@/lib/tasks/queries";
+import {
+  getDailyTasksForDate,
+  getLastProcessedDate,
+} from "@/lib/tasks/queries";
 import { ensureRecurringInstances } from "@/lib/tasks/ensure-recurring-instances";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { processRollover } from "@/lib/tasks/rollover";
@@ -37,19 +40,20 @@ function serializeTask(t: {
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  const { timezone, lastProcessedDate } = await getUserDayState(user.id);
-  const today = getUserLocalDate(timezone);
+  const today = getUserLocalDate(user.timezone);
 
-  // Rollover + recurring in parallel (independent operations)
-  const needsRollover =
-    !lastProcessedDate || lastProcessedDate.getTime() < today.getTime();
-
-  await Promise.all([
-    needsRollover
-      ? processRollover(user.id, lastProcessedDate, today)
-      : undefined,
+  // Fetch lastProcessedDate + ensure recurring in parallel (independent)
+  const [lastProcessedDate] = await Promise.all([
+    getLastProcessedDate(user.id),
     ensureRecurringInstances(user.id, today),
   ]);
+
+  // Rollover only on day change (rare, once per day)
+  const needsRollover =
+    !lastProcessedDate || lastProcessedDate.getTime() < today.getTime();
+  if (needsRollover) {
+    await processRollover(user.id, lastProcessedDate, today);
+  }
 
   const tasks = await getDailyTasksForDate(user.id, today);
 

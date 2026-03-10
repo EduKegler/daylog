@@ -30,6 +30,17 @@ export async function getUserDayState(userId: string): Promise<{
   return user;
 }
 
+export async function getLastProcessedDate(userId: string): Promise<Date | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { lastProcessedDate: true },
+  });
+  if (!user) {
+    throw new Error(`User not found: ${userId}. Try clearing cookies and signing in again.`);
+  }
+  return user.lastProcessedDate;
+}
+
 // ─── Recurring Tasks ──────────────────────────
 
 export async function getRecurringTasks(userId: string) {

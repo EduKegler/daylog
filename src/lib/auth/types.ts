@@ -4,6 +4,13 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
+      timezone: string;
     } & DefaultSession["user"];
+  }
+}
+
+declare module "@auth/core/jwt" {
+  interface JWT {
+    timezone?: string;
   }
 }

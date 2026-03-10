@@ -1,6 +1,7 @@
+import { cache } from "react";
 import { auth } from "./index";
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -8,9 +9,9 @@ export async function getCurrentUser() {
   }
 
   return session.user;
-}
+});
 
-export async function getOptionalUser() {
+export const getOptionalUser = cache(async () => {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -18,4 +19,4 @@ export async function getOptionalUser() {
   }
 
   return session.user;
-}
+});

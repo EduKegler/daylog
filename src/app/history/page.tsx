@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
-import { getUserDayState } from "@/lib/tasks/queries";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { getHistory } from "@/lib/history/queries";
 import { HistoryDayCard } from "./_components/history-day-card";
@@ -15,8 +14,7 @@ export default async function HistoryPage({
   const page = Math.max(0, parseInt(params.page ?? "0", 10) || 0);
   const pageSize = 7;
 
-  const { timezone } = await getUserDayState(user.id);
-  const today = getUserLocalDate(timezone);
+  const today = getUserLocalDate(user.timezone);
   const { days, hasMore } = await getHistory(user.id, today, page, pageSize);
 
   return (

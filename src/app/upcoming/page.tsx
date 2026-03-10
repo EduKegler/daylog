@@ -1,14 +1,12 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
-import { getUserDayState } from "@/lib/tasks/queries";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { getUpcomingTasks } from "@/lib/upcoming/queries";
 import { UpcomingDayCard } from "./_components/upcoming-day-card";
 
 export default async function UpcomingPage() {
   const user = await getCurrentUser();
-  const { timezone } = await getUserDayState(user.id);
-  const today = getUserLocalDate(timezone);
+  const today = getUserLocalDate(user.timezone);
   const days = await getUpcomingTasks(user.id, today);
 
   return (
