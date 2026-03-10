@@ -4,7 +4,7 @@ export function DaySummary({ stats }: { stats: DayStats }) {
   const pct = Math.round(stats.completionRate * 100);
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
       <StatCard label="Total" value={stats.total} />
       <StatCard label="Completed" value={stats.completed} accent />
       <StatCard label="Pending" value={stats.pending} />

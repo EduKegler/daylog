@@ -1,13 +1,9 @@
 import Link from "next/link";
 import { DaylogIcon } from "./components/daylog-icon";
 import { getCurrentUser } from "@/lib/auth/session";
-import {
-  getDailyTasksForDate,
-  getLastProcessedDate,
-} from "@/lib/tasks/queries";
+import { getDailyTasksForDate } from "@/lib/tasks/queries";
 import { ensureRecurringInstances } from "@/lib/tasks/ensure-recurring-instances";
 import { getUserLocalDate } from "@/lib/tasks/generation";
-import { processRollover } from "@/lib/tasks/rollover";
 import { computeDayStats } from "@/lib/stats/day-stats";
 import { formatLongDate } from "@/lib/dates/format";
 import { signOut } from "@/lib/auth";
@@ -42,19 +38,7 @@ export default async function DashboardPage() {
   const user = await getCurrentUser();
   const today = getUserLocalDate(user.timezone);
 
-  // Fetch lastProcessedDate + ensure recurring in parallel (independent)
-  const [lastProcessedDate] = await Promise.all([
-    getLastProcessedDate(user.id),
-    ensureRecurringInstances(user.id, today),
-  ]);
-
-  // Rollover only on day change (rare, once per day)
-  const needsRollover =
-    !lastProcessedDate || lastProcessedDate.getTime() < today.getTime();
-  if (needsRollover) {
-    await processRollover(user.id, lastProcessedDate, today);
-  }
-
+  await ensureRecurringInstances(user.id, today);
   const tasks = await getDailyTasksForDate(user.id, today);
 
   const pending = tasks.filter((t) => t.status === "PENDING");
@@ -66,7 +50,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="dashboard">
-      <header className="dashboard-header flex items-start justify-between">
+      <header className="dashboard-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
             <DaylogIcon size={28} />
@@ -76,7 +60,7 @@ export default async function DashboardPage() {
             {formatLongDate(today)}
           </time>
         </div>
-        <div className="flex items-baseline gap-4">
+        <nav className="flex items-baseline gap-3 sm:gap-4">
           <Link
             href="/history"
             className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
@@ -108,7 +92,7 @@ export default async function DashboardPage() {
               Sign out
             </button>
           </form>
-        </div>
+        </nav>
       </header>
 
       <DaySummary stats={stats} />

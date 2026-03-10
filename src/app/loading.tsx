@@ -1,14 +1,14 @@
 export default function Loading() {
   return (
     <main className="dashboard">
-      <header className="dashboard-header flex items-start justify-between">
+      <header className="dashboard-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
           <div className="h-8 w-24 rounded bg-[var(--color-border)] animate-pulse" />
           <div className="h-4 w-40 rounded bg-[var(--color-border)] animate-pulse mt-2" />
         </div>
       </header>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {Array.from({ length: 4 }, (_, i) => (
           <div
             key={i}
