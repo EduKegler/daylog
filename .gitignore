@@ -15,6 +15,9 @@
 # debug
 npm-debug.log*
 
+# npm lockfile (project uses pnpm)
+package-lock.json
+
 # env files
 .env
 .env*.local
