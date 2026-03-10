@@ -95,9 +95,8 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className="task-title cursor-pointer hover:text-[var(--color-accent)]"
+            className="task-title cursor-pointer"
             onClick={() => setIsEditing(true)}
-            title="Click to edit"
           >
             {task.title}
           </span>
@@ -111,25 +110,29 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
         <p className="text-xs text-[var(--color-muted)] mt-1">{label}</p>
       </div>
 
-      <button
-        onClick={handleToggle}
-        disabled={isPending}
-        className={`px-3 py-1 text-xs font-medium rounded-full transition-colors duration-200 ${
-          task.isActive
-            ? "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
-            : "bg-[var(--color-border)] text-[var(--color-muted)] hover:bg-stone-300"
-        }`}
-      >
-        {task.isActive ? "Active" : "Inactive"}
-      </button>
-      <button
-        onClick={handleDelete}
-        disabled={isPending}
-        className="text-[var(--color-muted)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all duration-200 text-sm"
-        aria-label="Delete recurring task"
-      >
-        ×
-      </button>
+      <div className="flex items-center gap-0.5">
+        <button onClick={() => setIsEditing(true)} disabled={isPending} className="task-action-btn" aria-label="Edit recurring task">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <button
+          onClick={handleToggle}
+          disabled={isPending}
+          className={`px-3 py-1 text-xs font-medium rounded-full transition-colors duration-200 ${
+            task.isActive
+              ? "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
+              : "bg-[var(--color-border)] text-[var(--color-muted)] hover:bg-stone-300"
+          }`}
+        >
+          {task.isActive ? "Active" : "Inactive"}
+        </button>
+        <button onClick={handleDelete} disabled={isPending} className="task-action-btn delete" aria-label="Delete recurring task">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

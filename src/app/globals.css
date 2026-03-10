@@ -117,6 +117,43 @@ button:disabled {
   transform: translateX(2px);
 }
 
+/* ─── Task Action Buttons ───────────────────── */
+
+.task-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  color: var(--color-border);
+  background: transparent;
+  border: none;
+  transition: all 200ms ease;
+  flex-shrink: 0;
+}
+
+.task-action-btn:hover {
+  color: var(--color-muted);
+  background: var(--color-border);
+}
+
+.task-action-btn.delete:hover {
+  color: #DC2626;
+  background: #FEF2F2;
+}
+
+.task-item:hover .task-action-btn {
+  color: var(--color-muted);
+}
+
+@media (hover: none) {
+  .task-action-btn {
+    color: var(--color-muted);
+    opacity: 0.5;
+  }
+}
+
 .task-item.completed {
   opacity: 0.6;
 }
