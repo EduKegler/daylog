@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getRecurringTasks } from "@/lib/tasks/queries";
+import { NavMenu } from "@/app/components/nav-menu";
 import { RecurringTaskList } from "./_components/recurring-task-list";
 import { RecurringTaskForm } from "./_components/recurring-task-form";
 
@@ -15,12 +15,7 @@ export default async function RecurringPage() {
           <h1 className="app-title">recurring</h1>
           <p className="today-date">Tasks that repeat automatically</p>
         </div>
-        <Link
-          href="/"
-          className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
-        >
-          ← Back
-        </Link>
+        <NavMenu />
       </header>
 
       <RecurringTaskForm />

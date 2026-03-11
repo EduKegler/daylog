@@ -54,6 +54,7 @@ button:disabled {
   font-size: var(--text-display);
   color: var(--color-stone-900);
   line-height: 1;
+  text-transform: capitalize;
 }
 
 .today-date {
@@ -389,12 +390,14 @@ button:disabled {
   padding-top: 1rem;
 }
 
+.nav-link,
 .pagination-link {
   font-size: var(--text-small);
   color: var(--color-muted);
   transition: color 200ms ease;
 }
 
+.nav-link:hover,
 .pagination-link:hover {
   color: var(--color-accent);
 }

@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { getUpcomingTasks } from "@/lib/upcoming/queries";
+import { NavMenu } from "@/app/components/nav-menu";
 import { UpcomingDayCard } from "./_components/upcoming-day-card";
 
 export default async function UpcomingPage() {
@@ -16,12 +16,7 @@ export default async function UpcomingPage() {
           <h1 className="app-title">upcoming</h1>
           <p className="today-date">Scheduled tasks</p>
         </div>
-        <Link
-          href="/"
-          className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
-        >
-          ← Back
-        </Link>
+        <NavMenu />
       </header>
 
       <div className="dashboard-content">

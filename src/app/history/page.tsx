@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { getHistory } from "@/lib/history/queries";
+import { NavMenu } from "@/app/components/nav-menu";
 import { HistoryDayCard } from "./_components/history-day-card";
 
 export default async function HistoryPage({
@@ -24,12 +25,7 @@ export default async function HistoryPage({
           <h1 className="app-title">history</h1>
           <p className="today-date">Previous days</p>
         </div>
-        <Link
-          href="/"
-          className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
-        >
-          ← Back
-        </Link>
+        <NavMenu />
       </header>
 
       <div className="dashboard-content">

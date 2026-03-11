@@ -194,6 +194,20 @@ background: var(--color-border);
 color: var(--color-muted);
 ```
 
+### NavMenu (navegação global)
+
+Arquivo: `src/app/components/nav-menu.tsx` (Server Component)
+
+Links de navegação (History, Upcoming, Recurring) + Sign out. Presente em todas as páginas autenticadas.
+
+| Prop | Default | Uso |
+|---|---|---|
+| `showHome` | `true` | Na Home page, passar `false` para não mostrar self-link |
+
+**Estilo dos links**: classe `.nav-link` (compartilhada com `.pagination-link` em globals.css)
+**Sign out hover**: `hover:text-stone-600` (diferenciado dos links de navegação)
+**Spacing**: `gap-3 sm:gap-4`
+
 ### Checkbox (circular)
 
 ```css

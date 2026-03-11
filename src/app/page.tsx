@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { DaylogIcon } from "./components/daylog-icon";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getDailyTasksForDate } from "@/lib/tasks/queries";
@@ -6,7 +5,7 @@ import { ensureRecurringInstances } from "@/lib/tasks/ensure-recurring-instances
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { computeDayStats } from "@/lib/stats/day-stats";
 import { formatLongDate } from "@/lib/dates/format";
-import { signOut } from "@/lib/auth";
+import { NavMenu } from "./components/nav-menu";
 import { DaySummary } from "./components/day-summary";
 import { TaskList } from "./components/task-list";
 import { CreateTaskForm } from "./components/create-task-form";
@@ -60,39 +59,7 @@ export default async function DashboardPage() {
             {formatLongDate(today)}
           </time>
         </div>
-        <nav className="flex items-baseline gap-3 sm:gap-4">
-          <Link
-            href="/history"
-            className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
-          >
-            History
-          </Link>
-          <Link
-            href="/upcoming"
-            className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
-          >
-            Upcoming
-          </Link>
-          <Link
-            href="/recurring"
-            className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
-          >
-            Recurring
-          </Link>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button
-              type="submit"
-              className="text-small text-[var(--color-muted)] hover:text-stone-600 transition-colors duration-200"
-            >
-              Sign out
-            </button>
-          </form>
-        </nav>
+        <NavMenu />
       </header>
 
       <DaySummary stats={stats} />
