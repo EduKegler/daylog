@@ -10,6 +10,7 @@ pnpm build            # prisma generate && next build
 pnpm test             # Vitest watch mode
 pnpm test:run         # Vitest single run
 pnpm lint             # Next.js lint
+pnpm lighthouse       # Lighthouse CI audit (uses .lighthouserc.js)
 ```
 
 Run a single test file:
