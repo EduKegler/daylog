@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useDailyTasks } from "@/lib/queries/daily";
 import { computeDayStats } from "@/lib/stats/day-stats";
 import { DaySummary } from "./day-summary";
 import { TaskList } from "./task-list";
-import { CreateTaskForm } from "./create-task-form";
+import { TaskForm } from "./task-form/task-form";
 import { EmptyState } from "./empty-state";
 import { AllClearIllustration, NoCompletedIllustration } from "./empty-state-illustrations";
 
@@ -39,6 +40,31 @@ function DashboardSkeleton() {
   );
 }
 
+function NewTaskButton() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 w-full py-3.5 text-subtext text-muted bg-transparent border-0 border-b border-border transition-colors duration-200 hover:text-accent"
+      >
+        <span className="text-icon leading-none">+</span>
+        New task
+      </button>
+    );
+  }
+
+  return (
+    <TaskForm
+      mode="create"
+      defaultTaskType="one-time"
+      onSuccess={() => setIsOpen(false)}
+      onCancel={() => setIsOpen(false)}
+    />
+  );
+}
+
 export function DashboardContent() {
   const { data, isLoading } = useDailyTasks();
 
@@ -67,7 +93,7 @@ export function DashboardContent() {
           }
         />
 
-        <CreateTaskForm />
+        <NewTaskButton />
 
         <TaskList
           title="Completed"

@@ -50,13 +50,13 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.title).toBeDefined();
   });
 
-  it("rejects title > 200 characters", () => {
+  it("rejects title > 75 characters", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
-      title: "a".repeat(201),
+      title: "a".repeat(76),
     });
     expect(result.success).toBe(false);
-    if (!result.success) expect(result.errors.title).toContain("200");
+    if (!result.success) expect(result.errors.title).toContain("75");
   });
 
   it("trims the title", () => {
@@ -75,13 +75,13 @@ describe("validateRecurringTaskInput", () => {
     if (result.success) expect(result.data.description).toBeNull();
   });
 
-  it("rejects description > 2000 characters", () => {
+  it("rejects description > 450 characters", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
-      description: "a".repeat(2001),
+      description: "a".repeat(451),
     });
     expect(result.success).toBe(false);
-    if (!result.success) expect(result.errors.description).toContain("2000");
+    if (!result.success) expect(result.errors.description).toContain("450");
   });
 
   // Category validation
@@ -156,13 +156,46 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  it("accepts MONTHLY with valid config", () => {
+  it("accepts MONTHLY with daysOfMonth array", () => {
+    const result = validateRecurringTaskInput({
+      ...validInput,
+      recurrenceType: "MONTHLY",
+      recurrenceConfig: JSON.stringify({ daysOfMonth: [1, 15] }),
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recurrenceConfig).toBe(
+        JSON.stringify({ daysOfMonth: [1, 15] }),
+      );
+    }
+  });
+
+  it("accepts MONTHLY with legacy dayOfMonth and normalizes to daysOfMonth", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "MONTHLY",
       recurrenceConfig: JSON.stringify({ dayOfMonth: 15 }),
     });
     expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recurrenceConfig).toBe(
+        JSON.stringify({ daysOfMonth: [15] }),
+      );
+    }
+  });
+
+  it("normalizes MONTHLY: deduplicates and sorts daysOfMonth", () => {
+    const result = validateRecurringTaskInput({
+      ...validInput,
+      recurrenceType: "MONTHLY",
+      recurrenceConfig: JSON.stringify({ daysOfMonth: [15, 1, 15, 28] }),
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recurrenceConfig).toBe(
+        JSON.stringify({ daysOfMonth: [1, 15, 28] }),
+      );
+    }
   });
 
   it("rejects MONTHLY without config", () => {
@@ -174,11 +207,21 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
-  it("rejects MONTHLY with dayOfMonth out of range", () => {
+  it("rejects MONTHLY with daysOfMonth out of range", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "MONTHLY",
-      recurrenceConfig: JSON.stringify({ dayOfMonth: 32 }),
+      recurrenceConfig: JSON.stringify({ daysOfMonth: [0, 32] }),
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
+  });
+
+  it("rejects MONTHLY with empty daysOfMonth array", () => {
+    const result = validateRecurringTaskInput({
+      ...validInput,
+      recurrenceType: "MONTHLY",
+      recurrenceConfig: JSON.stringify({ daysOfMonth: [] }),
     });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
@@ -215,7 +258,7 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toContain("8");
   });
 
-  it("rejects MONTHLY with config missing dayOfMonth", () => {
+  it("rejects MONTHLY with config missing daysOfMonth and dayOfMonth", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
       recurrenceType: "MONTHLY",
@@ -264,23 +307,23 @@ describe("validateTaskInput", () => {
     if (!result.success) expect(result.errors.title).toBeDefined();
   });
 
-  it("rejects title > 200 characters", () => {
+  it("rejects title > 75 characters", () => {
     const result = validateTaskInput({
-      title: "a".repeat(201),
+      title: "a".repeat(76),
       scheduledDate: "2026-03-09",
     });
     expect(result.success).toBe(false);
-    if (!result.success) expect(result.errors.title).toContain("200");
+    if (!result.success) expect(result.errors.title).toContain("75");
   });
 
-  it("rejects description > 2000 characters", () => {
+  it("rejects description > 450 characters", () => {
     const result = validateTaskInput({
       title: "Task",
-      description: "a".repeat(2001),
+      description: "a".repeat(451),
       scheduledDate: "2026-03-09",
     });
     expect(result.success).toBe(false);
-    if (!result.success) expect(result.errors.description).toContain("2000");
+    if (!result.success) expect(result.errors.description).toContain("450");
   });
 
   it("rejects category > 50 characters", () => {

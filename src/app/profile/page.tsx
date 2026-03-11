@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { signOut } from "@/lib/auth";
 import { NavMenu } from "@/app/components/nav-menu";
 import { UserAvatar } from "@/app/components/user-avatar";
+import { Text } from "@/app/components/text";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -10,10 +11,8 @@ export default async function ProfilePage() {
     <main className="max-w-[42rem] mx-auto py-8 px-6">
       <header className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="font-display text-display text-stone-900 leading-none capitalize">
-            profile
-          </h1>
-          <p className="text-subtext text-muted mt-1 block">Your account</p>
+          <Text variant="display" className="capitalize">profile</Text>
+          <Text variant="subtext" className="mt-1 block">Your account</Text>
         </div>
         <NavMenu activePath="/profile" />
       </header>
@@ -23,11 +22,9 @@ export default async function ProfilePage() {
           <UserAvatar name={user.name} image={user.image} size={48} />
           <div>
             {user.name && (
-              <p className="text-body font-medium text-stone-900">
-                {user.name}
-              </p>
+              <Text variant="body" className="font-medium">{user.name}</Text>
             )}
-            {user.email && <p className="text-small text-muted">{user.email}</p>}
+            {user.email && <Text variant="small" muted>{user.email}</Text>}
           </div>
         </div>
 

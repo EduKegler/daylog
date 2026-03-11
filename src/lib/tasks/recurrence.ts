@@ -3,7 +3,7 @@ export type SpecificWeekdaysConfig = {
 };
 
 export type MonthlyConfig = {
-  dayOfMonth: number; // 1-31
+  daysOfMonth: number[]; // 1-31
 };
 
 export type RecurrenceConfig = SpecificWeekdaysConfig | MonthlyConfig | null;
@@ -51,19 +51,27 @@ export function parseRecurrenceConfig(
   }
 
   if (type === "MONTHLY") {
-    if (
-      !parsed ||
-      typeof parsed !== "object" ||
-      !("dayOfMonth" in parsed) ||
-      typeof (parsed as MonthlyConfig).dayOfMonth !== "number"
-    ) {
-      throw new Error("MONTHLY requires { dayOfMonth: number }");
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("MONTHLY requires { daysOfMonth: number[] }");
     }
-    const { dayOfMonth } = parsed as MonthlyConfig;
-    if (!Number.isInteger(dayOfMonth) || dayOfMonth < 1 || dayOfMonth > 31) {
-      throw new Error(`Invalid dayOfMonth: ${dayOfMonth}. Must be 1-31`);
+    let daysOfMonth: number[];
+    const obj = parsed as Record<string, unknown>;
+    if ("daysOfMonth" in parsed && Array.isArray(obj.daysOfMonth)) {
+      daysOfMonth = obj.daysOfMonth as number[];
+    } else if ("dayOfMonth" in parsed && typeof obj.dayOfMonth === "number") {
+      daysOfMonth = [obj.dayOfMonth];
+    } else {
+      throw new Error("MONTHLY requires { daysOfMonth: number[] }");
     }
-    return { dayOfMonth } as MonthlyConfig;
+    if (daysOfMonth.length === 0) {
+      throw new Error("MONTHLY requires at least one day");
+    }
+    for (const d of daysOfMonth) {
+      if (!Number.isInteger(d) || d < 1 || d > 31) {
+        throw new Error(`Invalid day of month: ${d}. Must be 1-31`);
+      }
+    }
+    return { daysOfMonth } as MonthlyConfig;
   }
 
   throw new Error(`Unknown recurrence type: ${type}`);
@@ -89,12 +97,13 @@ export function shouldTaskOccurOnDate(
     }
 
     case "MONTHLY": {
-      const { dayOfMonth } = config as MonthlyConfig;
+      const { daysOfMonth } = config as MonthlyConfig;
       const lastDay = new Date(
         Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0),
       ).getUTCDate();
-      if (dayOfMonth > lastDay) return false;
-      return date.getUTCDate() === dayOfMonth;
+      return daysOfMonth.some(
+        (day) => day <= lastDay && date.getUTCDate() === day,
+      );
     }
 
     default:
@@ -119,8 +128,9 @@ export function getRecurrenceLabel(
       return sorted.map((d) => WEEKDAY_NAMES_SHORT[d]).join(", ");
     }
     case "MONTHLY": {
-      const { dayOfMonth } = config as MonthlyConfig;
-      return `Day ${dayOfMonth} of each month`;
+      const { daysOfMonth } = config as MonthlyConfig;
+      if (daysOfMonth.length === 1) return `Day ${daysOfMonth[0]} of each month`;
+      return `Days ${daysOfMonth.join(", ")} of each month`;
     }
     default:
       return type;

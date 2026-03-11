@@ -1,5 +1,7 @@
 "use client";
 
+import { Text } from "./components/text";
+
 export default function Error({
   error,
   reset,
@@ -10,16 +12,16 @@ export default function Error({
   return (
     <main className="flex min-h-screen items-center justify-center">
       <div className="text-center max-w-md">
-        <h2 className="text-xl font-semibold text-stone-900 mb-2">
+        <Text as="h2" variant="heading" className="mb-2">
           Something went wrong
-        </h2>
-        <p className="text-small text-stone-500 mb-1">
+        </Text>
+        <Text variant="small" muted className="mb-1">
           {error.message || "An unexpected error occurred."}
-        </p>
+        </Text>
         {error.digest && (
-          <p className="text-xs text-stone-400 mb-6 font-mono">
+          <Text variant="small" muted className="text-xs mb-6 font-mono">
             Digest: {error.digest}
-          </p>
+          </Text>
         )}
         <button
           onClick={reset}

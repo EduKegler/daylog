@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { formatShortDate } from "@/lib/dates/format";
+import { canEditDailyTask } from "@/lib/tasks/daily-task-rules";
+import { Text } from "./text";
 import {
   useCompleteTask,
   useUncompleteTask,
   useDeleteTask,
-  useUpdateTask,
 } from "@/lib/queries/daily";
+import { TaskForm } from "./task-form/task-form";
 
 export type Task = {
   id: string;
@@ -19,6 +21,9 @@ export type Task = {
   status: "PENDING" | "COMPLETED" | "SKIPPED";
   originalDate: string | null;
   scheduledDate: string;
+  recurringTaskId: string | null;
+  recurrenceType: string | null;
+  recurrenceConfig: string | null;
 };
 
 const taskItemBase = "flex items-start gap-3 py-3.5 border-b border-border transition-transform duration-200 hover:translate-x-0.5";
@@ -32,17 +37,14 @@ export function TaskItem({ task }: { task: Task }) {
   const completeTask = useCompleteTask();
   const uncompleteTask = useUncompleteTask();
   const deleteTask = useDeleteTask();
-  const updateTask = useUpdateTask();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [editCategory, setEditCategory] = useState("");
   const isCompleted = task.status === "COMPLETED";
   const isCarryOver =
     task.originalDate && task.originalDate !== task.scheduledDate;
   const isPending =
-    completeTask.isPending || uncompleteTask.isPending || deleteTask.isPending || updateTask.isPending;
+    completeTask.isPending || uncompleteTask.isPending || deleteTask.isPending;
+  const canEdit = canEditDailyTask(task);
 
   function handleToggle() {
     if (isCompleted) {
@@ -57,83 +59,50 @@ export function TaskItem({ task }: { task: Task }) {
   }
 
   function handleEdit() {
-    setEditTitle(task.title);
-    setEditDescription(task.description ?? "");
-    setEditCategory(task.category ?? "");
+    if (!canEdit) return;
     setIsEditing(true);
   }
 
-  function handleSave() {
-    if (!editTitle.trim()) return;
-    updateTask.mutate(
-      {
-        taskId: task.id,
-        data: {
-          title: editTitle.trim(),
-          description: editDescription.trim() || null,
-          category: editCategory.trim() || null,
-        },
-      },
-      { onSuccess: () => setIsEditing(false) },
-    );
-  }
-
-  function handleCancel() {
-    setIsEditing(false);
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") handleSave();
-    if (e.key === "Escape") handleCancel();
-  }
-
   if (isEditing) {
+    const { recurringTaskId, recurrenceType } = task;
+    const isRecurring =
+      task.sourceType === "RECURRING" &&
+      recurringTaskId !== null &&
+      recurrenceType !== null;
+
     return (
       <div className={taskItemBase}>
-        <div className="flex-1 min-w-0 space-y-2">
-          <input
-            type="text"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            className="w-full py-2 text-body bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted"
-            autoFocus
-            onKeyDown={handleKeyDown}
-          />
-          <div className="flex gap-4">
-            <input
-              type="text"
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              placeholder="Description (optional)"
-              className="w-full py-2 text-small bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted"
-              onKeyDown={handleKeyDown}
+        <div className="flex-1 min-w-0">
+          {isRecurring ? (
+            <TaskForm
+              mode="edit"
+              taskType="recurring"
+              taskId={recurringTaskId}
+              initialData={{
+                title: task.title,
+                description: task.description,
+                category: task.category,
+                recurrenceType: recurrenceType,
+                recurrenceConfig: task.recurrenceConfig,
+              }}
+              onSuccess={() => setIsEditing(false)}
+              onCancel={() => setIsEditing(false)}
             />
-            <input
-              type="text"
-              value={editCategory}
-              onChange={(e) => setEditCategory(e.target.value)}
-              placeholder="Category (optional)"
-              className="w-full py-2 text-small bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted"
-              onKeyDown={handleKeyDown}
+          ) : (
+            <TaskForm
+              mode="edit"
+              taskType="one-time"
+              taskId={task.id}
+              initialData={{
+                title: task.title,
+                description: task.description,
+                category: task.category,
+                scheduledDate: task.scheduledDate,
+              }}
+              onSuccess={() => setIsEditing(false)}
+              onCancel={() => setIsEditing(false)}
             />
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleCancel}
-              className="text-small text-muted bg-transparent border-none py-1.5 px-3 hover:text-stone-900"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={isPending || !editTitle.trim()}
-              className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isPending ? "Saving..." : "Save"}
-            </button>
-          </div>
+          )}
         </div>
       </div>
     );
@@ -173,13 +142,13 @@ export function TaskItem({ task }: { task: Task }) {
 
       <div className="flex-1 min-w-0">
         <span
-          className={cn("text-body leading-[1.4]", isCompleted ? "line-through opacity-50" : "cursor-pointer")}
-          onClick={!isCompleted ? handleEdit : undefined}
+          className={cn("text-body leading-[1.4]", isCompleted ? "line-through opacity-50" : canEdit ? "cursor-pointer" : "")}
+          onClick={canEdit ? handleEdit : undefined}
         >
           {task.title}
         </span>
         {task.description && (
-          <p className="text-small text-muted mt-0.5">{task.description}</p>
+          <Text variant="small" muted className="mt-0.5">{task.description}</Text>
         )}
       </div>
 
@@ -197,7 +166,7 @@ export function TaskItem({ task }: { task: Task }) {
           <span className={badge} title="Recurring task">↻</span>
         )}
         <div className="flex items-center gap-0.5">
-          {!isCompleted && (
+          {canEdit && (
             <button onClick={handleEdit} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit task">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

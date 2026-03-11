@@ -42,20 +42,48 @@ export async function uncompleteTaskAction(taskId: string) {
 
 export async function updateTaskAction(
   taskId: string,
-  data: { title: string; description: string | null; category: string | null },
-) {
-  const { title, description, category, errors } = validateCommonFields({
-    title: data.title,
-    description: data.description ?? undefined,
-    category: data.category ?? undefined,
-  });
+  data: {
+    title: string;
+    description: string | null;
+    category: string | null;
+    scheduledDate?: string;
+  },
+): Promise<ActionResult> {
+  const user = await getCurrentUser();
 
-  if (Object.keys(errors).length > 0) {
-    throw new Error(Object.values(errors)[0] as string);
+  if (data.scheduledDate) {
+    const result = validateTaskInput({
+      title: data.title,
+      description: data.description ?? undefined,
+      category: data.category ?? undefined,
+      scheduledDate: data.scheduledDate,
+    });
+
+    if (!result.success) {
+      return { success: false, errors: result.errors };
+    }
+
+    await updateDailyTask(taskId, user.id, {
+      title: result.data.title,
+      description: result.data.description,
+      category: result.data.category,
+      scheduledDate: result.data.scheduledDate,
+    });
+  } else {
+    const { title, description, category, errors } = validateCommonFields({
+      title: data.title,
+      description: data.description ?? undefined,
+      category: data.category ?? undefined,
+    });
+
+    if (Object.keys(errors).length > 0) {
+      return { success: false, errors };
+    }
+
+    await updateDailyTask(taskId, user.id, { title, description, category });
   }
 
-  const user = await getCurrentUser();
-  await updateDailyTask(taskId, user.id, { title, description, category });
+  return { success: true };
 }
 
 export async function deleteTaskAction(taskId: string) {

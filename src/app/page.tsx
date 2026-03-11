@@ -1,4 +1,5 @@
 import { DaylogIcon } from "./components/daylog-icon";
+import { Text } from "./components/text";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { formatLongDate } from "@/lib/dates/format";
@@ -15,7 +16,7 @@ export default async function DashboardPage() {
         <div>
           <div className="flex items-center gap-2">
             <DaylogIcon size={28} />
-            <h1 className="font-display text-display text-stone-900 leading-none capitalize">daylog</h1>
+            <Text variant="display" className="capitalize">daylog</Text>
           </div>
           <time className="text-subtext text-muted mt-1 block" dateTime={today.toISOString()}>
             {formatLongDate(today)}

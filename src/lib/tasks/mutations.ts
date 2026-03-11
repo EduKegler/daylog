@@ -58,15 +58,25 @@ export async function uncompleteTask(
 export async function updateDailyTask(
   taskId: string,
   userId: string,
-  data: { title: string; description: string | null; category: string | null },
+  data: {
+    title: string;
+    description: string | null;
+    category: string | null;
+    scheduledDate?: Date;
+  },
 ): Promise<void> {
+  const updateData: Record<string, unknown> = {
+    title: data.title,
+    description: data.description,
+    category: data.category,
+  };
+  if (data.scheduledDate) {
+    updateData.scheduledDate = startOfDay(data.scheduledDate);
+  }
+
   const { count } = await prisma.dailyTask.updateMany({
     where: { id: taskId, userId },
-    data: {
-      title: data.title,
-      description: data.description,
-      category: data.category,
-    },
+    data: updateData,
   });
 
   if (count === 0) throw new Error("Task not found or unauthorized");

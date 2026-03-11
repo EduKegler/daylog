@@ -56,6 +56,11 @@ export async function getDailyTasksForDate(userId: string, date: Date) {
       userId,
       scheduledDate: { gte: dayStart, lt: dayEnd },
     },
+    include: {
+      recurringTask: {
+        select: { id: true, recurrenceType: true, recurrenceConfig: true },
+      },
+    },
     orderBy: [{ status: "asc" }, { createdAt: "asc" }],
   });
 }

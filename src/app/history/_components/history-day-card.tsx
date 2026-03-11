@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { Text } from "@/app/components/text";
 import type { HistoryDay } from "@/lib/queries/history";
 import { formatLongDate, formatShortDate } from "@/lib/dates/format";
 
@@ -22,7 +23,7 @@ export function HistoryDayCard({ day }: { day: HistoryDay }) {
   return (
     <section className="mt-8 pb-6 border-b-2 border-border">
       <div className="flex items-baseline justify-between mb-3">
-        <h2 className="font-display text-heading text-stone-900 capitalize">{formatLongDate(new Date(day.date))}</h2>
+        <Text as="h2" variant="heading" className="capitalize">{formatLongDate(new Date(day.date))}</Text>
         <span className="text-small text-muted font-medium">
           {day.stats.completed}/{day.stats.total} · {pct}%
         </span>

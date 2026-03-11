@@ -57,7 +57,7 @@ async function main() {
       title: "Pay bills",
       category: "Finance",
       recurrenceType: "MONTHLY",
-      recurrenceConfig: JSON.stringify({ dayOfMonth: 10 }),
+      recurrenceConfig: JSON.stringify({ daysOfMonth: [10] }),
     },
   });
 

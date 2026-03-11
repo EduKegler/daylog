@@ -6,9 +6,7 @@ import type { RecurringTask } from "@/lib/queries/recurring";
 import {
   useToggleRecurringTask,
   useDeleteRecurringTask,
-  useUpdateRecurringTask,
 } from "@/lib/queries/recurring";
-import type { ActionResult } from "@/lib/tasks/actions";
 import {
   parseRecurrenceConfig,
   getRecurrenceLabel,
@@ -16,23 +14,12 @@ import {
 import { Text } from "@/app/components/text";
 import { EmptyState } from "@/app/components/empty-state";
 import { NoRecurringIllustration } from "@/app/components/empty-state-illustrations";
-
-const WEEKDAYS = [
-  { value: 0, label: "Sun" },
-  { value: 1, label: "Mon" },
-  { value: 2, label: "Tue" },
-  { value: 3, label: "Wed" },
-  { value: 4, label: "Thu" },
-  { value: 5, label: "Fri" },
-  { value: 6, label: "Sat" },
-];
+import { TaskForm } from "@/app/components/task-form/task-form";
 
 const taskItemBase = "flex items-start gap-3 py-3.5 border-b border-border transition-transform duration-200 hover:translate-x-0.5";
 const actionBtn = "flex items-center justify-center w-7 h-7 rounded-md text-border bg-transparent border-none transition-all duration-200 shrink-0 group-hover:text-muted";
 const actionBtnEdit = `${actionBtn} hover:text-muted hover:bg-border`;
 const actionBtnDelete = `${actionBtn} hover:text-red-600 hover:bg-red-50`;
-const input = "w-full py-2 text-body bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted";
-const inputSmall = "w-full py-2 text-small bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted";
 
 export function RecurringTaskList({ tasks }: { tasks: RecurringTask[] }) {
   if (tasks.length === 0) {
@@ -87,10 +74,19 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
 
   if (isEditing) {
     return (
-      <RecurringTaskEditForm
-        task={task}
+      <TaskForm
+        mode="edit"
+        taskType="recurring"
+        taskId={task.id}
+        initialData={{
+          title: task.title,
+          description: task.description,
+          category: task.category,
+          recurrenceType: task.recurrenceType,
+          recurrenceConfig: task.recurrenceConfig,
+        }}
+        onSuccess={() => setIsEditing(false)}
         onCancel={() => setIsEditing(false)}
-        onSaved={() => setIsEditing(false)}
       />
     );
   }
@@ -114,7 +110,7 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
           )}
         </div>
         {task.description && (
-          <p className="text-small text-muted mt-0.5">{task.description}</p>
+          <Text variant="small" muted className="mt-0.5">{task.description}</Text>
         )}
         <Text variant="small" muted className="mt-1">{label}</Text>
       </div>
@@ -144,201 +140,5 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
         </button>
       </div>
     </div>
-  );
-}
-
-function RecurringTaskEditForm({
-  task,
-  onCancel,
-  onSaved,
-}: {
-  task: RecurringTask;
-  onCancel: () => void;
-  onSaved: () => void;
-}) {
-  const updateTask = useUpdateRecurringTask();
-  const [recurrenceType, setRecurrenceType] = useState(task.recurrenceType);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const parsedConfig = (() => {
-    try {
-      return task.recurrenceConfig ? JSON.parse(task.recurrenceConfig) : null;
-    } catch {
-      return null;
-    }
-  })();
-
-  const [selectedDays, setSelectedDays] = useState<number[]>(
-    parsedConfig?.days ?? [],
-  );
-  const [dayOfMonth, setDayOfMonth] = useState<number>(
-    parsedConfig?.dayOfMonth ?? 1,
-  );
-
-  function toggleDay(day: number) {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
-    );
-  }
-
-  function buildConfig(): string | null {
-    if (recurrenceType === "SPECIFIC_WEEKDAYS") {
-      return JSON.stringify({ days: selectedDays });
-    }
-    if (recurrenceType === "MONTHLY") {
-      return JSON.stringify({ dayOfMonth });
-    }
-    return null;
-  }
-
-  function handleSubmit(formData: FormData) {
-    const config = buildConfig();
-    if (config) {
-      formData.set("recurrenceConfig", config);
-    }
-    formData.set("recurrenceType", recurrenceType);
-
-    updateTask.mutate(
-      { taskId: task.id, formData },
-      {
-        onSuccess: (result: ActionResult) => {
-          if (result.success) {
-            setErrors({});
-            onSaved();
-          } else if (result.errors) {
-            setErrors(result.errors);
-          }
-        },
-      },
-    );
-  }
-
-  return (
-    <form action={handleSubmit} className="flex flex-col gap-3 py-4 border-b border-border">
-      <div>
-        <Text as="label" variant="label">
-          Title
-        </Text>
-        <input
-          name="title"
-          type="text"
-          defaultValue={task.title}
-          required
-          autoFocus
-          className={input}
-        />
-        {errors.title && (
-          <p className="text-small text-red-600 mt-1">{errors.title}</p>
-        )}
-      </div>
-
-      <div>
-        <Text as="label" variant="label">
-          Description (optional)
-        </Text>
-        <input
-          name="description"
-          type="text"
-          defaultValue={task.description ?? ""}
-          placeholder="Additional details"
-          className={input}
-        />
-      </div>
-
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <Text as="label" variant="label">
-            Category
-          </Text>
-          <input
-            name="category"
-            type="text"
-            defaultValue={task.category ?? ""}
-            placeholder="Optional"
-            className={inputSmall}
-          />
-        </div>
-
-        <div className="flex-1">
-          <Text as="label" variant="label">
-            Recurrence
-          </Text>
-          <select
-            value={recurrenceType}
-            onChange={(e) => setRecurrenceType(e.target.value)}
-            className={inputSmall}
-          >
-            <option value="DAILY">Every day</option>
-            <option value="WEEKDAYS">Weekdays</option>
-            <option value="SPECIFIC_WEEKDAYS">Specific days</option>
-            <option value="MONTHLY">Monthly</option>
-          </select>
-          {errors.recurrenceType && (
-            <p className="text-small text-red-600 mt-1">{errors.recurrenceType}</p>
-          )}
-        </div>
-      </div>
-
-      {recurrenceType === "SPECIFIC_WEEKDAYS" && (
-        <div>
-          <Text as="label" variant="label" className="mb-2 block">
-            Days of the week
-          </Text>
-          <div className="flex gap-1">
-            {WEEKDAYS.map((wd) => (
-              <button
-                key={wd.value}
-                type="button"
-                onClick={() => toggleDay(wd.value)}
-                className={cn(
-                  "px-2.5 py-1.5 text-small rounded-md transition-colors duration-200",
-                  selectedDays.includes(wd.value)
-                    ? "bg-accent text-white"
-                    : "bg-border text-muted hover:bg-stone-300",
-                )}
-              >
-                {wd.label}
-              </button>
-            ))}
-          </div>
-          {errors.recurrenceConfig && (
-            <p className="text-small text-red-600 mt-1">{errors.recurrenceConfig}</p>
-          )}
-        </div>
-      )}
-
-      {recurrenceType === "MONTHLY" && (
-        <div>
-          <Text as="label" variant="label">
-            Day of the month
-          </Text>
-          <input
-            type="number"
-            min={1}
-            max={31}
-            value={dayOfMonth}
-            onChange={(e) => setDayOfMonth(Number(e.target.value))}
-            className={inputSmall}
-            style={{ maxWidth: "5rem" }}
-          />
-          {errors.recurrenceConfig && (
-            <p className="text-small text-red-600 mt-1">{errors.recurrenceConfig}</p>
-          )}
-        </div>
-      )}
-
-      <div className="flex justify-end gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="text-small text-muted bg-transparent border-none py-1.5 px-3 hover:text-stone-900"
-        >
-          Cancel
-        </button>
-        <button type="submit" disabled={updateTask.isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
-          {updateTask.isPending ? "Saving..." : "Save"}
-        </button>
-      </div>
-    </form>
   );
 }

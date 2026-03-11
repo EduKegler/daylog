@@ -31,12 +31,28 @@ describe("parseRecurrenceConfig", () => {
     expect(result).toEqual({ days: [1, 3, 5] });
   });
 
-  it("parses MONTHLY correctly", () => {
+  it("parses MONTHLY with daysOfMonth array", () => {
+    const result = parseRecurrenceConfig(
+      "MONTHLY",
+      JSON.stringify({ daysOfMonth: [1, 15, 28] }),
+    );
+    expect(result).toEqual({ daysOfMonth: [1, 15, 28] });
+  });
+
+  it("parses MONTHLY with single daysOfMonth", () => {
+    const result = parseRecurrenceConfig(
+      "MONTHLY",
+      JSON.stringify({ daysOfMonth: [10] }),
+    );
+    expect(result).toEqual({ daysOfMonth: [10] });
+  });
+
+  it("parses MONTHLY backward compat: dayOfMonth number → daysOfMonth array", () => {
     const result = parseRecurrenceConfig(
       "MONTHLY",
       JSON.stringify({ dayOfMonth: 15 }),
     );
-    expect(result).toEqual({ dayOfMonth: 15 });
+    expect(result).toEqual({ daysOfMonth: [15] });
   });
 
   it("throws error if config is null for SPECIFIC_WEEKDAYS", () => {
@@ -79,22 +95,40 @@ describe("parseRecurrenceConfig", () => {
     ).toThrow("Invalid day: -1");
   });
 
-  it("throws error if dayOfMonth is not a number", () => {
+  it("throws error if daysOfMonth is not an array", () => {
     expect(() =>
-      parseRecurrenceConfig("MONTHLY", JSON.stringify({ dayOfMonth: "15" })),
+      parseRecurrenceConfig("MONTHLY", JSON.stringify({ daysOfMonth: 15 })),
     ).toThrow("MONTHLY requires");
   });
 
-  it("throws error for dayOfMonth 0", () => {
+  it("throws error if MONTHLY config has neither daysOfMonth nor dayOfMonth", () => {
     expect(() =>
-      parseRecurrenceConfig("MONTHLY", JSON.stringify({ dayOfMonth: 0 })),
-    ).toThrow("Invalid dayOfMonth");
+      parseRecurrenceConfig("MONTHLY", JSON.stringify({ foo: 1 })),
+    ).toThrow("MONTHLY requires");
   });
 
-  it("throws error for dayOfMonth 32", () => {
+  it("throws error for empty daysOfMonth array", () => {
     expect(() =>
-      parseRecurrenceConfig("MONTHLY", JSON.stringify({ dayOfMonth: 32 })),
-    ).toThrow("Invalid dayOfMonth");
+      parseRecurrenceConfig("MONTHLY", JSON.stringify({ daysOfMonth: [] })),
+    ).toThrow("at least one day");
+  });
+
+  it("throws error for daysOfMonth with 0", () => {
+    expect(() =>
+      parseRecurrenceConfig("MONTHLY", JSON.stringify({ daysOfMonth: [0] })),
+    ).toThrow("Invalid day of month: 0");
+  });
+
+  it("throws error for daysOfMonth with 32", () => {
+    expect(() =>
+      parseRecurrenceConfig("MONTHLY", JSON.stringify({ daysOfMonth: [32] })),
+    ).toThrow("Invalid day of month: 32");
+  });
+
+  it("throws error for daysOfMonth with non-integer", () => {
+    expect(() =>
+      parseRecurrenceConfig("MONTHLY", JSON.stringify({ daysOfMonth: [1.5] })),
+    ).toThrow("Invalid day of month: 1.5");
   });
 
   it("throws error for unknown type", () => {
@@ -149,31 +183,32 @@ describe("shouldTaskOccurOnDate", () => {
   });
 
   describe("MONTHLY", () => {
-    it("returns true on the correct day", () => {
-      expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 15 }, utcDate(2026, 3, 15))).toBe(true);
+    it("returns true when date matches one of daysOfMonth", () => {
+      expect(shouldTaskOccurOnDate("MONTHLY", { daysOfMonth: [1, 15, 28] }, utcDate(2026, 3, 15))).toBe(true);
     });
 
-    it("returns false on another day", () => {
-      expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 15 }, utcDate(2026, 3, 14))).toBe(false);
+    it("returns true for first day in daysOfMonth", () => {
+      expect(shouldTaskOccurOnDate("MONTHLY", { daysOfMonth: [1, 15] }, utcDate(2026, 6, 1))).toBe(true);
+    });
+
+    it("returns false when date does not match any daysOfMonth", () => {
+      expect(shouldTaskOccurOnDate("MONTHLY", { daysOfMonth: [1, 15, 28] }, utcDate(2026, 3, 14))).toBe(false);
     });
 
     it("returns false for day 31 in a month with 30 days", () => {
-      // April has 30 days
-      expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 31 }, utcDate(2026, 4, 30))).toBe(false);
+      expect(shouldTaskOccurOnDate("MONTHLY", { daysOfMonth: [31] }, utcDate(2026, 4, 30))).toBe(false);
     });
 
     it("returns true for day 29 in February of a leap year", () => {
-      // 2028 is a leap year
-      expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 29 }, utcDate(2028, 2, 29))).toBe(true);
+      expect(shouldTaskOccurOnDate("MONTHLY", { daysOfMonth: [29] }, utcDate(2028, 2, 29))).toBe(true);
     });
 
     it("returns false for day 29 in February of a non-leap year", () => {
-      // 2026 is not a leap year - Feb has 28 days
-      expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 29 }, utcDate(2026, 2, 28))).toBe(false);
+      expect(shouldTaskOccurOnDate("MONTHLY", { daysOfMonth: [29] }, utcDate(2026, 2, 28))).toBe(false);
     });
 
-    it("returns true for day 1", () => {
-      expect(shouldTaskOccurOnDate("MONTHLY", { dayOfMonth: 1 }, utcDate(2026, 6, 1))).toBe(true);
+    it("returns true with single-element array", () => {
+      expect(shouldTaskOccurOnDate("MONTHLY", { daysOfMonth: [10] }, utcDate(2026, 3, 10))).toBe(true);
     });
   });
 
@@ -205,9 +240,15 @@ describe("getRecurrenceLabel", () => {
     );
   });
 
-  it("returns label for MONTHLY", () => {
-    expect(getRecurrenceLabel("MONTHLY", { dayOfMonth: 10 })).toBe(
+  it("returns label for MONTHLY with single day", () => {
+    expect(getRecurrenceLabel("MONTHLY", { daysOfMonth: [10] })).toBe(
       "Day 10 of each month",
+    );
+  });
+
+  it("returns label for MONTHLY with multiple days", () => {
+    expect(getRecurrenceLabel("MONTHLY", { daysOfMonth: [1, 15, 28] })).toBe(
+      "Days 1, 15, 28 of each month",
     );
   });
 

@@ -1,4 +1,5 @@
 import type { UpcomingDay } from "@/lib/queries/upcoming";
+import { Text } from "@/app/components/text";
 import { formatLongDate } from "@/lib/dates/format";
 import { formatRelativeDate } from "@/lib/dates/relative";
 import { TaskItem } from "@/app/components/task-item";
@@ -18,7 +19,7 @@ export function UpcomingDayCard({
     <section className="mt-8 pb-6 border-b-2 border-border">
       <div className="flex items-baseline justify-between mb-3">
         <div>
-          <h2 className="font-display text-heading text-stone-900 capitalize">{formatLongDate(date)}</h2>
+          <Text as="h2" variant="heading" className="capitalize">{formatLongDate(date)}</Text>
           <span className="text-small text-accent font-medium mt-0.5 block">{relative}</span>
         </div>
         <span className="text-small text-muted font-medium">

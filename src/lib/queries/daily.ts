@@ -47,6 +47,9 @@ export function useCreateTask() {
           status: "PENDING",
           originalDate: null,
           scheduledDate: previous.today,
+          recurringTaskId: null,
+          recurrenceType: null,
+          recurrenceConfig: null,
         };
 
         queryClient.setQueryData<DailyTasksResponse>(queryKeys.daily(), {
@@ -136,7 +139,12 @@ export function useUpdateTask() {
 
   type UpdateVars = {
     taskId: string;
-    data: { title: string; description: string | null; category: string | null };
+    data: {
+      title: string;
+      description: string | null;
+      category: string | null;
+      scheduledDate?: string;
+    };
   };
 
   return useMutation({

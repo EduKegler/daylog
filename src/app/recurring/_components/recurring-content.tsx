@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRecurringTasks } from "@/lib/queries/recurring";
-import { RecurringTaskForm } from "./recurring-task-form";
+import { TaskForm } from "@/app/components/task-form/task-form";
 import { RecurringTaskList } from "./recurring-task-list";
 
 function RecurringSkeleton() {
@@ -20,12 +21,37 @@ function RecurringSkeleton() {
   );
 }
 
+function NewRecurringTaskButton() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 w-full py-3.5 text-subtext text-muted bg-transparent border-0 border-b border-border transition-colors duration-200 hover:text-accent"
+      >
+        <span className="text-icon leading-none">+</span>
+        New recurring task
+      </button>
+    );
+  }
+
+  return (
+    <TaskForm
+      mode="create"
+      defaultTaskType="recurring"
+      onSuccess={() => setIsOpen(false)}
+      onCancel={() => setIsOpen(false)}
+    />
+  );
+}
+
 export function RecurringContent() {
   const { data, isLoading } = useRecurringTasks();
 
   return (
     <>
-      <RecurringTaskForm />
+      <NewRecurringTaskButton />
 
       {isLoading || !data ? (
         <RecurringSkeleton />

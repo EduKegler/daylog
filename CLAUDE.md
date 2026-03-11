@@ -57,6 +57,7 @@ The core domain logic — handles task carryover between days:
 | Middleware (auth guard) | `src/proxy.ts` |
 | CSS & design tokens | `src/app/globals.css` |
 | Class merge utility | `src/lib/cn.ts` |
+| Task form (unified) | `src/app/components/task-form/` |
 | Text primitive | `src/app/components/text.tsx` |
 
 ### Import alias
@@ -80,6 +81,8 @@ Use `cn()` from `@/lib/cn` (`clsx` + `tailwind-merge`) for conditional classes:
 import { cn } from "@/lib/cn";
 <div className={cn("base-classes", isActive && "extra-classes")} />
 ```
+
+**`tailwind-merge` caveat:** Custom `@theme` font-size tokens (e.g. `text-tag`) are NOT recognized by `tailwind-merge`. Combining them with other `text-*` utilities (like `text-right`, `text-muted`) causes the custom class to be silently stripped. Use standard Tailwind size classes (`text-xs`, `text-sm`, etc.) when passing through `cn()`.
 
 ## Design System
 

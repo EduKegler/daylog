@@ -1,4 +1,5 @@
 import { TaskItem, type Task } from "./task-item";
+import { Text } from "./text";
 
 export function TaskList({
   title,
@@ -12,7 +13,7 @@ export function TaskList({
   if (tasks.length === 0) {
     return (
       <section className="mt-8">
-        <h2 className="text-small font-semibold uppercase tracking-wider text-muted mb-3 flex items-center gap-2">{title}</h2>
+        <Text as="h2" variant="label" className="font-semibold mb-3 flex items-center gap-2">{title}</Text>
         <div>{emptyMessage}</div>
       </section>
     );
@@ -20,10 +21,10 @@ export function TaskList({
 
   return (
     <section className="mt-8">
-      <h2 className="text-small font-semibold uppercase tracking-wider text-muted mb-3 flex items-center gap-2">
+      <Text as="h2" variant="label" className="font-semibold mb-3 flex items-center gap-2">
         {title}
         <span className="text-tag font-medium text-muted bg-border px-2 py-0.5 rounded-full">{tasks.length}</span>
-      </h2>
+      </Text>
       <div className="flex flex-col">
         {tasks.map((task) => (
           <TaskItem key={task.id} task={task} />

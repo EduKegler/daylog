@@ -9,6 +9,11 @@ type SerializableTask = {
   status: string;
   originalDate: Date | null;
   scheduledDate: Date;
+  recurringTask?: {
+    id: string;
+    recurrenceType: string;
+    recurrenceConfig: string | null;
+  } | null;
 };
 
 export function serializeTask(t: SerializableTask): Task {
@@ -21,5 +26,8 @@ export function serializeTask(t: SerializableTask): Task {
     status: t.status as Task["status"],
     originalDate: t.originalDate?.toISOString() ?? null,
     scheduledDate: t.scheduledDate.toISOString(),
+    recurringTaskId: t.recurringTask?.id ?? null,
+    recurrenceType: t.recurringTask?.recurrenceType ?? null,
+    recurrenceConfig: t.recurringTask?.recurrenceConfig ?? null,
   };
 }

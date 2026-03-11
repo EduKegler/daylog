@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DaylogIcon } from "../components/daylog-icon";
+import { Text } from "../components/text";
 import { signIn } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -20,8 +21,8 @@ export default function LoginPage() {
         <div className="mb-4 flex justify-center">
           <DaylogIcon size={64} />
         </div>
-        <h1 className="font-display text-5xl text-stone-900 mb-2">Daylog</h1>
-        <p className="text-stone-500 mb-10">Your daily task tracker</p>
+        <Text variant="display" className="text-5xl mb-2">Daylog</Text>
+        <Text variant="subtext" className="mb-10">Your daily task tracker</Text>
         <form
           action={async () => {
             "use server";

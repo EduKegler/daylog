@@ -1,9 +1,52 @@
+import { z } from "zod";
+
 const RECURRENCE_TYPES = ["DAILY", "WEEKDAYS", "SPECIFIC_WEEKDAYS", "MONTHLY"] as const;
 type RecurrenceType = (typeof RECURRENCE_TYPES)[number];
 
 type ValidationResult<T> =
   | { success: true; data: T }
   | { success: false; errors: Record<string, string> };
+
+export const FIELD_LIMITS = {
+  title: 75,
+  description: 450,
+  category: 50,
+} as const;
+
+const commonFieldsSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(
+      FIELD_LIMITS.title,
+      `Title must be at most ${FIELD_LIMITS.title} characters`,
+    ),
+  description: z
+    .string()
+    .max(
+      FIELD_LIMITS.description,
+      `Description must be at most ${FIELD_LIMITS.description} characters`,
+    ),
+  category: z
+    .string()
+    .max(
+      FIELD_LIMITS.category,
+      `Category must be at most ${FIELD_LIMITS.category} characters`,
+    ),
+});
+
+function issuesToRecord(
+  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>,
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const issue of issues) {
+    const key = issue.path[0];
+    if (typeof key === "string" && !(key in errors)) {
+      errors[key] = issue.message;
+    }
+  }
+  return errors;
+}
 
 export type RecurringTaskInput = {
   title: string;
@@ -23,26 +66,29 @@ export function validateCommonFields(data: {
   category: string | null;
   errors: Record<string, string>;
 } {
-  const errors: Record<string, string> = {};
+  const trimmed = {
+    title: (data.title ?? "").trim(),
+    description: (data.description ?? "").trim(),
+    category: (data.category ?? "").trim(),
+  };
 
-  const title = data.title?.trim() ?? "";
-  if (!title) {
-    errors.title = "Title is required";
-  } else if (title.length > 200) {
-    errors.title = "Title must be at most 200 characters";
+  const result = commonFieldsSchema.safeParse(trimmed);
+
+  if (result.success) {
+    return {
+      title: result.data.title,
+      description: result.data.description || null,
+      category: result.data.category || null,
+      errors: {},
+    };
   }
 
-  const description = data.description?.trim() || null;
-  if (description && description.length > 2000) {
-    errors.description = "Description must be at most 2000 characters";
-  }
-
-  const category = data.category?.trim() || null;
-  if (category && category.length > 50) {
-    errors.category = "Category must be at most 50 characters";
-  }
-
-  return { title, description, category, errors };
+  return {
+    title: trimmed.title,
+    description: trimmed.description || null,
+    category: trimmed.category || null,
+    errors: issuesToRecord(result.error.issues),
+  };
 }
 
 export function validateRecurringTaskInput(data: {
@@ -126,17 +172,25 @@ function validateRecurrenceConfig(
   }
 
   if (type === "MONTHLY") {
-    if (
-      !parsed ||
-      typeof parsed !== "object" ||
-      !("dayOfMonth" in parsed) ||
-      typeof (parsed as { dayOfMonth: unknown }).dayOfMonth !== "number"
-    ) {
-      return "Select the day of the month";
+    if (!parsed || typeof parsed !== "object") {
+      return "Select at least one day of the month";
     }
-    const { dayOfMonth } = parsed as { dayOfMonth: number };
-    if (!Number.isInteger(dayOfMonth) || dayOfMonth < 1 || dayOfMonth > 31) {
-      return "Day of the month must be between 1 and 31";
+    const obj = parsed as Record<string, unknown>;
+    let daysOfMonth: number[];
+    if ("daysOfMonth" in parsed && Array.isArray(obj.daysOfMonth)) {
+      daysOfMonth = obj.daysOfMonth as number[];
+    } else if ("dayOfMonth" in parsed && typeof obj.dayOfMonth === "number") {
+      daysOfMonth = [obj.dayOfMonth];
+    } else {
+      return "Select at least one day of the month";
+    }
+    if (daysOfMonth.length === 0) {
+      return "Select at least one day of the month";
+    }
+    for (const d of daysOfMonth) {
+      if (!Number.isInteger(d) || d < 1 || d > 31) {
+        return `Day of the month must be between 1 and 31 (got ${d})`;
+      }
     }
     return null;
   }
@@ -146,6 +200,22 @@ function validateRecurrenceConfig(
 
 function normalizeConfig(type: RecurrenceType, configStr: string | null): string | null {
   if (type === "DAILY" || type === "WEEKDAYS") return null;
+  if (!configStr) return configStr;
+
+  if (type === "MONTHLY") {
+    const parsed = JSON.parse(configStr) as Record<string, unknown>;
+    let daysOfMonth: number[];
+    if ("daysOfMonth" in parsed && Array.isArray(parsed.daysOfMonth)) {
+      daysOfMonth = parsed.daysOfMonth as number[];
+    } else if ("dayOfMonth" in parsed && typeof parsed.dayOfMonth === "number") {
+      daysOfMonth = [parsed.dayOfMonth];
+    } else {
+      return configStr;
+    }
+    const sorted = [...new Set(daysOfMonth)].sort((a, b) => a - b);
+    return JSON.stringify({ daysOfMonth: sorted });
+  }
+
   return configStr;
 }
 
