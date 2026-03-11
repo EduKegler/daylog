@@ -1,16 +1,7 @@
-import { getCurrentUser } from "@/lib/auth/session";
-import { getUserLocalDate } from "@/lib/tasks/generation";
-import { getUpcomingTasks } from "@/lib/upcoming/queries";
 import { NavMenu } from "@/app/components/nav-menu";
-import { EmptyState } from "@/app/components/empty-state";
-import { NoUpcomingIllustration } from "@/app/components/empty-state-illustrations";
-import { UpcomingDayCard } from "./_components/upcoming-day-card";
+import { UpcomingContent } from "./_components/upcoming-content";
 
-export default async function UpcomingPage() {
-  const user = await getCurrentUser();
-  const today = getUserLocalDate(user.timezone);
-  const days = await getUpcomingTasks(user.id, today);
-
+export default function UpcomingPage() {
   return (
     <main className="max-w-[42rem] mx-auto py-8 px-6">
       <header className="mb-8 flex items-start justify-between">
@@ -21,23 +12,7 @@ export default async function UpcomingPage() {
         <NavMenu />
       </header>
 
-      <div>
-        {days.length === 0 ? (
-          <EmptyState
-            illustration={<NoUpcomingIllustration />}
-            title="No upcoming tasks"
-            description="Tasks scheduled for future days will show up here."
-          />
-        ) : (
-          days.map((day) => (
-            <UpcomingDayCard
-              key={day.date.toISOString()}
-              day={day}
-              today={today}
-            />
-          ))
-        )}
-      </div>
+      <UpcomingContent />
     </main>
   );
 }

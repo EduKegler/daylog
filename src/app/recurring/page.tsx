@@ -1,13 +1,7 @@
-import { getCurrentUser } from "@/lib/auth/session";
-import { getRecurringTasks } from "@/lib/tasks/queries";
 import { NavMenu } from "@/app/components/nav-menu";
-import { RecurringTaskList } from "./_components/recurring-task-list";
-import { RecurringTaskForm } from "./_components/recurring-task-form";
+import { RecurringContent } from "./_components/recurring-content";
 
-export default async function RecurringPage() {
-  const user = await getCurrentUser();
-  const tasks = await getRecurringTasks(user.id!);
-
+export default function RecurringPage() {
   return (
     <main className="max-w-[42rem] mx-auto py-8 px-6">
       <header className="mb-8 flex items-start justify-between">
@@ -18,19 +12,7 @@ export default async function RecurringPage() {
         <NavMenu />
       </header>
 
-      <RecurringTaskForm />
-
-      <RecurringTaskList
-        tasks={tasks.map((t) => ({
-          id: t.id,
-          title: t.title,
-          description: t.description,
-          category: t.category,
-          recurrenceType: t.recurrenceType,
-          recurrenceConfig: t.recurrenceConfig,
-          isActive: t.isActive,
-        }))}
-      />
+      <RecurringContent />
     </main>
   );
 }

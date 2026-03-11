@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/cn";
+import type { RecurringTask } from "@/lib/queries/recurring";
 import {
-  toggleRecurringTask,
-  deleteRecurringTask,
-  updateRecurringTask,
-  type ActionResult,
-} from "@/lib/tasks/actions";
+  useToggleRecurringTask,
+  useDeleteRecurringTask,
+  useUpdateRecurringTask,
+} from "@/lib/queries/recurring";
+import type { ActionResult } from "@/lib/tasks/actions";
 import {
   parseRecurrenceConfig,
   getRecurrenceLabel,
@@ -25,16 +26,6 @@ const WEEKDAYS = [
   { value: 5, label: "Fri" },
   { value: 6, label: "Sat" },
 ];
-
-type RecurringTask = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  recurrenceType: string;
-  recurrenceConfig: string | null;
-  isActive: boolean;
-};
 
 const taskItemBase = "flex items-start gap-3 py-3.5 border-b border-border transition-transform duration-200 hover:translate-x-0.5";
 const actionBtn = "flex items-center justify-center w-7 h-7 rounded-md text-border bg-transparent border-none transition-all duration-200 shrink-0 group-hover:text-muted";
@@ -64,8 +55,11 @@ export function RecurringTaskList({ tasks }: { tasks: RecurringTask[] }) {
 }
 
 function RecurringTaskItem({ task }: { task: RecurringTask }) {
-  const [isPending, startTransition] = useTransition();
+  const toggleTask = useToggleRecurringTask();
+  const deleteTask = useDeleteRecurringTask();
   const [isEditing, setIsEditing] = useState(false);
+
+  const isPending = toggleTask.isPending || deleteTask.isPending;
 
   const config = (() => {
     try {
@@ -84,15 +78,11 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
   );
 
   function handleToggle() {
-    startTransition(async () => {
-      await toggleRecurringTask(task.id);
-    });
+    toggleTask.mutate(task.id);
   }
 
   function handleDelete() {
-    startTransition(async () => {
-      await deleteRecurringTask(task.id);
-    });
+    deleteTask.mutate(task.id);
   }
 
   if (isEditing) {
@@ -166,7 +156,7 @@ function RecurringTaskEditForm({
   onCancel: () => void;
   onSaved: () => void;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const updateTask = useUpdateRecurringTask();
   const [recurrenceType, setRecurrenceType] = useState(task.recurrenceType);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -208,15 +198,19 @@ function RecurringTaskEditForm({
     }
     formData.set("recurrenceType", recurrenceType);
 
-    startTransition(async () => {
-      const result: ActionResult = await updateRecurringTask(task.id, formData);
-      if (result.success) {
-        setErrors({});
-        onSaved();
-      } else if (result.errors) {
-        setErrors(result.errors);
-      }
-    });
+    updateTask.mutate(
+      { taskId: task.id, formData },
+      {
+        onSuccess: (result: ActionResult) => {
+          if (result.success) {
+            setErrors({});
+            onSaved();
+          } else if (result.errors) {
+            setErrors(result.errors);
+          }
+        },
+      },
+    );
   }
 
   return (
@@ -341,8 +335,8 @@ function RecurringTaskEditForm({
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
-          {isPending ? "Saving..." : "Save"}
+        <button type="submit" disabled={updateTask.isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
+          {updateTask.isPending ? "Saving..." : "Save"}
         </button>
       </div>
     </form>

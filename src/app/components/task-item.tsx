@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { formatShortDate } from "@/lib/dates/format";
 import {
-  completeTaskAction,
-  uncompleteTaskAction,
-  deleteTaskAction,
-  updateTaskAction,
-} from "../actions";
+  useCompleteTask,
+  useUncompleteTask,
+  useDeleteTask,
+  useUpdateTask,
+} from "@/lib/queries/daily";
 
 export type Task = {
   id: string;
@@ -29,7 +29,11 @@ const badge = "text-tag font-medium px-2 py-0.5 rounded-full bg-border text-mute
 const badgeCarryOver = "text-tag font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 whitespace-nowrap";
 
 export function TaskItem({ task }: { task: Task }) {
-  const [isPending, startTransition] = useTransition();
+  const completeTask = useCompleteTask();
+  const uncompleteTask = useUncompleteTask();
+  const deleteTask = useDeleteTask();
+  const updateTask = useUpdateTask();
+
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
@@ -37,21 +41,19 @@ export function TaskItem({ task }: { task: Task }) {
   const isCompleted = task.status === "COMPLETED";
   const isCarryOver =
     task.originalDate && task.originalDate !== task.scheduledDate;
+  const isPending =
+    completeTask.isPending || uncompleteTask.isPending || deleteTask.isPending || updateTask.isPending;
 
   function handleToggle() {
-    startTransition(async () => {
-      if (isCompleted) {
-        await uncompleteTaskAction(task.id);
-      } else {
-        await completeTaskAction(task.id);
-      }
-    });
+    if (isCompleted) {
+      uncompleteTask.mutate(task.id);
+    } else {
+      completeTask.mutate(task.id);
+    }
   }
 
   function handleDelete() {
-    startTransition(async () => {
-      await deleteTaskAction(task.id);
-    });
+    deleteTask.mutate(task.id);
   }
 
   function handleEdit() {
@@ -63,14 +65,17 @@ export function TaskItem({ task }: { task: Task }) {
 
   function handleSave() {
     if (!editTitle.trim()) return;
-    startTransition(async () => {
-      await updateTaskAction(task.id, {
-        title: editTitle.trim(),
-        description: editDescription.trim() || null,
-        category: editCategory.trim() || null,
-      });
-      setIsEditing(false);
-    });
+    updateTask.mutate(
+      {
+        taskId: task.id,
+        data: {
+          title: editTitle.trim(),
+          description: editDescription.trim() || null,
+          category: editCategory.trim() || null,
+        },
+      },
+      { onSuccess: () => setIsEditing(false) },
+    );
   }
 
   function handleCancel() {

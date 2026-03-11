@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { createTask, deleteTask, updateDailyTask, completeTask, uncompleteTask } from "@/lib/tasks/mutations";
 import { validateTaskInput, validateCommonFields } from "@/lib/tasks/validation";
@@ -28,21 +27,17 @@ export async function createTaskAction(formData: FormData): Promise<ActionResult
     scheduledDate: result.data.scheduledDate,
   });
 
-  revalidatePath("/");
-  revalidatePath("/upcoming");
   return { success: true };
 }
 
 export async function completeTaskAction(taskId: string) {
   const user = await getCurrentUser();
   await completeTask(taskId, user.id);
-  revalidatePath("/");
 }
 
 export async function uncompleteTaskAction(taskId: string) {
   const user = await getCurrentUser();
   await uncompleteTask(taskId, user.id);
-  revalidatePath("/");
 }
 
 export async function updateTaskAction(
@@ -61,13 +56,9 @@ export async function updateTaskAction(
 
   const user = await getCurrentUser();
   await updateDailyTask(taskId, user.id, { title, description, category });
-  revalidatePath("/");
-  revalidatePath("/upcoming");
 }
 
 export async function deleteTaskAction(taskId: string) {
   const user = await getCurrentUser();
   await deleteTask(taskId, user.id);
-  revalidatePath("/");
-  revalidatePath("/upcoming");
 }

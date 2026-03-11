@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
-import { createRecurringTask, type ActionResult } from "@/lib/tasks/actions";
+import { useCreateRecurringTask } from "@/lib/queries/recurring";
 import { Text } from "@/app/components/text";
 
 const WEEKDAYS = [
@@ -20,12 +20,12 @@ const inputSmall = "w-full py-2 text-small bg-transparent border-0 border-b bord
 
 export function RecurringTaskForm() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [recurrenceType, setRecurrenceType] = useState("DAILY");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const [dayOfMonth, setDayOfMonth] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const createTask = useCreateRecurringTask();
 
   function buildConfig(): string | null {
     if (recurrenceType === "SPECIFIC_WEEKDAYS") {
@@ -50,18 +50,20 @@ export function RecurringTaskForm() {
     }
     formData.set("recurrenceType", recurrenceType);
 
-    startTransition(async () => {
-      const result: ActionResult = await createRecurringTask(formData);
-      if (result.success) {
-        formRef.current?.reset();
-        setRecurrenceType("DAILY");
-        setSelectedDays([]);
-        setDayOfMonth(1);
-        setErrors({});
-        setIsOpen(false);
-      } else if (result.errors) {
-        setErrors(result.errors);
-      }
+    setErrors({});
+    createTask.mutate(formData, {
+      onSuccess: (result) => {
+        if (result.success) {
+          formRef.current?.reset();
+          setRecurrenceType("DAILY");
+          setSelectedDays([]);
+          setDayOfMonth(1);
+          setErrors({});
+          setIsOpen(false);
+        } else if (result.errors) {
+          setErrors(result.errors);
+        }
+      },
     });
   }
 
@@ -197,8 +199,8 @@ export function RecurringTaskForm() {
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
-          {isPending ? "Creating..." : "Create"}
+        <button type="submit" disabled={createTask.isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
+          {createTask.isPending ? "Creating..." : "Create"}
         </button>
       </div>
     </form>

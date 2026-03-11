@@ -1,25 +1,26 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { createTaskAction } from "../actions";
-import type { ActionResult } from "@/lib/tasks/actions";
+import { useRef, useState } from "react";
+import { useCreateTask } from "@/lib/queries/daily";
 
 export function CreateTaskForm() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const createTask = useCreateTask();
 
   function handleSubmit(formData: FormData) {
-    startTransition(async () => {
-      const result: ActionResult = await createTaskAction(formData);
-      if (result.success) {
-        formRef.current?.reset();
-        setErrors({});
-        setIsOpen(false);
-      } else if (result.errors) {
-        setErrors(result.errors);
-      }
+    setErrors({});
+    createTask.mutate(formData, {
+      onSuccess: (result) => {
+        if (result.success) {
+          formRef.current?.reset();
+          setErrors({});
+          setIsOpen(false);
+        } else if (result.errors) {
+          setErrors(result.errors);
+        }
+      },
     });
   }
 
@@ -78,8 +79,8 @@ export function CreateTaskForm() {
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
-          {isPending ? "Creating..." : "Create"}
+        <button type="submit" disabled={createTask.isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
+          {createTask.isPending ? "Creating..." : "Create"}
         </button>
       </div>
     </form>

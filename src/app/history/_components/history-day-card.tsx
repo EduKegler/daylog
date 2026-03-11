@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import type { HistoryDay } from "@/lib/history/queries";
+import type { HistoryDay } from "@/lib/queries/history";
 import { formatLongDate, formatShortDate } from "@/lib/dates/format";
 
 const statusBase = "w-5 h-5 flex items-center justify-center shrink-0 text-small font-semibold";
@@ -22,7 +22,7 @@ export function HistoryDayCard({ day }: { day: HistoryDay }) {
   return (
     <section className="mt-8 pb-6 border-b-2 border-border">
       <div className="flex items-baseline justify-between mb-3">
-        <h2 className="font-display text-heading text-stone-900 capitalize">{formatLongDate(day.date)}</h2>
+        <h2 className="font-display text-heading text-stone-900 capitalize">{formatLongDate(new Date(day.date))}</h2>
         <span className="text-small text-muted font-medium">
           {day.stats.completed}/{day.stats.total} · {pct}%
         </span>
@@ -60,8 +60,7 @@ export function HistoryDayCard({ day }: { day: HistoryDay }) {
                   </span>
                 )}
               {task.originalDate &&
-                task.originalDate.getTime() !==
-                  task.scheduledDate.getTime() && (
+                task.originalDate !== task.scheduledDate && (
                   <span
                     className={badgeCarryOver}
                     title={`Originally on ${formatShortDate(task.originalDate)}`}

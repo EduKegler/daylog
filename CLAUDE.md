@@ -19,16 +19,17 @@ pnpm vitest run src/lib/tasks/__tests__/validation.test.ts
 
 ## Architecture
 
-**Stack**: Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Prisma 7 (PrismaPg adapter) + NextAuth v5 (Google OAuth, JWT strategy)
+**Stack**: Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + Prisma 7 (PrismaPg adapter) + NextAuth v5 (Google OAuth, JWT strategy) + React Query (TanStack Query v5)
 
 **Package manager**: pnpm (`packageManager` field in package.json)
 
 ### Data flow
 
-- **Pages** are Server Components that fetch data via `getCurrentUser()` + Prisma queries
-- **Mutations** go through Server Actions in `src/app/actions.ts` (daily tasks) and `src/lib/tasks/actions.ts` (recurring tasks)
-- **Client Components** (`src/app/components/`) use `useTransition()` to call server actions with optimistic UI
+- **Pages** are thin Server Component wrappers (header, nav) that render Client Components for dynamic content
+- **Data fetching** uses React Query hooks (`src/lib/queries/`) that call API routes (`src/app/api/tasks/`) → Prisma queries
+- **Mutations** go through React Query `useMutation` hooks that call Server Actions in `src/app/actions.ts` (daily tasks) and `src/lib/tasks/actions.ts` (recurring tasks), with optimistic cache updates and automatic invalidation
 - **Validation** runs server-side in `src/lib/tasks/validation.ts` before any mutation
+- **Cache**: React Query provides client-side SWR cache (staleTime: 5min, gcTime: 10min), eliminating redundant skeletons on navigation
 
 ### Daily rollover system
 
@@ -42,6 +43,11 @@ The core domain logic — handles task carryover between days:
 
 | Area | Path |
 |---|---|
+| React Query hooks | `src/lib/queries/` |
+| API routes (data fetching) | `src/app/api/tasks/` |
+| Query key factory | `src/lib/queries/keys.ts` |
+| QueryClient provider | `src/app/providers.tsx` |
+| Task serialization | `src/lib/tasks/serialize.ts` |
 | Server Actions (daily tasks) | `src/app/actions.ts` |
 | Server Actions (recurring) | `src/lib/tasks/actions.ts` |
 | Task business logic | `src/lib/tasks/` |

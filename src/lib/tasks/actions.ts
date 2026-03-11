@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { validateRecurringTaskInput } from "./validation";
@@ -36,8 +35,6 @@ export async function createRecurringTask(formData: FormData): Promise<ActionRes
     },
   });
 
-  revalidatePath("/recurring");
-  revalidatePath("/");
   return { success: true };
 }
 
@@ -78,8 +75,6 @@ export async function updateRecurringTask(
     },
   });
 
-  revalidatePath("/recurring");
-  revalidatePath("/");
   return { success: true };
 }
 
@@ -99,8 +94,6 @@ export async function toggleRecurringTask(taskId: string): Promise<ActionResult>
     data: { isActive: !task.isActive },
   });
 
-  revalidatePath("/recurring");
-  revalidatePath("/");
   return { success: true };
 }
 
@@ -117,7 +110,5 @@ export async function deleteRecurringTask(taskId: string): Promise<ActionResult>
 
   await prisma.recurringTask.delete({ where: { id: taskId } });
 
-  revalidatePath("/recurring");
-  revalidatePath("/");
   return { success: true };
 }
