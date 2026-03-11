@@ -1,5 +1,6 @@
 import { cn } from "@/lib/cn";
 import { Text } from "@/app/components/text";
+import { Tooltip } from "@/app/components/tooltip";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -89,27 +90,27 @@ export function HistoryDayCard({ day, open, onOpenChange }: HistoryDayCardProps)
                     <span className={badge}>{task.category}</span>
                   )}
                   {task.sourceType === "RECURRING" && (
-                    <span className={badge} title="Recurring">
-                      ↻
-                    </span>
+                    <Tooltip content="Recurring task">
+                      <span className={badge} tabIndex={0}>
+                        ↻
+                      </span>
+                    </Tooltip>
                   )}
                   {task.status === "SKIPPED" &&
                     task.originalDate === null && (
-                      <span
-                        className={badgeCarryOver}
-                        title="Carried over to the next day"
-                      >
-                        ↗
-                      </span>
+                      <Tooltip content="Carried over to the next day">
+                        <span className={badgeCarryOver} tabIndex={0}>
+                          ↗
+                        </span>
+                      </Tooltip>
                     )}
                   {task.originalDate &&
                     task.originalDate !== task.scheduledDate && (
-                      <span
-                        className={badgeCarryOver}
-                        title={`Originally on ${formatShortDate(task.originalDate)}`}
-                      >
-                        ↗ {formatShortDate(task.originalDate)}
-                      </span>
+                      <Tooltip content={`Originally on ${formatShortDate(task.originalDate)}`}>
+                        <span className={badgeCarryOver} tabIndex={0}>
+                          ↗ {formatShortDate(task.originalDate)}
+                        </span>
+                      </Tooltip>
                     )}
                 </div>
               </div>
