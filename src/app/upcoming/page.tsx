@@ -9,7 +9,7 @@ export default function UpcomingPage() {
           <h1 className="font-display text-display text-stone-900 leading-none capitalize">upcoming</h1>
           <p className="text-subtext text-muted mt-1 block">Scheduled tasks</p>
         </div>
-        <NavMenu />
+        <NavMenu activePath="/upcoming" />
       </header>
 
       <UpcomingContent />

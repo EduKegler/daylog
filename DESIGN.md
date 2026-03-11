@@ -148,17 +148,35 @@ Carry-over variant: `bg-amber-100 text-amber-800` (sobrescreve bg e text)
 
 ### NavMenu (navegação global)
 
-Arquivo: `src/app/components/nav-menu.tsx` (Server Component)
+Arquivo: `src/app/components/nav-menu.tsx` (async Server Component)
 
-Links de navegação (History, Upcoming, Recurring) + Sign out. Presente em todas as páginas autenticadas.
+Links de navegação (Home, History, Upcoming, Recurring) + avatar do usuário. Presente em todas as páginas autenticadas. Busca user data internamente via `getCurrentUser()` (cached).
+
+| Prop | Tipo | Uso |
+|---|---|---|
+| `activePath` | `"/" \| "/history" \| "/upcoming" \| "/recurring" \| "/profile"` | Indica a página ativa — link correspondente recebe estilo `text-stone-900` |
+
+**Link ativo**: `text-stone-900` (texto primário, sem hover effect)
+**Links inativos**: `text-small text-muted transition-colors duration-200 hover:text-accent`
+**Avatar**: substitui o antigo "Sign out" — `<UserAvatar>` dentro de `<Link href="/profile">` com `aria-label="Profile"`
+**Spacing**: `gap-3 sm:gap-4`, `items-center` (alinha avatar com texto)
+
+### UserAvatar
+
+Arquivo: `src/app/components/user-avatar.tsx` (Server Component)
+
+Avatar circular do usuário com 3 níveis de fallback.
 
 | Prop | Default | Uso |
 |---|---|---|
-| `showHome` | `true` | Na Home page, passar `false` para não mostrar self-link |
+| `name` | `null` | Nome do usuário (para iniciais no fallback) |
+| `image` | `null` | URL da foto (Google OAuth) |
+| `size` | `24` | Dimensão em px (width/height) |
 
-**Estilo dos links**: `text-small text-muted transition-colors duration-200 hover:text-accent` (inline)
-**Sign out hover**: `hover:text-stone-600` (diferenciado dos links de navegação)
-**Spacing**: `gap-3 sm:gap-4`
+**Prioridade de renderização**:
+1. Com `image`: `<img>` circular, `referrerPolicy="no-referrer"` (necessário para Google photos)
+2. Sem `image`, com `name`: iniciais (1ª letra do 1º e último nome) em círculo `bg-border text-muted`
+3. Sem nada: ícone SVG silhueta genérica em `bg-border text-muted`
 
 ### Checkbox (circular)
 

@@ -9,7 +9,7 @@ export default function RecurringPage() {
           <h1 className="font-display text-display text-stone-900 leading-none capitalize">recurring</h1>
           <p className="text-subtext text-muted mt-1 block">Tasks that repeat automatically</p>
         </div>
-        <NavMenu />
+        <NavMenu activePath="/recurring" />
       </header>
 
       <RecurringContent />

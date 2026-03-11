@@ -1,38 +1,47 @@
 import Link from "next/link";
-import { signOut } from "@/lib/auth";
+import { cn } from "@/lib/cn";
+import { getCurrentUser } from "@/lib/auth/session";
+import { UserAvatar } from "./user-avatar";
 
-const link = "text-small text-muted transition-colors duration-200 hover:text-accent";
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/history", label: "History" },
+  { href: "/upcoming", label: "Upcoming" },
+  { href: "/recurring", label: "Recurring" },
+] as const;
 
-export function NavMenu({ showHome = true }: { showHome?: boolean }) {
+type ActivePath = (typeof navLinks)[number]["href"] | "/profile";
+
+export async function NavMenu({
+  activePath,
+}: {
+  activePath?: ActivePath;
+}) {
+  const user = await getCurrentUser();
+
   return (
-    <nav className="flex items-baseline gap-3 sm:gap-4">
-      {showHome && (
-        <Link href="/" className={link}>
-          Home
-        </Link>
-      )}
-      <Link href="/history" className={link}>
-        History
-      </Link>
-      <Link href="/upcoming" className={link}>
-        Upcoming
-      </Link>
-      <Link href="/recurring" className={link}>
-        Recurring
-      </Link>
-      <form
-        action={async () => {
-          "use server";
-          await signOut({ redirectTo: "/login" });
-        }}
-      >
-        <button
-          type="submit"
-          className="text-small text-muted hover:text-stone-600 transition-colors duration-200"
+    <nav className="flex items-center gap-3 sm:gap-4">
+      {navLinks.map((link) => (
+        <Link
+          key={link.href}
+          href={link.href}
+          className={cn(
+            "text-small transition-colors duration-200",
+            activePath === link.href
+              ? "text-stone-900"
+              : "text-muted hover:text-accent",
+          )}
         >
-          Sign out
-        </button>
-      </form>
+          {link.label}
+        </Link>
+      ))}
+      <Link
+        href="/profile"
+        aria-label="Profile"
+        className="transition-opacity duration-200 hover:opacity-80"
+      >
+        <UserAvatar name={user.name} image={user.image} />
+      </Link>
     </nav>
   );
 }

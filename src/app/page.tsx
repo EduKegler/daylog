@@ -21,7 +21,7 @@ export default async function DashboardPage() {
             {formatLongDate(today)}
           </time>
         </div>
-        <NavMenu />
+        <NavMenu activePath="/" />
       </header>
 
       <DashboardContent />
