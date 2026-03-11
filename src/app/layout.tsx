@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, DM_Sans } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { WebVitals } from "./components/web-vitals";
 import "./globals.css";
 
@@ -48,6 +49,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable}`}>
       <body>
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
         <WebVitals />
         {children}
       </body>
