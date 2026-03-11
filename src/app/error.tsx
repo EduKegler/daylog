@@ -13,7 +13,7 @@ export default function Error({
         <h2 className="text-xl font-semibold text-stone-900 mb-2">
           Something went wrong
         </h2>
-        <p className="text-sm text-stone-500 mb-1">
+        <p className="text-small text-stone-500 mb-1">
           {error.message || "An unexpected error occurred."}
         </p>
         {error.digest && (
@@ -23,7 +23,7 @@ export default function Error({
         )}
         <button
           onClick={reset}
-          className="px-4 py-2 bg-stone-900 text-white rounded-lg text-sm font-medium hover:bg-stone-800 transition-colors duration-200"
+          className="px-4 py-2 bg-stone-900 text-white rounded-lg text-small font-medium hover:bg-stone-800 transition-colors duration-200"
         >
           Try again
         </button>

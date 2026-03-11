@@ -1,4 +1,5 @@
 import type { DayStats } from "@/lib/stats/day-stats";
+import { Text } from "./text";
 
 export function DaySummary({ stats }: { stats: DayStats }) {
   const pct = Math.round(stats.completionRate * 100);
@@ -31,13 +32,13 @@ export function DaySummary({ stats }: { stats: DayStats }) {
               className="transition-all duration-700 ease-out"
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold">
+          <Text variant="small" className="absolute inset-0 flex items-center justify-center font-semibold">
             {pct}%
-          </span>
+          </Text>
         </div>
-        <span className="mt-1.5 text-xs tracking-wide text-[var(--color-muted)] uppercase">
+        <Text variant="caption" className="mt-1.5">
           Progress
-        </span>
+        </Text>
       </div>
     </div>
   );
@@ -54,14 +55,12 @@ function StatCard({
 }) {
   return (
     <div className="stat-card flex flex-col items-center justify-center">
-      <span
-        className={`text-3xl font-semibold tabular-nums ${accent ? "text-[var(--color-accent)]" : ""}`}
-      >
+      <Text variant="stat" accent={accent}>
         {value}
-      </span>
-      <span className="mt-1 text-xs tracking-wide text-[var(--color-muted)] uppercase">
+      </Text>
+      <Text variant="caption" className="mt-1">
         {label}
-      </span>
+      </Text>
     </div>
   );
 }

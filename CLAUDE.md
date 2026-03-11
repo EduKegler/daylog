@@ -50,6 +50,7 @@ The core domain logic — handles task carryover between days:
 | Database schema | `prisma/schema.prisma` |
 | Middleware (auth guard) | `src/proxy.ts` |
 | CSS & design tokens | `src/app/globals.css` |
+| Text primitive | `src/app/components/text.tsx` |
 
 ### Import alias
 

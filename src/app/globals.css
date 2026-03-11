@@ -8,6 +8,14 @@
   --color-muted: #78716C;
   --font-display: var(--font-instrument-serif), Georgia, serif;
   --font-body: var(--font-dm-sans), system-ui, sans-serif;
+  --text-display: 2rem;
+  --text-heading: 1.375rem;
+  --text-icon: 1.25rem;
+  --text-body: 1rem;
+  --text-subtext: 0.9375rem;
+  --text-small: 0.875rem;
+  --text-tag: 0.8125rem;
+  --text-stat: 1.875rem;
 }
 
 body {
@@ -43,13 +51,13 @@ button:disabled {
 
 .app-title {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-stone-900);
   line-height: 1;
 }
 
 .today-date {
-  font-size: 0.875rem;
+  font-size: var(--text-subtext);
   color: var(--color-muted);
   margin-top: 0.25rem;
   display: block;
@@ -71,7 +79,7 @@ button:disabled {
 }
 
 .section-title {
-  font-size: 0.75rem;
+  font-size: var(--text-small);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -83,7 +91,7 @@ button:disabled {
 }
 
 .section-count {
-  font-size: 0.75rem;
+  font-size: var(--text-tag);
   font-weight: 500;
   color: var(--color-muted);
   background: var(--color-border);
@@ -92,7 +100,7 @@ button:disabled {
 }
 
 .empty-message {
-  font-size: 0.875rem;
+  font-size: var(--text-subtext);
   color: var(--color-muted);
   padding: 1rem 0;
 }
@@ -188,18 +196,18 @@ button:disabled {
 }
 
 .task-title {
-  font-size: 0.9375rem;
+  font-size: var(--text-body);
   line-height: 1.4;
 }
 
 .task-description {
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
   color: var(--color-muted);
   margin-top: 0.125rem;
 }
 
 .task-badge {
-  font-size: 0.6875rem;
+  font-size: var(--text-tag);
   font-weight: 500;
   padding: 0.125rem 0.5rem;
   border-radius: 9999px;
@@ -209,7 +217,7 @@ button:disabled {
 }
 
 .task-badge.recurring {
-  font-size: 0.75rem;
+  font-size: var(--text-tag);
 }
 
 /* ─── Create Task Form ───────────────────────── */
@@ -220,7 +228,7 @@ button:disabled {
   gap: 0.5rem;
   width: 100%;
   padding: 0.875rem 0;
-  font-size: 0.875rem;
+  font-size: var(--text-subtext);
   color: var(--color-muted);
   background: none;
   border: none;
@@ -233,7 +241,7 @@ button:disabled {
 }
 
 .add-icon {
-  font-size: 1.125rem;
+  font-size: var(--text-icon);
   line-height: 1;
 }
 
@@ -248,7 +256,7 @@ button:disabled {
 .task-input {
   width: 100%;
   padding: 0.5rem 0;
-  font-size: 0.9375rem;
+  font-size: var(--text-body);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--color-border);
@@ -262,7 +270,7 @@ button:disabled {
 }
 
 .task-input.small {
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
 }
 
 .task-input::placeholder {
@@ -281,7 +289,7 @@ button:disabled {
 }
 
 .btn-cancel {
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
   color: var(--color-muted);
   background: none;
   border: none;
@@ -293,7 +301,7 @@ button:disabled {
 }
 
 .btn-submit {
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
   font-weight: 500;
   color: white;
   background: var(--color-accent);
@@ -336,13 +344,13 @@ button:disabled {
 
 .history-day-title {
   font-family: var(--font-display);
-  font-size: 1.125rem;
+  font-size: var(--text-heading);
   color: var(--color-stone-900);
   text-transform: capitalize;
 }
 
 .history-day-stats {
-  font-size: 0.75rem;
+  font-size: var(--text-small);
   color: var(--color-muted);
   font-weight: 500;
 }
@@ -358,7 +366,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
   font-weight: 600;
 }
 
@@ -382,7 +390,7 @@ button:disabled {
 }
 
 .pagination-link {
-  font-size: 0.8125rem;
+  font-size: var(--text-small);
   color: var(--color-muted);
   transition: color 200ms ease;
 }
@@ -407,7 +415,7 @@ button:disabled {
 }
 
 .upcoming-relative {
-  font-size: 0.75rem;
+  font-size: var(--text-small);
   color: var(--color-accent);
   font-weight: 500;
   margin-top: 0.125rem;

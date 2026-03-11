@@ -63,19 +63,19 @@ export default async function DashboardPage() {
         <nav className="flex items-baseline gap-3 sm:gap-4">
           <Link
             href="/history"
-            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
+            className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
           >
             History
           </Link>
           <Link
             href="/upcoming"
-            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
+            className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
           >
             Upcoming
           </Link>
           <Link
             href="/recurring"
-            className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
+            className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
           >
             Recurring
           </Link>
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
           >
             <button
               type="submit"
-              className="text-xs text-[var(--color-muted)] hover:text-stone-600 transition-colors duration-200"
+              className="text-small text-[var(--color-muted)] hover:text-stone-600 transition-colors duration-200"
             >
               Sign out
             </button>

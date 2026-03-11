@@ -45,18 +45,43 @@ NUNCA usar fontes ou tamanhos fora desta tabela.
 | `--font-display` | Instrument Serif (400) | Títulos, datas históricas |
 | `--font-body` | DM Sans | Todo o resto (body, buttons, inputs, labels) |
 
-### Escala de tamanhos
+### Escala de tamanhos (tokens)
 
-| Tamanho | Rem | Onde é usado |
-|---|---|---|
-| App title | `2rem` | `.app-title` |
-| History day title | `1.125rem` | `.history-day-title` (font-display) |
-| Add icon | `1.125rem` | `.add-icon` |
-| Today date, empty msg | `0.875rem` | `.today-date`, `.empty-message`, `.add-task-btn` |
-| Task title, input | `0.9375rem` | `.task-title`, `.task-input` |
-| Task description, small input, buttons, pagination | `0.8125rem` | `.task-description`, `.task-input.small`, `.btn-cancel`, `.btn-submit`, `.pagination-link`, `.history-status-icon` |
-| Section title, stats, history day stats, recurring badge | `0.75rem` | `.section-title`, `.section-count`, `.history-day-stats`, `.upcoming-relative`, `.task-badge.recurring` |
-| Badge | `0.6875rem` | `.task-badge` |
+Piso tipográfico: **0.8125rem (13px)** para badges/tags, **0.875rem (14px)** para texto.
+
+Todos os tamanhos são definidos como CSS custom properties no `@theme` do globals.css usando o namespace `--text-*` (obrigatório para Tailwind v4 gerar utilities). Classes CSS usam `var(--text-*)`.
+
+| Token | Rem | Tailwind utility | Onde é usado |
+|---|---|---|---|
+| `--text-display` | `2rem` | `text-display` | `.app-title` |
+| `--text-heading` | `1.375rem` | `text-heading` | `.history-day-title` (font-display — compensação x-height) |
+| `--text-icon` | `1.25rem` | `text-icon` | `.add-icon` |
+| `--text-body` | `1rem` | `text-body` | `.task-title`, `.task-input` |
+| `--text-subtext` | `0.9375rem` | `text-subtext` | `.today-date`, `.empty-message`, `.add-task-btn` |
+| `--text-small` | `0.875rem` | `text-small` | `.task-description`, `.task-input.small`, `.btn-cancel`, `.btn-submit`, `.pagination-link`, `.history-status-icon`, `.section-title`, `.history-day-stats`, `.upcoming-relative` |
+| `--text-tag` | `0.8125rem` | `text-tag` | `.task-badge`, `.section-count` |
+| `--text-stat` | `1.875rem` | `text-stat` | Stat cards (day-summary) |
+
+### Componente `<Text>`
+
+Arquivo: `src/app/components/text.tsx` (Server Component)
+
+Para texto estático com 3+ propriedades tipográficas bundled. Não usar para elementos interativos (links, buttons) — preferir utility `text-small` nesses casos.
+
+**`label` vs `caption`**: `label` é para form labels (`font-medium`, `tracking-wider`). `caption` é para stat card captions (`tracking-wide`, sem `font-medium`).
+
+| Variant | Classes | Default `as` | Default `muted` |
+|---|---|---|---|
+| `display` | `font-display text-display leading-none` | `h1` | false |
+| `heading` | `font-display text-heading` | `h2` | false |
+| `body` | `text-body` | `p` | false |
+| `subtext` | `text-subtext` | `p` | true |
+| `small` | `text-small` | `span` | false |
+| `label` | `text-small font-medium uppercase tracking-wider` | `span` | true |
+| `caption` | `text-small uppercase tracking-wide` | `span` | true |
+| `stat` | `text-stat font-semibold tabular-nums` | `span` | false |
+
+Props adicionais: `as` (elemento HTML), `muted` (cor muted), `accent` (cor accent), `className`.
 
 ---
 
@@ -99,7 +124,7 @@ sm:      grid-cols-4 gap-4
 
 **Submit (primário)**
 ```css
-font-size: 0.8125rem; font-weight: 500;
+font-size: 0.875rem; font-weight: 500;
 background: var(--color-accent); color: white;
 border: none; border-radius: 0.375rem;
 padding: 0.375rem 1rem;
@@ -109,7 +134,7 @@ padding: 0.375rem 1rem;
 
 **Cancel (ghost)**
 ```css
-font-size: 0.8125rem;
+font-size: 0.875rem;
 background: none; border: none;
 color: var(--color-muted);
 padding: 0.375rem 0.75rem;
@@ -129,7 +154,7 @@ color: var(--color-border);
 **Add task (full-width ghost)**
 ```css
 width: 100%; padding: 0.875rem 0;
-font-size: 0.875rem; color: var(--color-muted);
+font-size: 0.9375rem; color: var(--color-muted);
 background: none; border: none;
 border-bottom: 1px solid var(--color-border);
 /* hover */ color: var(--color-accent);
@@ -141,13 +166,13 @@ Estilo underline — sem bordas laterais, sem background.
 
 ```css
 width: 100%; padding: 0.5rem 0;
-font-size: 0.9375rem;
+font-size: 1rem;
 background: transparent; border: none;
 border-bottom: 1px solid var(--color-border);
 outline: none; color: var(--color-stone-900);
 /* focus */ border-bottom-color: var(--color-accent);
 /* placeholder */ color: var(--color-muted);
-/* small variant */ font-size: 0.8125rem;
+/* small variant */ font-size: 0.875rem;
 ```
 
 ### Cards
@@ -162,7 +187,7 @@ padding: 1rem;
 ### Badges
 
 ```css
-font-size: 0.6875rem; font-weight: 500;
+font-size: 0.875rem; font-weight: 500;
 padding: 0.125rem 0.5rem;
 border-radius: 9999px;
 background: var(--color-border);

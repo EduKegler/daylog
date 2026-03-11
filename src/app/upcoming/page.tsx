@@ -18,7 +18,7 @@ export default async function UpcomingPage() {
         </div>
         <Link
           href="/"
-          className="text-xs text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
+          className="text-small text-[var(--color-muted)] hover:text-[var(--color-accent)] transition-colors duration-200"
         >
           ← Back
         </Link>

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { createRecurringTask, type ActionResult } from "@/lib/tasks/actions";
+import { Text } from "@/app/components/text";
 
 const WEEKDAYS = [
   { value: 0, label: "Sun" },
@@ -72,9 +73,9 @@ export function RecurringTaskForm() {
   return (
     <form ref={formRef} action={handleSubmit} className="create-task-form">
       <div>
-        <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
+        <Text as="label" variant="label">
           Title
-        </label>
+        </Text>
         <input
           name="title"
           type="text"
@@ -84,14 +85,14 @@ export function RecurringTaskForm() {
           className="task-input"
         />
         {errors.title && (
-          <p className="text-xs text-red-600 mt-1">{errors.title}</p>
+          <p className="text-small text-red-600 mt-1">{errors.title}</p>
         )}
       </div>
 
       <div>
-        <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
+        <Text as="label" variant="label">
           Description (optional)
-        </label>
+        </Text>
         <input
           name="description"
           type="text"
@@ -102,9 +103,9 @@ export function RecurringTaskForm() {
 
       <div className="form-row">
         <div className="flex-1">
-          <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
+          <Text as="label" variant="label">
             Category
-          </label>
+          </Text>
           <input
             name="category"
             type="text"
@@ -114,9 +115,9 @@ export function RecurringTaskForm() {
         </div>
 
         <div className="flex-1">
-          <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
+          <Text as="label" variant="label">
             Recurrence
-          </label>
+          </Text>
           <select
             value={recurrenceType}
             onChange={(e) => setRecurrenceType(e.target.value)}
@@ -128,23 +129,23 @@ export function RecurringTaskForm() {
             <option value="MONTHLY">Monthly</option>
           </select>
           {errors.recurrenceType && (
-            <p className="text-xs text-red-600 mt-1">{errors.recurrenceType}</p>
+            <p className="text-small text-red-600 mt-1">{errors.recurrenceType}</p>
           )}
         </div>
       </div>
 
       {recurrenceType === "SPECIFIC_WEEKDAYS" && (
         <div>
-          <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium mb-2 block">
+          <Text as="label" variant="label" className="mb-2 block">
             Days of the week
-          </label>
+          </Text>
           <div className="flex gap-1">
             {WEEKDAYS.map((wd) => (
               <button
                 key={wd.value}
                 type="button"
                 onClick={() => toggleDay(wd.value)}
-                className={`px-2.5 py-1.5 text-xs rounded-md transition-colors duration-200 ${
+                className={`px-2.5 py-1.5 text-small rounded-md transition-colors duration-200 ${
                   selectedDays.includes(wd.value)
                     ? "bg-[var(--color-accent)] text-white"
                     : "bg-[var(--color-border)] text-[var(--color-muted)] hover:bg-stone-300"
@@ -155,16 +156,16 @@ export function RecurringTaskForm() {
             ))}
           </div>
           {errors.recurrenceConfig && (
-            <p className="text-xs text-red-600 mt-1">{errors.recurrenceConfig}</p>
+            <p className="text-small text-red-600 mt-1">{errors.recurrenceConfig}</p>
           )}
         </div>
       )}
 
       {recurrenceType === "MONTHLY" && (
         <div>
-          <label className="text-[0.6875rem] uppercase tracking-wider text-[var(--color-muted)] font-medium">
+          <Text as="label" variant="label">
             Day of the month
-          </label>
+          </Text>
           <input
             type="number"
             min={1}
@@ -175,7 +176,7 @@ export function RecurringTaskForm() {
             style={{ maxWidth: "5rem" }}
           />
           {errors.recurrenceConfig && (
-            <p className="text-xs text-red-600 mt-1">{errors.recurrenceConfig}</p>
+            <p className="text-small text-red-600 mt-1">{errors.recurrenceConfig}</p>
           )}
         </div>
       )}

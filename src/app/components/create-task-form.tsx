@@ -43,7 +43,7 @@ export function CreateTaskForm() {
         className="task-input"
       />
       {errors.title && (
-        <p className="text-xs text-red-600 mt-1">{errors.title}</p>
+        <p className="text-small text-red-600 mt-1">{errors.title}</p>
       )}
 
       <div className="form-row">
@@ -61,10 +61,10 @@ export function CreateTaskForm() {
         />
       </div>
       {errors.category && (
-        <p className="text-xs text-red-600 mt-1">{errors.category}</p>
+        <p className="text-small text-red-600 mt-1">{errors.category}</p>
       )}
       {errors.scheduledDate && (
-        <p className="text-xs text-red-600 mt-1">{errors.scheduledDate}</p>
+        <p className="text-small text-red-600 mt-1">{errors.scheduledDate}</p>
       )}
 
       <div className="form-actions">
