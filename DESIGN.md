@@ -146,6 +146,26 @@ Small variant: trocar `text-body` por `text-small`
 
 Carry-over variant: `bg-amber-100 text-amber-800` (sobrescreve bg e text)
 
+### Tooltip
+
+Arquivo: `src/app/components/tooltip.tsx` (Client Component)
+
+Wrapper sobre `@radix-ui/react-tooltip`. Usado para dar contexto visual a ícones e botões.
+
+| Prop | Tipo | Default | Uso |
+|---|---|---|---|
+| `children` | `ReactNode` | — | Elemento trigger (usa `asChild`) |
+| `content` | `string` | — | Texto exibido no tooltip |
+| `side` | `"top" \| "bottom" \| "left" \| "right"` | `"top"` | Posição preferida |
+
+**Estilo**: `bg-stone-900 text-white text-[0.8125rem] rounded-md px-2.5 py-1` com `sideOffset={6}`
+
+**Animação**: fade + scale via `animate-tooltip-in` / `animate-tooltip-out` (200ms / 150ms)
+
+**Provider**: `<TooltipProvider delayDuration={300}>` em `src/app/providers.tsx`
+
+**Touch devices**: Radix desabilita tooltips automaticamente em pointer coarse (mobile).
+
 ### NavMenu (navegação global)
 
 Arquivo: `src/app/components/nav-menu.tsx` (async Server Component)

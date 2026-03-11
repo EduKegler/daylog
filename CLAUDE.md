@@ -74,7 +74,7 @@ NextAuth v5 with Google provider, JWT strategy, PrismaAdapter. Session includes 
 
 ## Styling
 
-All styles live inline as Tailwind utilities in TSX files. No CSS custom classes — `globals.css` only has `@theme` tokens, base element styles, and one `@media (hover: none)` rule using `[data-action-btn]`.
+All styles live inline as Tailwind utilities in TSX files. No CSS custom classes — `globals.css` only has `@theme` tokens (including animation tokens), `@keyframes` for component animations, base element styles, and one `@media (hover: none)` rule using `[data-action-btn]`.
 
 Use `cn()` from `@/lib/cn` (`clsx` + `tailwind-merge`) for conditional classes:
 ```tsx

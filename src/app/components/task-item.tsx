@@ -11,6 +11,7 @@ import {
   useDeleteTask,
 } from "@/lib/queries/daily";
 import { TaskForm } from "./task-form/task-form";
+import { Tooltip } from "./tooltip";
 
 export type Task = {
   id: string;
@@ -112,33 +113,35 @@ export function TaskItem({ task }: { task: Task }) {
     <div
       className={cn(taskItemBase, "group", isCompleted && "opacity-60", isPending && "opacity-50")}
     >
-      <button
-        onClick={handleToggle}
-        disabled={isPending}
-        className={cn(
-          "w-5 h-5 rounded-full border-2 border-border flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200 bg-transparent hover:border-accent",
-          isCompleted && "border-accent bg-accent text-white",
-        )}
-        aria-label={isCompleted ? "Uncheck task" : "Complete task"}
-      >
-        {isCompleted && (
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-            className="w-3 h-3"
-          >
-            <path
-              d="M2 6L5 9L10 3"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </button>
+      <Tooltip content={isCompleted ? "Undo completion" : "Complete task"}>
+        <button
+          onClick={handleToggle}
+          disabled={isPending}
+          className={cn(
+            "w-5 h-5 rounded-full border-2 border-border flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200 bg-transparent hover:border-accent",
+            isCompleted && "border-accent bg-accent text-white",
+          )}
+          aria-label={isCompleted ? "Uncheck task" : "Complete task"}
+        >
+          {isCompleted && (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              className="w-3 h-3"
+            >
+              <path
+                d="M2 6L5 9L10 3"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </button>
+      </Tooltip>
 
       <div className="flex flex-col flex-1 min-w-0">
         <span
@@ -153,31 +156,36 @@ export function TaskItem({ task }: { task: Task }) {
       </div>
 
       <div className="flex items-center gap-2">
-        {isCarryOver && (
-          <span
-            className={badgeCarryOver}
-            title={`Originally on ${formatShortDate(task.originalDate!)}`}
-          >
-            ↗ {formatShortDate(task.originalDate!)}
-          </span>
+        {isCarryOver && task.originalDate && (
+          <Tooltip content={`Carried over from ${formatShortDate(task.originalDate)}`}>
+            <span className={badgeCarryOver} tabIndex={0}>
+              ↗ {formatShortDate(task.originalDate)}
+            </span>
+          </Tooltip>
         )}
         {task.category && <span className={badge}>{task.category}</span>}
         {task.sourceType === "RECURRING" && (
-          <span className={badge} title="Recurring task">↻</span>
+          <Tooltip content="Recurring task">
+            <span className={badge} tabIndex={0}>↻</span>
+          </Tooltip>
         )}
         <div className="flex items-center gap-0.5">
           {canEdit && (
-            <button onClick={handleEdit} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit task">
+            <Tooltip content="Edit task">
+              <button onClick={handleEdit} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit task">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </Tooltip>
+          )}
+          <Tooltip content="Delete task">
+            <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete task">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </button>
-          )}
-          <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete task">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
+          </Tooltip>
         </div>
       </div>
     </div>
