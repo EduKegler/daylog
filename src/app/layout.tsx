@@ -3,6 +3,7 @@ import { Instrument_Serif, DM_Sans } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { WebVitals } from "./components/web-vitals";
 import { Providers } from "./providers";
+import { Footer } from "./components/footer";
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -49,12 +50,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable}`}>
-      <body>
+      <body className="flex flex-col min-h-screen">
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
         <WebVitals />
-        <Providers>{children}</Providers>
+        <div className="flex-1">
+          <Providers>{children}</Providers>
+        </div>
+        <Footer />
       </body>
     </html>
   );
