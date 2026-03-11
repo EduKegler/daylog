@@ -140,7 +140,7 @@ export function TaskItem({ task }: { task: Task }) {
         )}
       </button>
 
-      <div className="flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0">
         <span
           className={cn("text-body leading-[1.4]", isCompleted ? "line-through opacity-50" : canEdit ? "cursor-pointer" : "")}
           onClick={canEdit ? handleEdit : undefined}
