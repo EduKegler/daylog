@@ -3,6 +3,8 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { getHistory } from "@/lib/history/queries";
 import { NavMenu } from "@/app/components/nav-menu";
+import { EmptyState } from "@/app/components/empty-state";
+import { NoHistoryIllustration } from "@/app/components/empty-state-illustrations";
 import { HistoryDayCard } from "./_components/history-day-card";
 
 const link = "text-small text-muted transition-colors duration-200 hover:text-accent";
@@ -32,7 +34,11 @@ export default async function HistoryPage({
 
       <div>
         {days.length === 0 ? (
-          <p className="text-subtext text-muted py-4">No history found.</p>
+          <EmptyState
+            illustration={<NoHistoryIllustration />}
+            title="No history yet"
+            description="Your completed days will be recorded here."
+          />
         ) : (
           days.map((day) => (
             <HistoryDayCard key={day.date.toISOString()} day={day} />

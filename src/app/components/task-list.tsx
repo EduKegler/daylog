@@ -7,13 +7,13 @@ export function TaskList({
 }: {
   title: string;
   tasks: Task[];
-  emptyMessage: string;
+  emptyMessage: React.ReactNode;
 }) {
   if (tasks.length === 0) {
     return (
       <section className="mt-8">
         <h2 className="text-small font-semibold uppercase tracking-wider text-muted mb-3 flex items-center gap-2">{title}</h2>
-        <p className="text-subtext text-muted py-4">{emptyMessage}</p>
+        <div>{emptyMessage}</div>
       </section>
     );
   }

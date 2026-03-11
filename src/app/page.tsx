@@ -9,6 +9,8 @@ import { NavMenu } from "./components/nav-menu";
 import { DaySummary } from "./components/day-summary";
 import { TaskList } from "./components/task-list";
 import { CreateTaskForm } from "./components/create-task-form";
+import { EmptyState } from "./components/empty-state";
+import { AllClearIllustration, NoCompletedIllustration } from "./components/empty-state-illustrations";
 import type { Task } from "./components/task-item";
 
 function serializeTask(t: {
@@ -68,7 +70,13 @@ export default async function DashboardPage() {
         <TaskList
           title="Pending"
           tasks={serializedPending}
-          emptyMessage="No pending tasks. Good job!"
+          emptyMessage={
+            <EmptyState
+              illustration={<AllClearIllustration />}
+              title="All clear!"
+              description="You've completed all your tasks for today."
+            />
+          }
         />
 
         <CreateTaskForm />
@@ -76,7 +84,13 @@ export default async function DashboardPage() {
         <TaskList
           title="Completed"
           tasks={serializedCompleted}
-          emptyMessage="No completed tasks yet."
+          emptyMessage={
+            <EmptyState
+              illustration={<NoCompletedIllustration />}
+              title="Nothing completed yet"
+              description="Completed tasks will appear here as you check them off."
+            />
+          }
         />
       </div>
     </main>

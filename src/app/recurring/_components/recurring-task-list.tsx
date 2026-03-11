@@ -13,6 +13,8 @@ import {
   getRecurrenceLabel,
 } from "@/lib/tasks/recurrence";
 import { Text } from "@/app/components/text";
+import { EmptyState } from "@/app/components/empty-state";
+import { NoRecurringIllustration } from "@/app/components/empty-state-illustrations";
 
 const WEEKDAYS = [
   { value: 0, label: "Sun" },
@@ -43,7 +45,13 @@ const inputSmall = "w-full py-2 text-small bg-transparent border-0 border-b bord
 
 export function RecurringTaskList({ tasks }: { tasks: RecurringTask[] }) {
   if (tasks.length === 0) {
-    return <p className="text-subtext text-muted py-4">No recurring tasks yet.</p>;
+    return (
+      <EmptyState
+        illustration={<NoRecurringIllustration />}
+        title="No recurring tasks"
+        description="Create tasks that repeat daily, on weekdays, or on specific days."
+      />
+    );
   }
 
   return (

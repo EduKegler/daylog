@@ -207,6 +207,35 @@ Action buttons ficam invisíveis e aparecem no hover do task-item (desktop) via 
 - Carry-over: `↗`
 - Recurring: `↻`
 
+### Ilustrações de Empty State
+
+Arquivo: `src/app/components/empty-state-illustrations.tsx`
+
+SVGs decorativos exibidos quando uma lista está vazia. Todas seguem regras consistentes:
+
+**Shared props** (objeto `shared`): `width=64 height=64 viewBox="0 0 64 64" fill=none strokeWidth=1.5 strokeLinecap=round strokeLinejoin=round`
+
+**Regras de consistência**:
+
+| Regra | Detalhe |
+|---|---|
+| Cor base | `currentColor` (`#E7E5E4` via parent) — formas principais visíveis contra fundo `#F7F6F3` |
+| Detalhe accent | Cada ícone tem **exatamente um detalhe** em `var(--color-accent)` semanticamente relevante |
+| Peso visual | Elementos grandes o suficiente (círculos r=18–20, retângulos ~14×14+) para não desaparecerem |
+| Centralização | Composição centrada no viewBox 64×64 |
+
+**Padrão de arrowhead para setas circulares** (baseado em Lucide/Feather): arco SVG conectado a uma ponta em formato "L" (duas linhas perpendiculares). O arco termina exatamente no canto do L — nunca usar chevron desconectado.
+
+**Ícones atuais**:
+
+| Ícone | Forma base | Detalhe accent |
+|---|---|---|
+| AllClear | Círculo r=20 + 4 shine lines | Checkmark dentro do círculo |
+| NoCompleted | 2 checkboxes 14×14 + linhas de texto | Dash horizontal dentro do primeiro checkbox |
+| NoUpcoming | Calendário (retângulo + header + presilhas + dots) | Presilhas + todos os day dots |
+| NoHistory | Relógio (círculo r=20 + 4 tick marks nos eixos) | Ponteiro único (~2h) + center dot |
+| NoRecurring | Arco ~300° r=18 com bezier para arrowhead | L-shaped arrowhead no upper-right |
+
 ---
 
 ## Acessibilidade

@@ -2,6 +2,8 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { getUpcomingTasks } from "@/lib/upcoming/queries";
 import { NavMenu } from "@/app/components/nav-menu";
+import { EmptyState } from "@/app/components/empty-state";
+import { NoUpcomingIllustration } from "@/app/components/empty-state-illustrations";
 import { UpcomingDayCard } from "./_components/upcoming-day-card";
 
 export default async function UpcomingPage() {
@@ -21,7 +23,11 @@ export default async function UpcomingPage() {
 
       <div>
         {days.length === 0 ? (
-          <p className="text-subtext text-muted py-4">No upcoming tasks scheduled.</p>
+          <EmptyState
+            illustration={<NoUpcomingIllustration />}
+            title="No upcoming tasks"
+            description="Tasks scheduled for future days will show up here."
+          />
         ) : (
           days.map((day) => (
             <UpcomingDayCard
