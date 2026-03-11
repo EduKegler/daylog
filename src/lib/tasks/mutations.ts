@@ -1,33 +1,34 @@
 import { prisma } from "@/lib/db/prisma";
+import type { OwnerFilter } from "@/lib/auth/owner-context";
 import { startOfDay, startOfNextDay } from "./queries";
 
 export type CreateTaskInput = {
-  userId: string;
   title: string;
   description?: string;
   category?: string;
   scheduledDate: Date;
-};
+} & OwnerFilter;
 
 export async function createTask(input: CreateTaskInput) {
+  const { title, description, category, scheduledDate, ...ownerFilter } = input;
   return prisma.dailyTask.create({
     data: {
-      userId: input.userId,
+      ...ownerFilter,
       sourceType: "MANUAL",
-      title: input.title,
-      description: input.description || null,
-      category: input.category || null,
-      scheduledDate: startOfDay(input.scheduledDate),
+      title,
+      description: description || null,
+      category: category || null,
+      scheduledDate: startOfDay(scheduledDate),
     },
   });
 }
 
 export async function completeTask(
   taskId: string,
-  userId: string,
+  filter: OwnerFilter,
 ): Promise<void> {
   const { count } = await prisma.dailyTask.updateMany({
-    where: { id: taskId, userId, status: { not: "COMPLETED" } },
+    where: { id: taskId, ...filter, status: { not: "COMPLETED" } },
     data: { status: "COMPLETED", completedAt: new Date() },
   });
 
@@ -36,7 +37,7 @@ export async function completeTask(
 
 export async function uncompleteTask(
   taskId: string,
-  userId: string,
+  filter: OwnerFilter,
 ): Promise<void> {
   const now = new Date();
   const today = startOfDay(now);
@@ -45,7 +46,7 @@ export async function uncompleteTask(
   const { count } = await prisma.dailyTask.updateMany({
     where: {
       id: taskId,
-      userId,
+      ...filter,
       status: "COMPLETED",
       completedAt: { gte: today, lt: tomorrow },
     },
@@ -57,7 +58,7 @@ export async function uncompleteTask(
 
 export async function updateDailyTask(
   taskId: string,
-  userId: string,
+  filter: OwnerFilter,
   data: {
     title: string;
     description: string | null;
@@ -75,7 +76,7 @@ export async function updateDailyTask(
   }
 
   const { count } = await prisma.dailyTask.updateMany({
-    where: { id: taskId, userId },
+    where: { id: taskId, ...filter },
     data: updateData,
   });
 
@@ -84,10 +85,10 @@ export async function updateDailyTask(
 
 export async function deleteTask(
   taskId: string,
-  userId: string,
+  filter: OwnerFilter,
 ): Promise<void> {
   const { count } = await prisma.dailyTask.deleteMany({
-    where: { id: taskId, userId },
+    where: { id: taskId, ...filter },
   });
 
   if (count === 0) throw new Error("Task not found or unauthorized");

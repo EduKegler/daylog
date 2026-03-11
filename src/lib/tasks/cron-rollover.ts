@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import type { OwnerContext } from "@/lib/auth/owner-context";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { processRollover } from "@/lib/tasks/rollover";
 import { ensureRecurringInstances } from "@/lib/tasks/ensure-recurring-instances";
@@ -27,12 +28,17 @@ export async function processCronRollover(): Promise<CronRolloverResult> {
       !user.lastProcessedDate ||
       user.lastProcessedDate.getTime() < today.getTime()
     ) {
+      const ctx: OwnerContext = {
+        type: "user",
+        userId: user.id,
+        timezone: user.timezone,
+      };
       const rollover = await processRollover(
-        user.id,
+        ctx,
         user.lastProcessedDate,
         today,
       );
-      await ensureRecurringInstances(user.id, today);
+      await ensureRecurringInstances({ userId: user.id }, today);
       results.push({ userId: user.id, carriedOver: rollover.carriedOver });
     }
   }

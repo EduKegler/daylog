@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import type { DailyTask } from "@/generated/prisma/client";
+import type { OwnerFilter } from "@/lib/auth/owner-context";
 import { computeDayStats, type DayStats } from "@/lib/stats/day-stats";
 
 export type HistoryDay = {
@@ -9,7 +10,7 @@ export type HistoryDay = {
 };
 
 export async function getHistory(
-  userId: string,
+  filter: OwnerFilter,
   beforeDate: Date,
   page: number,
   pageSize: number,
@@ -17,7 +18,7 @@ export async function getHistory(
   // Query 1: distinct dates paginated directly in the database
   const groupedDates = await prisma.dailyTask.groupBy({
     by: ["scheduledDate"],
-    where: { userId, scheduledDate: { lt: beforeDate } },
+    where: { ...filter, scheduledDate: { lt: beforeDate } },
     orderBy: { scheduledDate: "desc" },
     skip: page * pageSize,
     take: pageSize + 1,
@@ -35,7 +36,7 @@ export async function getHistory(
   // Query 2: fetch all tasks for these dates
   const tasks = await prisma.dailyTask.findMany({
     where: {
-      userId,
+      ...filter,
       scheduledDate: { in: paginatedDates },
     },
     orderBy: [{ status: "asc" }, { createdAt: "asc" }],

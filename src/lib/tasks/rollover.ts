@@ -1,20 +1,37 @@
 import { prisma } from "@/lib/db/prisma";
+import type { OwnerContext, OwnerFilter } from "@/lib/auth/owner-context";
+import { buildOwnerFilter } from "@/lib/auth/owner-context";
 
 export type RolloverResult = {
   carriedOver: number;
 };
 
+function buildLastProcessedDateUpdate(
+  ctx: OwnerContext,
+  today: Date,
+) {
+  if (ctx.type === "user") {
+    return prisma.user.update({
+      where: { id: ctx.userId },
+      data: { lastProcessedDate: today },
+    });
+  }
+  return prisma.guestSession.update({
+    where: { id: ctx.guestSessionId },
+    data: { lastProcessedDate: today },
+  });
+}
+
 export async function processRollover(
-  userId: string,
+  ctx: OwnerContext,
   lastProcessedDate: Date | null,
   today: Date,
 ): Promise<RolloverResult> {
+  const filter: OwnerFilter = buildOwnerFilter(ctx);
+
   // Primeiro acesso: apenas marca o dia
   if (lastProcessedDate === null) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { lastProcessedDate: today },
-    });
+    await buildLastProcessedDateUpdate(ctx, today);
     return { carriedOver: 0 };
   }
 
@@ -26,7 +43,7 @@ export async function processRollover(
   // Fetch pending manual tasks from the last processed date
   const pendingManual = await prisma.dailyTask.findMany({
     where: {
-      userId,
+      ...filter,
       scheduledDate: lastProcessedDate,
       sourceType: "MANUAL",
       status: "PENDING",
@@ -34,16 +51,13 @@ export async function processRollover(
   });
 
   if (pendingManual.length === 0) {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { lastProcessedDate: today },
-    });
+    await buildLastProcessedDateUpdate(ctx, today);
     return { carriedOver: 0 };
   }
 
   // Build carry-overs preserving originalDate
   const carryOvers = pendingManual.map((task) => ({
-    userId,
+    ...filter,
     sourceType: "MANUAL" as const,
     title: task.title,
     description: task.description,
@@ -61,10 +75,7 @@ export async function processRollover(
       },
       data: { status: "SKIPPED" },
     }),
-    prisma.user.update({
-      where: { id: userId },
-      data: { lastProcessedDate: today },
-    }),
+    buildLastProcessedDateUpdate(ctx, today),
   ]);
 
   return { carriedOver: carryOvers.length };

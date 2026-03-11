@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db/prisma";
 import { authConfig } from "./config";
+import { DEFAULT_TIMEZONE } from "@/lib/guest/constants";
 import type {} from "./types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -16,14 +17,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { id: token.sub },
           select: { timezone: true },
         });
-        token.timezone = dbUser?.timezone ?? "America/Sao_Paulo";
+        token.timezone = dbUser?.timezone ?? DEFAULT_TIMEZONE;
       }
       return token;
     },
     session({ session, token }) {
       if (token.sub) session.user.id = token.sub;
       session.user.timezone =
-        (token.timezone as string) ?? "America/Sao_Paulo";
+        (token.timezone as string) ?? DEFAULT_TIMEZONE;
       return session;
     },
   },

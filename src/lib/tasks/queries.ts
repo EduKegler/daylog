@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import type { OwnerContext, OwnerFilter } from "@/lib/auth/owner-context";
 
 // ─── Helpers ──────────────────────────────────
 
@@ -14,46 +15,57 @@ export function startOfNextDay(date: Date): Date {
   return d;
 }
 
-// ─── User Day State ──────────────────────────
+// ─── Owner Day State ──────────────────────────
 
-export async function getUserDayState(userId: string): Promise<{
+export async function getOwnerDayState(ctx: OwnerContext): Promise<{
   timezone: string;
   lastProcessedDate: Date | null;
 }> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  if (ctx.type === "user") {
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.userId },
+      select: { timezone: true, lastProcessedDate: true },
+    });
+    if (!user) {
+      throw new Error(`User not found: ${ctx.userId}. Try clearing cookies and signing in again.`);
+    }
+    return user;
+  }
+
+  const session = await prisma.guestSession.findUnique({
+    where: { id: ctx.guestSessionId },
     select: { timezone: true, lastProcessedDate: true },
   });
-  if (!user) {
-    throw new Error(`User not found: ${userId}. Try clearing cookies and signing in again.`);
+  if (!session) {
+    throw new Error(`Guest session not found: ${ctx.guestSessionId}`);
   }
-  return user;
+  return session;
 }
 
 // ─── Recurring Tasks ──────────────────────────
 
-export async function getRecurringTasks(userId: string) {
+export async function getRecurringTasks(filter: OwnerFilter) {
   return prisma.recurringTask.findMany({
-    where: { userId },
+    where: { ...filter },
     orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
   });
 }
 
-export async function getActiveRecurringTasks(userId: string) {
+export async function getActiveRecurringTasks(filter: OwnerFilter) {
   return prisma.recurringTask.findMany({
-    where: { userId, isActive: true },
+    where: { ...filter, isActive: true },
   });
 }
 
 // ─── Daily Tasks ──────────────────────────────
 
-export async function getDailyTasksForDate(userId: string, date: Date) {
+export async function getDailyTasksForDate(filter: OwnerFilter, date: Date) {
   const dayStart = startOfDay(date);
   const dayEnd = startOfNextDay(date);
 
   return prisma.dailyTask.findMany({
     where: {
-      userId,
+      ...filter,
       scheduledDate: { gte: dayStart, lt: dayEnd },
     },
     include: {
@@ -66,7 +78,7 @@ export async function getDailyTasksForDate(userId: string, date: Date) {
 }
 
 export async function getExistingDailyTaskRecurringIds(
-  userId: string,
+  filter: OwnerFilter,
   date: Date,
 ): Promise<Set<string>> {
   const dayStart = startOfDay(date);
@@ -74,7 +86,7 @@ export async function getExistingDailyTaskRecurringIds(
 
   const existing = await prisma.dailyTask.findMany({
     where: {
-      userId,
+      ...filter,
       scheduledDate: { gte: dayStart, lt: dayEnd },
       sourceType: "RECURRING",
       recurringTaskId: { not: null },

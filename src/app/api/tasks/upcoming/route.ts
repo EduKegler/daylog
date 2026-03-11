@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { resolveOwnerContext, buildOwnerFilter } from "@/lib/auth/owner-context";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { getUpcomingTasks } from "@/lib/upcoming/queries";
 import { serializeTask } from "@/lib/tasks/serialize";
 
 export async function GET() {
-  const user = await getCurrentUser();
-  const today = getUserLocalDate(user.timezone);
-  const days = await getUpcomingTasks(user.id, today);
+  const ctx = await resolveOwnerContext();
+  if (!ctx) {
+    return NextResponse.json({ today: new Date().toISOString(), days: [] });
+  }
+
+  const today = getUserLocalDate(ctx.timezone);
+  const days = await getUpcomingTasks(buildOwnerFilter(ctx), today);
 
   return NextResponse.json({
     today: today.toISOString(),

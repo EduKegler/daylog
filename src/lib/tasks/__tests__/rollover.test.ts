@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { OwnerContext, OwnerFilter } from "@/lib/auth/owner-context";
 
 const mockPrisma = vi.hoisted(() => ({
   user: {
+    update: vi.fn(),
+  },
+  guestSession: {
     update: vi.fn(),
   },
   dailyTask: {
@@ -13,6 +17,12 @@ const mockPrisma = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/db/prisma", () => ({ prisma: mockPrisma }));
+vi.mock("@/lib/auth/owner-context", () => ({
+  buildOwnerFilter: (ctx: OwnerContext): OwnerFilter => {
+    if (ctx.type === "user") return { userId: ctx.userId };
+    return { guestSessionId: ctx.guestSessionId };
+  },
+}));
 
 import { processRollover } from "../rollover";
 
@@ -20,13 +30,16 @@ const today = new Date("2026-03-09T00:00:00.000Z");
 const yesterday = new Date("2026-03-08T00:00:00.000Z");
 const fiveDaysAgo = new Date("2026-03-04T00:00:00.000Z");
 
+const userCtx: OwnerContext = { type: "user", userId: "user-1", timezone: "UTC" };
+const guestCtx: OwnerContext = { type: "guest", guestSessionId: "guest-1", timezone: "UTC" };
+
 describe("processRollover", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("first access: sets lastProcessedDate, carriedOver = 0", async () => {
     mockPrisma.user.update.mockResolvedValue({});
 
-    const result = await processRollover("user-1", null, today);
+    const result = await processRollover(userCtx, null, today);
 
     expect(result).toEqual({ carriedOver: 0 });
     expect(mockPrisma.user.update).toHaveBeenCalledWith({
@@ -35,8 +48,20 @@ describe("processRollover", () => {
     });
   });
 
+  it("first access for guest: sets lastProcessedDate on guest session", async () => {
+    mockPrisma.guestSession.update.mockResolvedValue({});
+
+    const result = await processRollover(guestCtx, null, today);
+
+    expect(result).toEqual({ carriedOver: 0 });
+    expect(mockPrisma.guestSession.update).toHaveBeenCalledWith({
+      where: { id: "guest-1" },
+      data: { lastProcessedDate: today },
+    });
+  });
+
   it("same day: no-op, carriedOver = 0", async () => {
-    const result = await processRollover("user-1", today, today);
+    const result = await processRollover(userCtx, today, today);
 
     expect(result).toEqual({ carriedOver: 0 });
     expect(mockPrisma.user.update).not.toHaveBeenCalled();
@@ -59,7 +84,7 @@ describe("processRollover", () => {
     ]);
     mockPrisma.$transaction.mockResolvedValue([]);
 
-    const result = await processRollover("user-1", yesterday, today);
+    const result = await processRollover(userCtx, yesterday, today);
 
     expect(result).toEqual({ carriedOver: 1 });
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
@@ -90,7 +115,7 @@ describe("processRollover", () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([]);
     mockPrisma.user.update.mockResolvedValue({});
 
-    const result = await processRollover("user-1", yesterday, today);
+    const result = await processRollover(userCtx, yesterday, today);
 
     expect(result).toEqual({ carriedOver: 0 });
     expect(mockPrisma.$transaction).not.toHaveBeenCalled();
@@ -101,7 +126,7 @@ describe("processRollover", () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([]);
     mockPrisma.user.update.mockResolvedValue({});
 
-    const result = await processRollover("user-1", yesterday, today);
+    const result = await processRollover(userCtx, yesterday, today);
 
     expect(result).toEqual({ carriedOver: 0 });
     expect(mockPrisma.dailyTask.findMany).toHaveBeenCalledWith({
@@ -116,7 +141,7 @@ describe("processRollover", () => {
 
   it("idempotency: second execution carries nothing", async () => {
     // On second execution, lastProcessedDate is already today
-    const result = await processRollover("user-1", today, today);
+    const result = await processRollover(userCtx, today, today);
 
     expect(result).toEqual({ carriedOver: 0 });
     expect(mockPrisma.dailyTask.findMany).not.toHaveBeenCalled();
@@ -149,7 +174,7 @@ describe("processRollover", () => {
     ]);
     mockPrisma.$transaction.mockResolvedValue([]);
 
-    const result = await processRollover("user-1", fiveDaysAgo, today);
+    const result = await processRollover(userCtx, fiveDaysAgo, today);
 
     expect(result).toEqual({ carriedOver: 2 });
 
@@ -180,7 +205,7 @@ describe("processRollover", () => {
     ]);
     mockPrisma.$transaction.mockResolvedValue([]);
 
-    const result = await processRollover("user-1", wednesday, friday);
+    const result = await processRollover(userCtx, wednesday, friday);
 
     expect(result).toEqual({ carriedOver: 1 });
     const createManyCall = mockPrisma.dailyTask.createMany.mock.calls[0][0];
@@ -216,7 +241,7 @@ describe("processRollover", () => {
     ]);
     mockPrisma.$transaction.mockResolvedValue([]);
 
-    const result = await processRollover("user-1", yesterday, today);
+    const result = await processRollover(userCtx, yesterday, today);
 
     expect(result).toEqual({ carriedOver: 2 });
   });
@@ -237,12 +262,54 @@ describe("processRollover", () => {
     ]);
     mockPrisma.$transaction.mockResolvedValue([]);
 
-    await processRollover("user-1", yesterday, today);
+    await processRollover(userCtx, yesterday, today);
 
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
     // Verify that createMany, updateMany and user.update were called
     expect(mockPrisma.dailyTask.createMany).toHaveBeenCalledTimes(1);
     expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledTimes(1);
     expect(mockPrisma.user.update).toHaveBeenCalledTimes(1);
+  });
+
+  it("guest rollover: uses guestSessionId in filter and updates guest session", async () => {
+    mockPrisma.dailyTask.findMany.mockResolvedValue([
+      {
+        id: "task-g1",
+        guestSessionId: "guest-1",
+        title: "Guest task",
+        description: null,
+        category: null,
+        sourceType: "MANUAL",
+        status: "PENDING",
+        scheduledDate: yesterday,
+        originalDate: null,
+      },
+    ]);
+    mockPrisma.$transaction.mockResolvedValue([]);
+
+    const result = await processRollover(guestCtx, yesterday, today);
+
+    expect(result).toEqual({ carriedOver: 1 });
+
+    // Verify filter uses guestSessionId
+    expect(mockPrisma.dailyTask.findMany).toHaveBeenCalledWith({
+      where: {
+        guestSessionId: "guest-1",
+        scheduledDate: yesterday,
+        sourceType: "MANUAL",
+        status: "PENDING",
+      },
+    });
+
+    // Verify carry-over data uses guestSessionId
+    const createManyCall = mockPrisma.dailyTask.createMany.mock.calls[0][0];
+    expect(createManyCall.data[0].guestSessionId).toBe("guest-1");
+    expect(createManyCall.data[0].userId).toBeUndefined();
+
+    // Verify lastProcessedDate updates guest session
+    expect(mockPrisma.guestSession.update).toHaveBeenCalledWith({
+      where: { id: "guest-1" },
+      data: { lastProcessedDate: today },
+    });
   });
 });

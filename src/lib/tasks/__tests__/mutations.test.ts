@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { OwnerFilter } from "@/lib/auth/owner-context";
 
 const mockPrisma = vi.hoisted(() => ({
   dailyTask: {
@@ -18,13 +19,15 @@ import {
   deleteTask,
 } from "../mutations";
 
+const userFilter: OwnerFilter = { userId: "user-1" };
+
 describe("completeTask", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("completes a pending task owned by user", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 1 });
 
-    await completeTask("task-1", "user-1");
+    await completeTask("task-1", userFilter);
 
     expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
       where: { id: "task-1", userId: "user-1", status: { not: "COMPLETED" } },
@@ -32,23 +35,35 @@ describe("completeTask", () => {
     });
   });
 
+  it("completes a pending task owned by guest", async () => {
+    mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 1 });
+    const guestFilter: OwnerFilter = { guestSessionId: "guest-1" };
+
+    await completeTask("task-1", guestFilter);
+
+    expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
+      where: { id: "task-1", guestSessionId: "guest-1", status: { not: "COMPLETED" } },
+      data: { status: "COMPLETED", completedAt: expect.any(Date) },
+    });
+  });
+
   it("throws on non-existent task", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
-    await expect(completeTask("bad-id", "user-1")).rejects.toThrow(
+    await expect(completeTask("bad-id", userFilter)).rejects.toThrow(
       "Task not found or already completed",
     );
   });
 
   it("throws on wrong user (ownership)", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
-    await expect(completeTask("task-1", "user-2")).rejects.toThrow(
+    await expect(completeTask("task-1", { userId: "user-2" })).rejects.toThrow(
       "Task not found or already completed",
     );
   });
 
   it("throws if already completed", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
-    await expect(completeTask("task-1", "user-1")).rejects.toThrow(
+    await expect(completeTask("task-1", userFilter)).rejects.toThrow(
       "Task not found or already completed",
     );
   });
@@ -60,7 +75,7 @@ describe("uncompleteTask", () => {
   it("uncompletes a task completed today", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 1 });
 
-    await uncompleteTask("task-1", "user-1");
+    await uncompleteTask("task-1", userFilter);
 
     expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
       where: {
@@ -75,21 +90,21 @@ describe("uncompleteTask", () => {
 
   it("throws on wrong user (ownership)", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
-    await expect(uncompleteTask("task-1", "user-2")).rejects.toThrow(
+    await expect(uncompleteTask("task-1", { userId: "user-2" })).rejects.toThrow(
       "Task not found or cannot be uncompleted",
     );
   });
 
   it("throws if task is not completed", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
-    await expect(uncompleteTask("task-1", "user-1")).rejects.toThrow(
+    await expect(uncompleteTask("task-1", userFilter)).rejects.toThrow(
       "Task not found or cannot be uncompleted",
     );
   });
 
   it("throws if completed on a different day", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
-    await expect(uncompleteTask("task-1", "user-1")).rejects.toThrow(
+    await expect(uncompleteTask("task-1", userFilter)).rejects.toThrow(
       "Task not found or cannot be uncompleted",
     );
   });
@@ -144,6 +159,27 @@ describe("createTask", () => {
       },
     });
   });
+
+  it("creates a task for guest", async () => {
+    mockPrisma.dailyTask.create.mockResolvedValue({ id: "new-3" });
+
+    await createTask({
+      guestSessionId: "guest-1",
+      title: "Guest task",
+      scheduledDate: new Date("2026-03-11T00:00:00Z"),
+    });
+
+    expect(mockPrisma.dailyTask.create).toHaveBeenCalledWith({
+      data: {
+        guestSessionId: "guest-1",
+        sourceType: "MANUAL",
+        title: "Guest task",
+        description: null,
+        category: null,
+        scheduledDate: new Date("2026-03-11T00:00:00Z"),
+      },
+    });
+  });
 });
 
 describe("updateDailyTask", () => {
@@ -152,7 +188,7 @@ describe("updateDailyTask", () => {
   it("updates task with basic data", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 1 });
 
-    await updateDailyTask("task-1", "user-1", {
+    await updateDailyTask("task-1", userFilter, {
       title: "Updated title",
       description: "New desc",
       category: "Work",
@@ -171,7 +207,7 @@ describe("updateDailyTask", () => {
   it("updates task with scheduledDate (calls startOfDay)", async () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 1 });
 
-    await updateDailyTask("task-1", "user-1", {
+    await updateDailyTask("task-1", userFilter, {
       title: "Moved task",
       description: null,
       category: null,
@@ -193,7 +229,7 @@ describe("updateDailyTask", () => {
     mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
 
     await expect(
-      updateDailyTask("bad-id", "user-1", {
+      updateDailyTask("bad-id", userFilter, {
         title: "No task",
         description: null,
         category: null,
@@ -208,7 +244,7 @@ describe("deleteTask", () => {
   it("deletes task owned by user", async () => {
     mockPrisma.dailyTask.deleteMany.mockResolvedValue({ count: 1 });
 
-    await deleteTask("task-1", "user-1");
+    await deleteTask("task-1", userFilter);
 
     expect(mockPrisma.dailyTask.deleteMany).toHaveBeenCalledWith({
       where: { id: "task-1", userId: "user-1" },
@@ -218,7 +254,7 @@ describe("deleteTask", () => {
   it("throws when task not found (count === 0)", async () => {
     mockPrisma.dailyTask.deleteMany.mockResolvedValue({ count: 0 });
 
-    await expect(deleteTask("bad-id", "user-1")).rejects.toThrow(
+    await expect(deleteTask("bad-id", userFilter)).rejects.toThrow(
       "Task not found or unauthorized",
     );
   });

@@ -4,6 +4,7 @@ import { GoogleAnalytics } from "@next/third-parties/google";
 import { WebVitals } from "./components/web-vitals";
 import { Providers } from "./providers";
 import { Footer } from "./components/footer";
+import { TimezoneDetector } from "./components/timezone-detector";
 import "./globals.css";
 
 const instrumentSerif = Instrument_Serif({
@@ -55,6 +56,7 @@ export default function RootLayout({
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}
         <WebVitals />
+        <TimezoneDetector />
         <div className="flex-1">
           <Providers>{children}</Providers>
         </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getOptionalUser } from "@/lib/auth/session";
 import { UserAvatar } from "./user-avatar";
 
 const navLinks = [
@@ -17,7 +17,7 @@ export async function NavMenu({
 }: {
   activePath?: ActivePath;
 }) {
-  const user = await getCurrentUser();
+  const user = await getOptionalUser();
 
   return (
     <nav className="flex items-center gap-3 sm:gap-4">
@@ -35,13 +35,22 @@ export async function NavMenu({
           {link.label}
         </Link>
       ))}
-      <Link
-        href="/profile"
-        aria-label="Profile"
-        className="transition-opacity duration-200 hover:opacity-80"
-      >
-        <UserAvatar name={user.name} image={user.image} />
-      </Link>
+      {user ? (
+        <Link
+          href="/profile"
+          aria-label="Profile"
+          className="transition-opacity duration-200 hover:opacity-80"
+        >
+          <UserAvatar name={user.name} image={user.image} />
+        </Link>
+      ) : (
+        <Link
+          href="/login"
+          className="text-muted hover:text-accent transition-colors duration-200"
+        >
+          Sign in
+        </Link>
+      )}
     </nav>
   );
 }

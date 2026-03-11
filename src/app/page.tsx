@@ -1,14 +1,23 @@
+import { cookies } from "next/headers";
 import { DaylogIcon } from "./components/daylog-icon";
 import { Text } from "./components/text";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getOptionalUser } from "@/lib/auth/session";
 import { getUserLocalDate } from "@/lib/tasks/generation";
 import { formatLongDate } from "@/lib/dates/format";
+import { GUEST_TIMEZONE_COOKIE, DEFAULT_TIMEZONE } from "@/lib/guest/constants";
 import { NavMenu } from "./components/nav-menu";
 import { DashboardContent } from "./components/dashboard-content";
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser();
-  const today = getUserLocalDate(user.timezone);
+  const user = await getOptionalUser();
+  let timezone = DEFAULT_TIMEZONE;
+  if (user) {
+    timezone = user.timezone;
+  } else {
+    const cookieStore = await cookies();
+    timezone = cookieStore.get(GUEST_TIMEZONE_COOKIE)?.value ?? DEFAULT_TIMEZONE;
+  }
+  const today = getUserLocalDate(timezone);
 
   return (
     <main className="max-w-[42rem] mx-auto py-8 px-6">

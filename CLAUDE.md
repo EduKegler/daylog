@@ -69,9 +69,28 @@ The core domain logic — handles task carryover between days:
 
 Uses `@prisma/adapter-pg` (PrismaPg) with connection string from `DATABASE_URL`. The Prisma client is generated to `src/generated/prisma/`. Always run `prisma generate` before build (already in the build script).
 
-### Auth
+### Auth & Guest Sessions
 
 NextAuth v5 with Google provider, JWT strategy, PrismaAdapter. Session includes `user.id` and `user.timezone`. User timezone defaults to `America/Sao_Paulo`. Auth middleware lives in `src/proxy.ts`.
+
+**Guest mode**: Unauthenticated users can use the app immediately. Guest sessions are stored in `GuestSession` table with a 30-day TTL. When a guest logs in, their data is atomically transferred to the user account via `claimGuestData()`.
+
+- **Owner abstraction**: `OwnerContext` (discriminated union: `user` | `guest`) and `OwnerFilter` (`{ userId }` | `{ guestSessionId }`) in `src/lib/auth/owner-context.ts`
+- **Resolution**: `resolveOwnerContext()` for reads (returns null if no session), `resolveWriteContext()` for writes (creates guest session if needed)
+- **Claim**: On first authenticated request with a guest cookie, data is claimed automatically inside `resolveOwnerContext()`
+- **Rate limiting**: In-memory rate limiter for guests (20 daily tasks/day, 5 recurring total) in `src/lib/guest/rate-limiter.ts`
+- **Rollover**: Guests get lazy rollover on `/api/tasks/daily` GET; cron only processes registered Users
+- **Protected routes**: Only `/profile` requires authentication; all other routes work for guests
+- **DB constraint**: `CHECK (num_nonnulls("userId", "guestSessionId") = 1)` on `DailyTask` and `RecurringTask`
+
+| Area | Path |
+|---|---|
+| Guest constants & quotas | `src/lib/guest/constants.ts` |
+| Guest session CRUD | `src/lib/guest/session.ts` |
+| Guest data claim | `src/lib/guest/claim.ts` |
+| Guest rate limiter | `src/lib/guest/rate-limiter.ts` |
+| Owner context types & resolution | `src/lib/auth/owner-context.ts` |
+| Timezone detector (client) | `src/app/components/timezone-detector.tsx` |
 
 ## Styling
 

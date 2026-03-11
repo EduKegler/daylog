@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import type { OwnerFilter } from "@/lib/auth/owner-context";
 import {
   getActiveRecurringTasks,
   getExistingDailyTaskRecurringIds,
@@ -10,14 +11,14 @@ import {
 } from "./recurrence";
 
 export async function ensureRecurringInstances(
-  userId: string,
+  filter: OwnerFilter,
   date: Date,
 ): Promise<void> {
   const dayStart = startOfDay(date);
 
   const [recurringTasks, existingIds] = await Promise.all([
-    getActiveRecurringTasks(userId),
-    getExistingDailyTaskRecurringIds(userId, date),
+    getActiveRecurringTasks(filter),
+    getExistingDailyTaskRecurringIds(filter, date),
   ]);
 
   const toCreate = recurringTasks.filter((rt) => {
@@ -37,7 +38,7 @@ export async function ensureRecurringInstances(
 
   await prisma.dailyTask.createMany({
     data: toCreate.map((rt) => ({
-      userId,
+      ...filter,
       sourceType: "RECURRING" as const,
       recurringTaskId: rt.id,
       title: rt.title,

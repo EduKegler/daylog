@@ -63,7 +63,7 @@ export function TaskForm(props: TaskFormProps): React.ReactElement {
 
   const initialScheduledDate =
     mode === "edit" && props.taskType === "one-time"
-      ? props.initialData.scheduledDate
+      ? props.initialData.scheduledDate.slice(0, 10)
       : formatToday();
 
   const initialRecurrenceType: RecurrenceTypeValue =
@@ -216,6 +216,8 @@ export function TaskForm(props: TaskFormProps): React.ReactElement {
           />
         </>
       )}
+
+      <FieldError message={errors._form} />
 
       <div className="flex justify-end gap-3">
         <button

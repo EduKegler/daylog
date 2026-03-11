@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/session";
+import { resolveOwnerContext, buildOwnerFilter } from "@/lib/auth/owner-context";
 import { getRecurringTasks } from "@/lib/tasks/queries";
 
 export async function GET() {
-  const user = await getCurrentUser();
-  const tasks = await getRecurringTasks(user.id!);
+  const ctx = await resolveOwnerContext();
+  if (!ctx) {
+    return NextResponse.json([]);
+  }
+
+  const tasks = await getRecurringTasks(buildOwnerFilter(ctx));
 
   return NextResponse.json(
     tasks.map((t) => ({

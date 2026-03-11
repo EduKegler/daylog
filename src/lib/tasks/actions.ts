@@ -1,8 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/db/prisma";
-import { getCurrentUser } from "@/lib/auth/session";
+import { resolveWriteContext, resolveOwnerContext, buildOwnerFilter } from "@/lib/auth/owner-context";
 import { validateRecurringTaskInput } from "./validation";
+import { checkGuestRecurringTaskLimit } from "@/lib/guest/rate-limiter";
 
 export type ActionResult = {
   success: boolean;
@@ -10,7 +11,12 @@ export type ActionResult = {
 };
 
 export async function createRecurringTask(formData: FormData): Promise<ActionResult> {
-  const user = await getCurrentUser();
+  const ctx = await resolveWriteContext();
+  const filter = buildOwnerFilter(ctx);
+
+  if (ctx.type === "guest" && !checkGuestRecurringTaskLimit(ctx.guestSessionId)) {
+    return { success: false, errors: { _form: "Guest recurring task limit reached" } };
+  }
 
   const result = validateRecurringTaskInput({
     title: formData.get("title") as string,
@@ -26,7 +32,7 @@ export async function createRecurringTask(formData: FormData): Promise<ActionRes
 
   await prisma.recurringTask.create({
     data: {
-      userId: user.id!,
+      ...filter,
       title: result.data.title,
       description: result.data.description,
       category: result.data.category,
@@ -42,10 +48,12 @@ export async function updateRecurringTask(
   taskId: string,
   formData: FormData,
 ): Promise<ActionResult> {
-  const user = await getCurrentUser();
+  const ctx = await resolveOwnerContext();
+  if (!ctx) return { success: false, errors: { _form: "No active session" } };
+  const filter = buildOwnerFilter(ctx);
 
   const existing = await prisma.recurringTask.findFirst({
-    where: { id: taskId, userId: user.id! },
+    where: { id: taskId, ...filter },
   });
 
   if (!existing) {
@@ -79,10 +87,12 @@ export async function updateRecurringTask(
 }
 
 export async function toggleRecurringTask(taskId: string): Promise<ActionResult> {
-  const user = await getCurrentUser();
+  const ctx = await resolveOwnerContext();
+  if (!ctx) return { success: false, errors: { _form: "No active session" } };
+  const filter = buildOwnerFilter(ctx);
 
   const task = await prisma.recurringTask.findFirst({
-    where: { id: taskId, userId: user.id! },
+    where: { id: taskId, ...filter },
   });
 
   if (!task) {
@@ -98,10 +108,12 @@ export async function toggleRecurringTask(taskId: string): Promise<ActionResult>
 }
 
 export async function deleteRecurringTask(taskId: string): Promise<ActionResult> {
-  const user = await getCurrentUser();
+  const ctx = await resolveOwnerContext();
+  if (!ctx) return { success: false, errors: { _form: "No active session" } };
+  const filter = buildOwnerFilter(ctx);
 
   const task = await prisma.recurringTask.findFirst({
-    where: { id: taskId, userId: user.id! },
+    where: { id: taskId, ...filter },
   });
 
   if (!task) {

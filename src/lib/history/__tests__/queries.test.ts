@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { OwnerFilter } from "@/lib/auth/owner-context";
 
 const mockPrisma = vi.hoisted(() => ({
   dailyTask: {
@@ -16,13 +17,15 @@ const yesterday = new Date("2026-03-08T00:00:00.000Z");
 const twoDaysAgo = new Date("2026-03-07T00:00:00.000Z");
 const threeDaysAgo = new Date("2026-03-06T00:00:00.000Z");
 
+const userFilter: OwnerFilter = { userId: "user-1" };
+
 describe("getHistory", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("no tasks: returns empty", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 
-    const result = await getHistory("user-1", today, 0, 7);
+    const result = await getHistory(userFilter, today, 0, 7);
 
     expect(result).toEqual({ days: [], hasMore: false });
   });
@@ -59,7 +62,7 @@ describe("getHistory", () => {
       },
     ]);
 
-    const result = await getHistory("user-1", today, 0, 7);
+    const result = await getHistory(userFilter, today, 0, 7);
 
     expect(result.days).toHaveLength(2);
     expect(result.hasMore).toBe(false);
@@ -88,7 +91,7 @@ describe("getHistory", () => {
       { id: "t2", status: "COMPLETED", scheduledDate: twoDaysAgo },
     ]);
 
-    const result = await getHistory("user-1", today, 0, 2);
+    const result = await getHistory(userFilter, today, 0, 2);
 
     expect(result.days).toHaveLength(2);
     expect(result.hasMore).toBe(true);
@@ -104,7 +107,7 @@ describe("getHistory", () => {
       { id: "t3", status: "PENDING", scheduledDate: threeDaysAgo },
     ]);
 
-    const result = await getHistory("user-1", today, 1, 2);
+    const result = await getHistory(userFilter, today, 1, 2);
 
     expect(result.days).toHaveLength(1);
     expect(result.hasMore).toBe(false);
@@ -114,7 +117,7 @@ describe("getHistory", () => {
   it("excludes current day: groupBy filters by lt beforeDate", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 
-    await getHistory("user-1", today, 0, 7);
+    await getHistory(userFilter, today, 0, 7);
 
     expect(mockPrisma.dailyTask.groupBy).toHaveBeenCalledWith({
       by: ["scheduledDate"],
@@ -138,7 +141,7 @@ describe("getHistory", () => {
       { id: "t1", status: "COMPLETED", scheduledDate: yesterday },
     ]);
 
-    const result = await getHistory("user-1", today, 0, 7);
+    const result = await getHistory(userFilter, today, 0, 7);
 
     expect(result.days).toHaveLength(2);
     expect(result.days[1].date).toEqual(twoDaysAgo);
@@ -150,11 +153,23 @@ describe("getHistory", () => {
   it("ownership: filters by userId", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 
-    await getHistory("user-42", today, 0, 7);
+    await getHistory({ userId: "user-42" }, today, 0, 7);
 
     expect(mockPrisma.dailyTask.groupBy).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ userId: "user-42" }),
+      }),
+    );
+  });
+
+  it("ownership: filters by guestSessionId", async () => {
+    mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
+
+    await getHistory({ guestSessionId: "guest-1" }, today, 0, 7);
+
+    expect(mockPrisma.dailyTask.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ guestSessionId: "guest-1" }),
       }),
     );
   });

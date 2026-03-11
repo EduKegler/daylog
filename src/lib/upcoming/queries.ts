@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import type { DailyTask } from "@/generated/prisma/client";
+import type { OwnerFilter } from "@/lib/auth/owner-context";
 
 export type UpcomingDay = {
   date: Date;
@@ -7,12 +8,12 @@ export type UpcomingDay = {
 };
 
 export async function getUpcomingTasks(
-  userId: string,
+  filter: OwnerFilter,
   afterDate: Date,
   limit = 50,
 ): Promise<UpcomingDay[]> {
   const tasks = await prisma.dailyTask.findMany({
-    where: { userId, scheduledDate: { gt: afterDate } },
+    where: { ...filter, scheduledDate: { gt: afterDate } },
     orderBy: [{ scheduledDate: "asc" }, { createdAt: "asc" }],
     take: limit,
   });

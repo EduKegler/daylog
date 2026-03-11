@@ -4,6 +4,9 @@ const mockPrisma = vi.hoisted(() => ({
   user: {
     findUnique: vi.fn(),
   },
+  guestSession: {
+    findUnique: vi.fn(),
+  },
   recurringTask: {
     findMany: vi.fn(),
   },
@@ -15,7 +18,7 @@ const mockPrisma = vi.hoisted(() => ({
 vi.mock("@/lib/db/prisma", () => ({ prisma: mockPrisma }));
 
 import {
-  getUserDayState,
+  getOwnerDayState,
   getRecurringTasks,
   getActiveRecurringTasks,
   getDailyTasksForDate,
@@ -23,18 +26,23 @@ import {
   startOfDay,
   startOfNextDay,
 } from "../queries";
+import type { OwnerContext, OwnerFilter } from "@/lib/auth/owner-context";
 
-describe("getUserDayState", () => {
+const userFilter: OwnerFilter = { userId: "user-1" };
+const guestFilter: OwnerFilter = { guestSessionId: "guest-1" };
+
+describe("getOwnerDayState", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("returns timezone and lastProcessedDate", async () => {
+  it("returns timezone and lastProcessedDate for user", async () => {
     const lastProcessed = new Date("2026-03-10T00:00:00Z");
     mockPrisma.user.findUnique.mockResolvedValue({
       timezone: "America/Sao_Paulo",
       lastProcessedDate: lastProcessed,
     });
 
-    const result = await getUserDayState("user-1");
+    const ctx: OwnerContext = { type: "user", userId: "user-1", timezone: "America/Sao_Paulo" };
+    const result = await getOwnerDayState(ctx);
 
     expect(result).toEqual({
       timezone: "America/Sao_Paulo",
@@ -46,25 +54,57 @@ describe("getUserDayState", () => {
     });
   });
 
+  it("returns timezone and lastProcessedDate for guest", async () => {
+    mockPrisma.guestSession.findUnique.mockResolvedValue({
+      timezone: "Europe/London",
+      lastProcessedDate: null,
+    });
+
+    const ctx: OwnerContext = { type: "guest", guestSessionId: "guest-1", timezone: "Europe/London" };
+    const result = await getOwnerDayState(ctx);
+
+    expect(result).toEqual({
+      timezone: "Europe/London",
+      lastProcessedDate: null,
+    });
+  });
+
   it("throws 'User not found' when user does not exist", async () => {
     mockPrisma.user.findUnique.mockResolvedValue(null);
+    const ctx: OwnerContext = { type: "user", userId: "nonexistent", timezone: "UTC" };
 
-    await expect(getUserDayState("nonexistent")).rejects.toThrow(
-      "User not found: nonexistent",
-    );
+    await expect(getOwnerDayState(ctx)).rejects.toThrow("User not found: nonexistent");
+  });
+
+  it("throws when guest session does not exist", async () => {
+    mockPrisma.guestSession.findUnique.mockResolvedValue(null);
+    const ctx: OwnerContext = { type: "guest", guestSessionId: "bad-id", timezone: "UTC" };
+
+    await expect(getOwnerDayState(ctx)).rejects.toThrow("Guest session not found: bad-id");
   });
 });
 
 describe("getRecurringTasks", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("calls findMany with userId and correct orderBy", async () => {
+  it("calls findMany with userId filter and correct orderBy", async () => {
     mockPrisma.recurringTask.findMany.mockResolvedValue([]);
 
-    await getRecurringTasks("user-1");
+    await getRecurringTasks(userFilter);
 
     expect(mockPrisma.recurringTask.findMany).toHaveBeenCalledWith({
       where: { userId: "user-1" },
+      orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
+    });
+  });
+
+  it("calls findMany with guestSessionId filter", async () => {
+    mockPrisma.recurringTask.findMany.mockResolvedValue([]);
+
+    await getRecurringTasks(guestFilter);
+
+    expect(mockPrisma.recurringTask.findMany).toHaveBeenCalledWith({
+      where: { guestSessionId: "guest-1" },
       orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
     });
   });
@@ -76,7 +116,7 @@ describe("getActiveRecurringTasks", () => {
   it("filters only active tasks", async () => {
     mockPrisma.recurringTask.findMany.mockResolvedValue([]);
 
-    await getActiveRecurringTasks("user-1");
+    await getActiveRecurringTasks(userFilter);
 
     expect(mockPrisma.recurringTask.findMany).toHaveBeenCalledWith({
       where: { userId: "user-1", isActive: true },
@@ -91,7 +131,7 @@ describe("getDailyTasksForDate", () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([]);
 
     const date = new Date("2026-03-11T15:00:00Z");
-    await getDailyTasksForDate("user-1", date);
+    await getDailyTasksForDate(userFilter, date);
 
     const expectedStart = startOfDay(date);
     const expectedEnd = startOfNextDay(date);
@@ -121,7 +161,7 @@ describe("getExistingDailyTaskRecurringIds", () => {
     ]);
 
     const date = new Date("2026-03-11T10:00:00Z");
-    const result = await getExistingDailyTaskRecurringIds("user-1", date);
+    const result = await getExistingDailyTaskRecurringIds(userFilter, date);
 
     expect(result).toBeInstanceOf(Set);
     expect(result).toEqual(new Set(["rec-1", "rec-2"]));
@@ -131,7 +171,7 @@ describe("getExistingDailyTaskRecurringIds", () => {
     mockPrisma.dailyTask.findMany.mockResolvedValue([]);
 
     const date = new Date("2026-03-11T10:00:00Z");
-    await getExistingDailyTaskRecurringIds("user-1", date);
+    await getExistingDailyTaskRecurringIds(userFilter, date);
 
     const expectedStart = startOfDay(date);
     const expectedEnd = startOfNextDay(date);

@@ -1,43 +1,56 @@
 "use server";
 
-import { getCurrentUser } from "@/lib/auth/session";
+import { resolveWriteContext, resolveOwnerContext, buildOwnerFilter } from "@/lib/auth/owner-context";
 import { createTask, deleteTask, updateDailyTask, completeTask, uncompleteTask } from "@/lib/tasks/mutations";
 import { validateTaskInput, validateCommonFields } from "@/lib/tasks/validation";
+import { checkGuestDailyTaskLimit } from "@/lib/guest/rate-limiter";
 import type { ActionResult } from "@/lib/tasks/actions";
 
 export async function createTaskAction(formData: FormData): Promise<ActionResult> {
-  const user = await getCurrentUser();
+  try {
+    const ctx = await resolveWriteContext();
+    const filter = buildOwnerFilter(ctx);
 
-  const result = validateTaskInput({
-    title: formData.get("title") as string,
-    description: formData.get("description") as string,
-    category: formData.get("category") as string,
-    scheduledDate: formData.get("scheduledDate") as string,
-  });
+    if (ctx.type === "guest" && !checkGuestDailyTaskLimit(ctx.guestSessionId)) {
+      return { success: false, errors: { _form: "Guest daily task limit reached" } };
+    }
 
-  if (!result.success) {
-    return { success: false, errors: result.errors };
+    const result = validateTaskInput({
+      title: formData.get("title") as string,
+      description: formData.get("description") as string,
+      category: formData.get("category") as string,
+      scheduledDate: formData.get("scheduledDate") as string,
+    });
+
+    if (!result.success) {
+      return { success: false, errors: result.errors };
+    }
+
+    await createTask({
+      ...filter,
+      title: result.data.title,
+      description: result.data.description ?? undefined,
+      category: result.data.category ?? undefined,
+      scheduledDate: result.data.scheduledDate,
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[createTaskAction] Error:", error);
+    return { success: false, errors: { _form: "Failed to create task. Please try again." } };
   }
-
-  await createTask({
-    userId: user.id,
-    title: result.data.title,
-    description: result.data.description ?? undefined,
-    category: result.data.category ?? undefined,
-    scheduledDate: result.data.scheduledDate,
-  });
-
-  return { success: true };
 }
 
 export async function completeTaskAction(taskId: string) {
-  const user = await getCurrentUser();
-  await completeTask(taskId, user.id);
+  const ctx = await resolveOwnerContext();
+  if (!ctx) throw new Error("No active session");
+  await completeTask(taskId, buildOwnerFilter(ctx));
 }
 
 export async function uncompleteTaskAction(taskId: string) {
-  const user = await getCurrentUser();
-  await uncompleteTask(taskId, user.id);
+  const ctx = await resolveOwnerContext();
+  if (!ctx) throw new Error("No active session");
+  await uncompleteTask(taskId, buildOwnerFilter(ctx));
 }
 
 export async function updateTaskAction(
@@ -49,7 +62,9 @@ export async function updateTaskAction(
     scheduledDate?: string;
   },
 ): Promise<ActionResult> {
-  const user = await getCurrentUser();
+  const ctx = await resolveOwnerContext();
+  if (!ctx) return { success: false, errors: { _form: "No active session" } };
+  const filter = buildOwnerFilter(ctx);
 
   if (data.scheduledDate) {
     const result = validateTaskInput({
@@ -63,7 +78,7 @@ export async function updateTaskAction(
       return { success: false, errors: result.errors };
     }
 
-    await updateDailyTask(taskId, user.id, {
+    await updateDailyTask(taskId, filter, {
       title: result.data.title,
       description: result.data.description,
       category: result.data.category,
@@ -80,13 +95,14 @@ export async function updateTaskAction(
       return { success: false, errors };
     }
 
-    await updateDailyTask(taskId, user.id, { title, description, category });
+    await updateDailyTask(taskId, filter, { title, description, category });
   }
 
   return { success: true };
 }
 
 export async function deleteTaskAction(taskId: string) {
-  const user = await getCurrentUser();
-  await deleteTask(taskId, user.id);
+  const ctx = await resolveOwnerContext();
+  if (!ctx) throw new Error("No active session");
+  await deleteTask(taskId, buildOwnerFilter(ctx));
 }

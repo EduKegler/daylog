@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { OwnerFilter } from "@/lib/auth/owner-context";
 
 const mockPrisma = vi.hoisted(() => ({
   dailyTask: {
@@ -25,6 +26,8 @@ function utcDate(year: number, month: number, day: number): Date {
   return new Date(Date.UTC(year, month - 1, day));
 }
 
+const userFilter: OwnerFilter = { userId: "user1" };
+
 const baseRecurring = {
   userId: "user1",
   description: null,
@@ -42,7 +45,7 @@ describe("ensureRecurringInstances", () => {
     mockQueries.getActiveRecurringTasks.mockResolvedValue([]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
-    await ensureRecurringInstances("user1", utcDate(2026, 3, 9));
+    await ensureRecurringInstances(userFilter, utcDate(2026, 3, 9));
 
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });
@@ -53,7 +56,7 @@ describe("ensureRecurringInstances", () => {
     ]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set(["rt1"]));
 
-    await ensureRecurringInstances("user1", utcDate(2026, 3, 9));
+    await ensureRecurringInstances(userFilter, utcDate(2026, 3, 9));
 
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });
@@ -64,7 +67,7 @@ describe("ensureRecurringInstances", () => {
     ]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
-    await ensureRecurringInstances("user1", utcDate(2026, 3, 9));
+    await ensureRecurringInstances(userFilter, utcDate(2026, 3, 9));
 
     expect(mockPrisma.dailyTask.createMany).toHaveBeenCalledWith({
       data: [
@@ -78,6 +81,27 @@ describe("ensureRecurringInstances", () => {
     });
   });
 
+  it("creates instance with guestSessionId for guest", async () => {
+    const guestFilter: OwnerFilter = { guestSessionId: "guest-1" };
+    mockQueries.getActiveRecurringTasks.mockResolvedValue([
+      { ...baseRecurring, id: "rt1", title: "Guest Daily", recurrenceType: "DAILY", userId: null, guestSessionId: "guest-1" },
+    ]);
+    mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
+
+    await ensureRecurringInstances(guestFilter, utcDate(2026, 3, 9));
+
+    expect(mockPrisma.dailyTask.createMany).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          guestSessionId: "guest-1",
+          sourceType: "RECURRING",
+          recurringTaskId: "rt1",
+          title: "Guest Daily",
+        }),
+      ],
+    });
+  });
+
   it("does not create WEEKDAYS on Saturday", async () => {
     // 2026-03-14 = Saturday
     mockQueries.getActiveRecurringTasks.mockResolvedValue([
@@ -85,7 +109,7 @@ describe("ensureRecurringInstances", () => {
     ]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
-    await ensureRecurringInstances("user1", utcDate(2026, 3, 14));
+    await ensureRecurringInstances(userFilter, utcDate(2026, 3, 14));
 
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });
@@ -98,7 +122,7 @@ describe("ensureRecurringInstances", () => {
     ]);
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set(["rt2"]));
 
-    await ensureRecurringInstances("user1", utcDate(2026, 3, 9));
+    await ensureRecurringInstances(userFilter, utcDate(2026, 3, 9));
 
     expect(mockPrisma.dailyTask.createMany).toHaveBeenCalledTimes(1);
     const call = mockPrisma.dailyTask.createMany.mock.calls[0][0];
@@ -114,7 +138,7 @@ describe("ensureRecurringInstances", () => {
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
     // 2026-03-09 = Monday (day 1) → should create
-    await ensureRecurringInstances("user1", utcDate(2026, 3, 9));
+    await ensureRecurringInstances(userFilter, utcDate(2026, 3, 9));
     expect(mockPrisma.dailyTask.createMany).toHaveBeenCalledTimes(1);
   });
 
@@ -126,7 +150,7 @@ describe("ensureRecurringInstances", () => {
     mockQueries.getExistingDailyTaskRecurringIds.mockResolvedValue(new Set());
 
     // 2026-03-10 = Tuesday (day 2) → should not create
-    await ensureRecurringInstances("user1", utcDate(2026, 3, 10));
+    await ensureRecurringInstances(userFilter, utcDate(2026, 3, 10));
     expect(mockPrisma.dailyTask.createMany).not.toHaveBeenCalled();
   });
 });

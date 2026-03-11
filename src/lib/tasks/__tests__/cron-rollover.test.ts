@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { OwnerContext } from "@/lib/auth/owner-context";
 
 const mockPrisma = vi.hoisted(() => ({
   user: {
@@ -25,6 +26,10 @@ import { processCronRollover } from "../cron-rollover";
 
 const today = new Date("2026-03-09T00:00:00.000Z");
 const yesterday = new Date("2026-03-08T00:00:00.000Z");
+
+function userCtx(id: string, timezone: string): OwnerContext {
+  return { type: "user", userId: id, timezone };
+}
 
 describe("processCronRollover", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -53,8 +58,15 @@ describe("processCronRollover", () => {
       processed: 1,
       results: [{ userId: "user-1", carriedOver: 3 }],
     });
-    expect(mockProcessRollover).toHaveBeenCalledWith("user-1", yesterday, today);
-    expect(mockEnsureRecurringInstances).toHaveBeenCalledWith("user-1", today);
+    expect(mockProcessRollover).toHaveBeenCalledWith(
+      userCtx("user-1", "America/Sao_Paulo"),
+      yesterday,
+      today,
+    );
+    expect(mockEnsureRecurringInstances).toHaveBeenCalledWith(
+      { userId: "user-1" },
+      today,
+    );
   });
 
   it("user with lastProcessedDate == today → skips (already processed)", async () => {
@@ -84,8 +96,15 @@ describe("processCronRollover", () => {
       processed: 1,
       results: [{ userId: "user-1", carriedOver: 0 }],
     });
-    expect(mockProcessRollover).toHaveBeenCalledWith("user-1", null, today);
-    expect(mockEnsureRecurringInstances).toHaveBeenCalledWith("user-1", today);
+    expect(mockProcessRollover).toHaveBeenCalledWith(
+      userCtx("user-1", "UTC"),
+      null,
+      today,
+    );
+    expect(mockEnsureRecurringInstances).toHaveBeenCalledWith(
+      { userId: "user-1" },
+      today,
+    );
   });
 
   it("multiple users, different states → processes only those that need it", async () => {
