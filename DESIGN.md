@@ -166,6 +166,24 @@ Wrapper sobre `@radix-ui/react-tooltip`. Usado para dar contexto visual a ícone
 
 **Touch devices**: Radix desabilita tooltips automaticamente em pointer coarse (mobile).
 
+### Collapsible
+
+Arquivo: `src/app/components/collapsible.tsx` (Client Component)
+
+Wrapper sobre `@radix-ui/react-collapsible`. Usado para seções expansíveis (ex: dias no histórico).
+
+**Exports**:
+
+| Componente | Base Radix | Uso |
+|---|---|---|
+| `Collapsible` | `Root` | Container — aceita `open`, `onOpenChange`, `asChild` |
+| `CollapsibleTrigger` | `Trigger` | Elemento clicável que alterna open/close |
+| `CollapsibleContent` | `Content` | Conteúdo colapsável com animação |
+
+**Animação**: height + opacity via `animate-collapsible-open` / `animate-collapsible-close` (200ms ease). Usa `--radix-collapsible-content-height` (injetada automaticamente pelo Radix).
+
+**Padrão de chevron**: SVG 14×14, `rotate-180` no estado aberto, `transition-transform duration-200`. Cor `text-muted`.
+
 ### NavMenu (navegação global)
 
 Arquivo: `src/app/components/nav-menu.tsx` (async Server Component)

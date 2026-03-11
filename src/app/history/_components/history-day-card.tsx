@@ -1,5 +1,10 @@
 import { cn } from "@/lib/cn";
 import { Text } from "@/app/components/text";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/app/components/collapsible";
 import type { HistoryDay } from "@/lib/queries/history";
 import { formatLongDate, formatShortDate } from "@/lib/dates/format";
 
@@ -17,62 +22,101 @@ function StatusIcon({ status }: { status: string }) {
   return <span className={`${statusBase} text-muted`}>—</span>;
 }
 
-export function HistoryDayCard({ day }: { day: HistoryDay }) {
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn(
+        "text-muted transition-transform duration-200 shrink-0",
+        open && "rotate-180"
+      )}
+      aria-hidden="true"
+    >
+      <path d="M3.5 5.25 7 8.75l3.5-3.5" />
+    </svg>
+  );
+}
+
+type HistoryDayCardProps = {
+  day: HistoryDay;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export function HistoryDayCard({ day, open, onOpenChange }: HistoryDayCardProps) {
   const pct = Math.round(day.stats.completionRate * 100);
 
   return (
-    <section className="mt-8 pb-6 border-b-2 border-border">
-      <div className="flex items-baseline justify-between mb-3">
-        <Text as="h2" variant="heading" className="capitalize">{formatLongDate(new Date(day.date))}</Text>
-        <span className="text-small text-muted font-medium">
-          {day.stats.completed}/{day.stats.total} · {pct}%
-        </span>
-      </div>
-
-      <div className="flex flex-col">
-        {day.tasks.map((task) => (
-          <div key={task.id} className="flex items-start gap-3 py-2 border-b border-border">
-            <StatusIcon status={task.status} />
-
-            <div className="flex-1 min-w-0">
-              <span
-                className={cn("text-body leading-[1.4]", task.status === "COMPLETED" && "line-through opacity-50")}
-              >
-                {task.title}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {task.category && (
-                <span className={badge}>{task.category}</span>
-              )}
-              {task.sourceType === "RECURRING" && (
-                <span className={badge} title="Recurring">
-                  ↻
+    <Collapsible asChild open={open} onOpenChange={onOpenChange}>
+      <section className="mt-8 pb-6 border-b-2 border-border">
+        <Text as="h2" variant="heading" className="capitalize">
+          <CollapsibleTrigger asChild>
+            <button className="flex w-full items-center justify-between text-left cursor-pointer bg-transparent border-0 p-0">
+              <span>{formatLongDate(new Date(day.date))}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-small text-muted font-medium font-body">
+                  {day.stats.completed}/{day.stats.total} · {pct}%
                 </span>
-              )}
-              {task.status === "SKIPPED" &&
-                task.originalDate === null && (
+                <ChevronIcon open={open} />
+              </div>
+            </button>
+          </CollapsibleTrigger>
+        </Text>
+
+        <CollapsibleContent>
+          <div className="flex flex-col mt-3">
+            {day.tasks.map((task) => (
+              <div key={task.id} className="flex items-start gap-3 py-2 border-b border-border">
+                <StatusIcon status={task.status} />
+
+                <div className="flex-1 min-w-0">
                   <span
-                    className={badgeCarryOver}
-                    title="Carried over to the next day"
+                    className={cn("text-body leading-[1.4]", task.status === "COMPLETED" && "line-through opacity-50")}
                   >
-                    ↗
+                    {task.title}
                   </span>
-                )}
-              {task.originalDate &&
-                task.originalDate !== task.scheduledDate && (
-                  <span
-                    className={badgeCarryOver}
-                    title={`Originally on ${formatShortDate(task.originalDate)}`}
-                  >
-                    ↗ {formatShortDate(task.originalDate)}
-                  </span>
-                )}
-            </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {task.category && (
+                    <span className={badge}>{task.category}</span>
+                  )}
+                  {task.sourceType === "RECURRING" && (
+                    <span className={badge} title="Recurring">
+                      ↻
+                    </span>
+                  )}
+                  {task.status === "SKIPPED" &&
+                    task.originalDate === null && (
+                      <span
+                        className={badgeCarryOver}
+                        title="Carried over to the next day"
+                      >
+                        ↗
+                      </span>
+                    )}
+                  {task.originalDate &&
+                    task.originalDate !== task.scheduledDate && (
+                      <span
+                        className={badgeCarryOver}
+                        title={`Originally on ${formatShortDate(task.originalDate)}`}
+                      >
+                        ↗ {formatShortDate(task.originalDate)}
+                      </span>
+                    )}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </section>
+        </CollapsibleContent>
+      </section>
+    </Collapsible>
   );
 }

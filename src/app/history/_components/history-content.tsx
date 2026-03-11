@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useHistory } from "@/lib/queries/history";
 import { EmptyState } from "@/app/components/empty-state";
@@ -34,8 +35,33 @@ export function HistoryContent() {
   const router = useRouter();
   const page = Math.max(0, parseInt(searchParams.get("page") ?? "0", 10) || 0);
   const { data, isLoading, isFetching } = useHistory(page);
+  const [openDays, setOpenDays] = useState<Set<string>>(new Set());
+
+  const allDates = useMemo(() => data?.days.map((d) => d.date) ?? [], [data?.days]);
+  const allExpanded = allDates.length > 0 && allDates.every((date) => openDays.has(date));
+
+  const handleDayOpenChange = useCallback((date: string, isOpen: boolean) => {
+    setOpenDays((prev) => {
+      const next = new Set(prev);
+      if (isOpen) {
+        next.add(date);
+      } else {
+        next.delete(date);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleAll = useCallback(() => {
+    if (allExpanded) {
+      setOpenDays(new Set());
+    } else {
+      setOpenDays(new Set(allDates));
+    }
+  }, [allExpanded, allDates]);
 
   function goToPage(newPage: number) {
+    setOpenDays(new Set());
     const params = new URLSearchParams(searchParams.toString());
     if (newPage === 0) {
       params.delete("page");
@@ -62,9 +88,20 @@ export function HistoryContent() {
 
   return (
     <div className={isFetching ? "opacity-70 transition-opacity" : ""}>
+      <div className="flex justify-end">
+        <button onClick={toggleAll} className={link}>
+          {allExpanded ? "Collapse all" : "Expand all"}
+        </button>
+      </div>
+
       <div>
         {data.days.map((day) => (
-          <HistoryDayCard key={day.date} day={day} />
+          <HistoryDayCard
+            key={day.date}
+            day={day}
+            open={openDays.has(day.date)}
+            onOpenChange={(isOpen) => handleDayOpenChange(day.date, isOpen)}
+          />
         ))}
       </div>
 

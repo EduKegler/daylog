@@ -18,6 +18,8 @@
   --text-stat: 1.875rem;
   --animate-tooltip-in: tooltip-in 200ms ease;
   --animate-tooltip-out: tooltip-out 150ms ease;
+  --animate-collapsible-open: collapsible-open 200ms ease;
+  --animate-collapsible-close: collapsible-close 200ms ease;
 }
 
 @keyframes tooltip-in {
@@ -28,6 +30,16 @@
 @keyframes tooltip-out {
   from { opacity: 1; transform: scale(1); }
   to { opacity: 0; transform: scale(0.97); }
+}
+
+@keyframes collapsible-open {
+  from { height: 0; opacity: 0; }
+  to { height: var(--radix-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes collapsible-close {
+  from { height: var(--radix-collapsible-content-height); opacity: 1; }
+  to { height: 0; opacity: 0; }
 }
 
 body {
