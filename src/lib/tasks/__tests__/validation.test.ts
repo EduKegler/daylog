@@ -268,6 +268,29 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
   });
 
+  it("rejects MONTHLY when parsed config is not an object (e.g. number)", () => {
+    const result = validateRecurringTaskInput({
+      ...validInput,
+      recurrenceType: "MONTHLY",
+      recurrenceConfig: JSON.stringify(42),
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.errors.recurrenceConfig).toBeDefined();
+  });
+
+  it("normalizeConfig passes through SPECIFIC_WEEKDAYS config unchanged", () => {
+    const config = JSON.stringify({ days: [1, 3] });
+    const result = validateRecurringTaskInput({
+      ...validInput,
+      recurrenceType: "SPECIFIC_WEEKDAYS",
+      recurrenceConfig: config,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.recurrenceConfig).toBe(config);
+    }
+  });
+
   it("rejects invalid JSON config", () => {
     const result = validateRecurringTaskInput({
       ...validInput,

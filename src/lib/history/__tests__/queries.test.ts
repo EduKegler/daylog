@@ -128,6 +128,25 @@ describe("getHistory", () => {
     });
   });
 
+  it("date with no matching tasks: returns empty task list and zero stats", async () => {
+    // groupBy returns a date, but findMany has no tasks for it (e.g. deleted between queries)
+    mockPrisma.dailyTask.groupBy.mockResolvedValue([
+      { scheduledDate: yesterday },
+      { scheduledDate: twoDaysAgo },
+    ]);
+    mockPrisma.dailyTask.findMany.mockResolvedValue([
+      { id: "t1", status: "COMPLETED", scheduledDate: yesterday },
+    ]);
+
+    const result = await getHistory("user-1", today, 0, 7);
+
+    expect(result.days).toHaveLength(2);
+    expect(result.days[1].date).toEqual(twoDaysAgo);
+    expect(result.days[1].tasks).toHaveLength(0);
+    expect(result.days[1].stats.total).toBe(0);
+    expect(result.days[1].stats.completed).toBe(0);
+  });
+
   it("ownership: filters by userId", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 

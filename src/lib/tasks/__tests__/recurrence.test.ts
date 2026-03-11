@@ -136,6 +136,12 @@ describe("parseRecurrenceConfig", () => {
       parseRecurrenceConfig("UNKNOWN" as never, "{}"),
     ).toThrow("Unknown recurrence type");
   });
+
+  it("throws when MONTHLY config is valid JSON but not an object (e.g. string)", () => {
+    expect(() =>
+      parseRecurrenceConfig("MONTHLY", JSON.stringify("not-an-object")),
+    ).toThrow("MONTHLY requires");
+  });
 });
 
 describe("shouldTaskOccurOnDate", () => {
