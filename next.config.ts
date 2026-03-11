@@ -7,7 +7,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  serverExternalPackages: ["@prisma/client", "@prisma/client-runtime-utils"],
+  serverExternalPackages: ["@prisma/client"],
 };
 
 export default withBundleAnalyzer(nextConfig);

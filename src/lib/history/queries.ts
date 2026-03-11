@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import type { DailyTask } from "@/generated/prisma";
+import type { DailyTask } from "@/generated/prisma/client";
 import { computeDayStats, type DayStats } from "@/lib/stats/day-stats";
 
 export type HistoryDay = {
