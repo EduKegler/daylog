@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { cn } from "@/lib/cn";
 import { createRecurringTask, type ActionResult } from "@/lib/tasks/actions";
 import { Text } from "@/app/components/text";
 
@@ -13,6 +14,9 @@ const WEEKDAYS = [
   { value: 5, label: "Fri" },
   { value: 6, label: "Sat" },
 ];
+
+const input = "w-full py-2 text-body bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted";
+const inputSmall = "w-full py-2 text-small bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted";
 
 export function RecurringTaskForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -63,15 +67,15 @@ export function RecurringTaskForm() {
 
   if (!isOpen) {
     return (
-      <button onClick={() => setIsOpen(true)} className="add-task-btn">
-        <span className="add-icon">+</span>
+      <button onClick={() => setIsOpen(true)} className="flex items-center gap-2 w-full py-3.5 text-subtext text-muted bg-transparent border-0 border-b border-border transition-colors duration-200 hover:text-accent">
+        <span className="text-icon leading-none">+</span>
         New recurring task
       </button>
     );
   }
 
   return (
-    <form ref={formRef} action={handleSubmit} className="create-task-form">
+    <form ref={formRef} action={handleSubmit} className="flex flex-col gap-3 py-4 border-b border-border">
       <div>
         <Text as="label" variant="label">
           Title
@@ -82,7 +86,7 @@ export function RecurringTaskForm() {
           placeholder="What recurs?"
           required
           autoFocus
-          className="task-input"
+          className={input}
         />
         {errors.title && (
           <p className="text-small text-red-600 mt-1">{errors.title}</p>
@@ -97,11 +101,11 @@ export function RecurringTaskForm() {
           name="description"
           type="text"
           placeholder="Additional details"
-          className="task-input"
+          className={input}
         />
       </div>
 
-      <div className="form-row">
+      <div className="flex gap-4">
         <div className="flex-1">
           <Text as="label" variant="label">
             Category
@@ -110,7 +114,7 @@ export function RecurringTaskForm() {
             name="category"
             type="text"
             placeholder="Optional"
-            className="task-input small"
+            className={inputSmall}
           />
         </div>
 
@@ -121,7 +125,7 @@ export function RecurringTaskForm() {
           <select
             value={recurrenceType}
             onChange={(e) => setRecurrenceType(e.target.value)}
-            className="task-input small"
+            className={inputSmall}
           >
             <option value="DAILY">Every day</option>
             <option value="WEEKDAYS">Weekdays</option>
@@ -145,11 +149,12 @@ export function RecurringTaskForm() {
                 key={wd.value}
                 type="button"
                 onClick={() => toggleDay(wd.value)}
-                className={`px-2.5 py-1.5 text-small rounded-md transition-colors duration-200 ${
+                className={cn(
+                  "px-2.5 py-1.5 text-small rounded-md transition-colors duration-200",
                   selectedDays.includes(wd.value)
-                    ? "bg-[var(--color-accent)] text-white"
-                    : "bg-[var(--color-border)] text-[var(--color-muted)] hover:bg-stone-300"
-                }`}
+                    ? "bg-accent text-white"
+                    : "bg-border text-muted hover:bg-stone-300",
+                )}
               >
                 {wd.label}
               </button>
@@ -172,7 +177,7 @@ export function RecurringTaskForm() {
             max={31}
             value={dayOfMonth}
             onChange={(e) => setDayOfMonth(Number(e.target.value))}
-            className="task-input small"
+            className={inputSmall}
             style={{ maxWidth: "5rem" }}
           />
           {errors.recurrenceConfig && (
@@ -181,18 +186,18 @@ export function RecurringTaskForm() {
         </div>
       )}
 
-      <div className="form-actions">
+      <div className="flex justify-end gap-3">
         <button
           type="button"
           onClick={() => {
             setIsOpen(false);
             setErrors({});
           }}
-          className="btn-cancel"
+          className="text-small text-muted bg-transparent border-none py-1.5 px-3 hover:text-stone-900"
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="btn-submit">
+        <button type="submit" disabled={isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
           {isPending ? "Creating..." : "Create"}
         </button>
       </div>

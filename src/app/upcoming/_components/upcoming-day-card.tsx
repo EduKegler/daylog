@@ -26,18 +26,18 @@ export function UpcomingDayCard({
   const relative = formatRelativeDate(day.date, today);
 
   return (
-    <section className="upcoming-day-card">
-      <div className="upcoming-day-header">
+    <section className="mt-8 pb-6 border-b-2 border-border">
+      <div className="flex items-baseline justify-between mb-3">
         <div>
-          <h2 className="history-day-title">{formatLongDate(day.date)}</h2>
-          <span className="upcoming-relative">{relative}</span>
+          <h2 className="font-display text-heading text-stone-900 capitalize">{formatLongDate(day.date)}</h2>
+          <span className="text-small text-accent font-medium mt-0.5 block">{relative}</span>
         </div>
-        <span className="history-day-stats">
+        <span className="text-small text-muted font-medium">
           {day.tasks.length} {day.tasks.length === 1 ? "task" : "tasks"}
         </span>
       </div>
 
-      <div className="task-list">
+      <div className="flex flex-col">
         {day.tasks.map((task) => (
           <TaskItem key={task.id} task={serializeTask(task)} />
         ))}

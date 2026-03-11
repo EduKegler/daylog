@@ -49,17 +49,17 @@ NUNCA usar fontes ou tamanhos fora desta tabela.
 
 Piso tipográfico: **0.8125rem (13px)** para badges/tags, **0.875rem (14px)** para texto.
 
-Todos os tamanhos são definidos como CSS custom properties no `@theme` do globals.css usando o namespace `--text-*` (obrigatório para Tailwind v4 gerar utilities). Classes CSS usam `var(--text-*)`.
+Todos os tamanhos são definidos como CSS custom properties no `@theme` do globals.css usando o namespace `--text-*` (obrigatório para Tailwind v4 gerar utilities). Usados como Tailwind utilities inline nos componentes TSX.
 
-| Token | Rem | Tailwind utility | Onde é usado |
+| Token | Rem | Tailwind utility | Uso |
 |---|---|---|---|
-| `--text-display` | `2rem` | `text-display` | `.app-title` |
-| `--text-heading` | `1.375rem` | `text-heading` | `.history-day-title` (font-display — compensação x-height) |
-| `--text-icon` | `1.25rem` | `text-icon` | `.add-icon` |
-| `--text-body` | `1rem` | `text-body` | `.task-title`, `.task-input` |
-| `--text-subtext` | `0.9375rem` | `text-subtext` | `.today-date`, `.empty-message`, `.add-task-btn` |
-| `--text-small` | `0.875rem` | `text-small` | `.task-description`, `.task-input.small`, `.btn-cancel`, `.btn-submit`, `.pagination-link`, `.history-status-icon`, `.section-title`, `.history-day-stats`, `.upcoming-relative` |
-| `--text-tag` | `0.8125rem` | `text-tag` | `.task-badge`, `.section-count` |
+| `--text-display` | `2rem` | `text-display` | Títulos de página |
+| `--text-heading` | `1.375rem` | `text-heading` | Títulos de seção (font-display) |
+| `--text-icon` | `1.25rem` | `text-icon` | Ícone "+" do add button |
+| `--text-body` | `1rem` | `text-body` | Títulos de task, inputs |
+| `--text-subtext` | `0.9375rem` | `text-subtext` | Datas, mensagens vazias, add button |
+| `--text-small` | `0.875rem` | `text-small` | Descrições, labels, botões, links, status |
+| `--text-tag` | `0.8125rem` | `text-tag` | Badges, section count |
 | `--text-stat` | `1.875rem` | `text-stat` | Stat cards (day-summary) |
 
 ### Componente `<Text>`
@@ -89,13 +89,7 @@ Props adicionais: `as` (elemento HTML), `muted` (cor muted), `accent` (cor accen
 
 ### Container principal
 
-```css
-.dashboard {
-  max-width: 42rem;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-}
-```
+`max-w-[42rem] mx-auto py-8 px-6` (Tailwind inline)
 
 ### Gaps padrão
 
@@ -122,77 +116,35 @@ sm:      grid-cols-4 gap-4
 
 ### Buttons
 
-**Submit (primário)**
-```css
-font-size: 0.875rem; font-weight: 500;
-background: var(--color-accent); color: white;
-border: none; border-radius: 0.375rem;
-padding: 0.375rem 1rem;
-/* hover */ background: var(--color-accent-hover);
-/* disabled */ opacity: 0.5; cursor: not-allowed;
-```
+Todos os estilos vivem inline via Tailwind utilities nos componentes TSX.
 
-**Cancel (ghost)**
-```css
-font-size: 0.875rem;
-background: none; border: none;
-color: var(--color-muted);
-padding: 0.375rem 0.75rem;
-/* hover */ color: var(--color-stone-900);
-```
+**Submit (primário)**: `text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed`
 
-**Action (icon button)**
-```css
-width: 1.75rem; height: 1.75rem;
-border-radius: 0.375rem;
-background: transparent; border: none;
-color: var(--color-border);
-/* hover */ color: var(--color-muted); background: var(--color-border);
-/* delete hover */ color: #DC2626; background: #FEF2F2;
-```
+**Cancel (ghost)**: `text-small text-muted bg-transparent border-none py-1.5 px-3 hover:text-stone-900`
 
-**Add task (full-width ghost)**
-```css
-width: 100%; padding: 0.875rem 0;
-font-size: 0.9375rem; color: var(--color-muted);
-background: none; border: none;
-border-bottom: 1px solid var(--color-border);
-/* hover */ color: var(--color-accent);
-```
+**Action (icon button)**: `flex items-center justify-center w-7 h-7 rounded-md text-border bg-transparent border-none transition-all duration-200 shrink-0 group-hover:text-muted` + `data-action-btn` para touch target
+- Edit variant: + `hover:text-muted hover:bg-border`
+- Delete variant: + `hover:text-red-600 hover:bg-red-50`
+
+**Add task (full-width ghost)**: `flex items-center gap-2 w-full py-3.5 text-subtext text-muted bg-transparent border-0 border-b border-border transition-colors duration-200 hover:text-accent`
 
 ### Inputs
 
 Estilo underline — sem bordas laterais, sem background.
 
-```css
-width: 100%; padding: 0.5rem 0;
-font-size: 1rem;
-background: transparent; border: none;
-border-bottom: 1px solid var(--color-border);
-outline: none; color: var(--color-stone-900);
-/* focus */ border-bottom-color: var(--color-accent);
-/* placeholder */ color: var(--color-muted);
-/* small variant */ font-size: 0.875rem;
-```
+`w-full py-2 text-body bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted`
+
+Small variant: trocar `text-body` por `text-small`
 
 ### Cards
 
-```css
-background: white;
-border: 1px solid var(--color-border);
-border-radius: 0.75rem;
-padding: 1rem;
-```
+`bg-white border border-border rounded-xl p-4`
 
 ### Badges
 
-```css
-font-size: 0.875rem; font-weight: 500;
-padding: 0.125rem 0.5rem;
-border-radius: 9999px;
-background: var(--color-border);
-color: var(--color-muted);
-```
+`text-tag font-medium px-2 py-0.5 rounded-full bg-border text-muted whitespace-nowrap`
+
+Carry-over variant: `bg-amber-100 text-amber-800` (sobrescreve bg e text)
 
 ### NavMenu (navegação global)
 
@@ -204,33 +156,23 @@ Links de navegação (History, Upcoming, Recurring) + Sign out. Presente em toda
 |---|---|---|
 | `showHome` | `true` | Na Home page, passar `false` para não mostrar self-link |
 
-**Estilo dos links**: classe `.nav-link` (compartilhada com `.pagination-link` em globals.css)
+**Estilo dos links**: `text-small text-muted transition-colors duration-200 hover:text-accent` (inline)
 **Sign out hover**: `hover:text-stone-600` (diferenciado dos links de navegação)
 **Spacing**: `gap-3 sm:gap-4`
 
 ### Checkbox (circular)
 
-```css
-width: 1.25rem; height: 1.25rem;
-border-radius: 50%;
-border: 2px solid var(--color-border);
-background: transparent;
-/* hover */ border-color: var(--color-accent);
-/* checked */ border-color: var(--color-accent);
-             background: var(--color-accent); color: white;
-```
+`w-5 h-5 rounded-full border-2 border-border flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200 bg-transparent hover:border-accent`
+
+Checked: + `border-accent bg-accent text-white` (via `cn()` condicional)
 
 ### Task item
 
-```css
-display: flex; align-items: flex-start; gap: 0.75rem;
-padding: 0.875rem 0;
-border-bottom: 1px solid var(--color-border);
-/* hover */ transform: translateX(2px);
-/* completed */ opacity: 0.6;
-```
+`flex items-start gap-3 py-3.5 border-b border-border transition-transform duration-200 hover:translate-x-0.5`
 
-Action buttons ficam invisíveis e aparecem no hover do task-item (desktop).
+Completed: + `opacity-60` (via `cn()` condicional)
+
+Action buttons ficam invisíveis e aparecem no hover do task-item (desktop) via `group` / `group-hover:text-muted`.
 
 ---
 
@@ -243,7 +185,7 @@ Action buttons ficam invisíveis e aparecem no hover do task-item (desktop).
 
 ### Mobile (`@media (hover: none)`)
 
-- Action buttons sempre visíveis com `opacity: 0.5`
+- Action buttons sempre visíveis com `opacity: 0.5` (via `[data-action-btn]` selector no globals.css — única regra CSS customizada restante)
 - Sem efeitos de hover
 
 ---

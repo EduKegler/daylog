@@ -1,21 +1,23 @@
 import Link from "next/link";
 import { signOut } from "@/lib/auth";
 
+const link = "text-small text-muted transition-colors duration-200 hover:text-accent";
+
 export function NavMenu({ showHome = true }: { showHome?: boolean }) {
   return (
     <nav className="flex items-baseline gap-3 sm:gap-4">
       {showHome && (
-        <Link href="/" className="nav-link">
+        <Link href="/" className={link}>
           Home
         </Link>
       )}
-      <Link href="/history" className="nav-link">
+      <Link href="/history" className={link}>
         History
       </Link>
-      <Link href="/upcoming" className="nav-link">
+      <Link href="/upcoming" className={link}>
         Upcoming
       </Link>
-      <Link href="/recurring" className="nav-link">
+      <Link href="/recurring" className={link}>
         Recurring
       </Link>
       <form
@@ -26,7 +28,7 @@ export function NavMenu({ showHome = true }: { showHome?: boolean }) {
       >
         <button
           type="submit"
-          className="text-small text-[var(--color-muted)] hover:text-stone-600 transition-colors duration-200"
+          className="text-small text-muted hover:text-stone-600 transition-colors duration-200"
         >
           Sign out
         </button>

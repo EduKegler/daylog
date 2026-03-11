@@ -50,6 +50,7 @@ The core domain logic — handles task carryover between days:
 | Database schema | `prisma/schema.prisma` |
 | Middleware (auth guard) | `src/proxy.ts` |
 | CSS & design tokens | `src/app/globals.css` |
+| Class merge utility | `src/lib/cn.ts` |
 | Text primitive | `src/app/components/text.tsx` |
 
 ### Import alias
@@ -63,6 +64,16 @@ Uses `@prisma/adapter-pg` (PrismaPg) with connection string from `DATABASE_URL`.
 ### Auth
 
 NextAuth v5 with Google provider, JWT strategy, PrismaAdapter. Session includes `user.id` and `user.timezone`. User timezone defaults to `America/Sao_Paulo`. Auth middleware lives in `src/proxy.ts`.
+
+## Styling
+
+All styles live inline as Tailwind utilities in TSX files. No CSS custom classes — `globals.css` only has `@theme` tokens, base element styles, and one `@media (hover: none)` rule using `[data-action-btn]`.
+
+Use `cn()` from `@/lib/cn` (`clsx` + `tailwind-merge`) for conditional classes:
+```tsx
+import { cn } from "@/lib/cn";
+<div className={cn("base-classes", isActive && "extra-classes")} />
+```
 
 ## Design System
 

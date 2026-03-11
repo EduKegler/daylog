@@ -48,14 +48,14 @@ export default async function DashboardPage() {
   const serializedCompleted = completed.map(serializeTask);
 
   return (
-    <main className="dashboard">
-      <header className="dashboard-header flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+    <main className="max-w-[42rem] mx-auto py-8 px-6">
+      <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
             <DaylogIcon size={28} />
-            <h1 className="app-title">daylog</h1>
+            <h1 className="font-display text-display text-stone-900 leading-none capitalize">daylog</h1>
           </div>
-          <time className="today-date" dateTime={today.toISOString()}>
+          <time className="text-subtext text-muted mt-1 block" dateTime={today.toISOString()}>
             {formatLongDate(today)}
           </time>
         </div>
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
 
       <DaySummary stats={stats} />
 
-      <div className="dashboard-content">
+      <div>
         <TaskList
           title="Pending"
           tasks={serializedPending}

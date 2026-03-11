@@ -10,18 +10,18 @@ export default async function UpcomingPage() {
   const days = await getUpcomingTasks(user.id, today);
 
   return (
-    <main className="dashboard">
-      <header className="dashboard-header flex items-start justify-between">
+    <main className="max-w-[42rem] mx-auto py-8 px-6">
+      <header className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="app-title">upcoming</h1>
-          <p className="today-date">Scheduled tasks</p>
+          <h1 className="font-display text-display text-stone-900 leading-none capitalize">upcoming</h1>
+          <p className="text-subtext text-muted mt-1 block">Scheduled tasks</p>
         </div>
         <NavMenu />
       </header>
 
-      <div className="dashboard-content">
+      <div>
         {days.length === 0 ? (
-          <p className="empty-message">No upcoming tasks scheduled.</p>
+          <p className="text-subtext text-muted py-4">No upcoming tasks scheduled.</p>
         ) : (
           days.map((day) => (
             <UpcomingDayCard

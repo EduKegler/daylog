@@ -9,7 +9,7 @@ export function DaySummary({ stats }: { stats: DayStats }) {
       <StatCard label="Total" value={stats.total} />
       <StatCard label="Completed" value={stats.completed} accent />
       <StatCard label="Pending" value={stats.pending} />
-      <div className="stat-card flex flex-col items-center justify-center">
+      <div className="bg-white border border-border rounded-xl p-4 flex flex-col items-center justify-center">
         <div className="relative h-14 w-14">
           <svg className="h-14 w-14 -rotate-90" viewBox="0 0 56 56">
             <circle
@@ -54,7 +54,7 @@ function StatCard({
   accent?: boolean;
 }) {
   return (
-    <div className="stat-card flex flex-col items-center justify-center">
+    <div className="bg-white border border-border rounded-xl p-4 flex flex-col items-center justify-center">
       <Text variant="stat" accent={accent}>
         {value}
       </Text>

@@ -5,6 +5,8 @@ import { getHistory } from "@/lib/history/queries";
 import { NavMenu } from "@/app/components/nav-menu";
 import { HistoryDayCard } from "./_components/history-day-card";
 
+const link = "text-small text-muted transition-colors duration-200 hover:text-accent";
+
 export default async function HistoryPage({
   searchParams,
 }: {
@@ -19,29 +21,29 @@ export default async function HistoryPage({
   const { days, hasMore } = await getHistory(user.id, today, page, pageSize);
 
   return (
-    <main className="dashboard">
-      <header className="dashboard-header flex items-start justify-between">
+    <main className="max-w-[42rem] mx-auto py-8 px-6">
+      <header className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="app-title">history</h1>
-          <p className="today-date">Previous days</p>
+          <h1 className="font-display text-display text-stone-900 leading-none capitalize">history</h1>
+          <p className="text-subtext text-muted mt-1 block">Previous days</p>
         </div>
         <NavMenu />
       </header>
 
-      <div className="dashboard-content">
+      <div>
         {days.length === 0 ? (
-          <p className="empty-message">No history found.</p>
+          <p className="text-subtext text-muted py-4">No history found.</p>
         ) : (
           days.map((day) => (
             <HistoryDayCard key={day.date.toISOString()} day={day} />
           ))
         )}
 
-        <div className="history-pagination">
+        <div className="flex justify-between mt-8 pt-4">
           {page > 0 && (
             <Link
               href={`/history?page=${page - 1}`}
-              className="pagination-link"
+              className={link}
             >
               ← Newer
             </Link>
@@ -49,7 +51,7 @@ export default async function HistoryPage({
           {hasMore && (
             <Link
               href={`/history?page=${page + 1}`}
-              className="pagination-link"
+              className={link}
             >
               Older →
             </Link>

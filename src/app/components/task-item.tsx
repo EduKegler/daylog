@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { cn } from "@/lib/cn";
 import { formatShortDate } from "@/lib/dates/format";
 import {
   completeTaskAction,
@@ -19,6 +20,13 @@ export type Task = {
   originalDate: string | null;
   scheduledDate: string;
 };
+
+const taskItemBase = "flex items-start gap-3 py-3.5 border-b border-border transition-transform duration-200 hover:translate-x-0.5";
+const actionBtn = "flex items-center justify-center w-7 h-7 rounded-md text-border bg-transparent border-none transition-all duration-200 shrink-0 group-hover:text-muted";
+const actionBtnEdit = `${actionBtn} hover:text-muted hover:bg-border`;
+const actionBtnDelete = `${actionBtn} hover:text-red-600 hover:bg-red-50`;
+const badge = "text-tag font-medium px-2 py-0.5 rounded-full bg-border text-muted whitespace-nowrap";
+const badgeCarryOver = "text-tag font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 whitespace-nowrap";
 
 export function TaskItem({ task }: { task: Task }) {
   const [isPending, startTransition] = useTransition();
@@ -76,23 +84,23 @@ export function TaskItem({ task }: { task: Task }) {
 
   if (isEditing) {
     return (
-      <div className="task-item">
+      <div className={taskItemBase}>
         <div className="flex-1 min-w-0 space-y-2">
           <input
             type="text"
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
-            className="task-input"
+            className="w-full py-2 text-body bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted"
             autoFocus
             onKeyDown={handleKeyDown}
           />
-          <div className="form-row">
+          <div className="flex gap-4">
             <input
               type="text"
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
               placeholder="Description (optional)"
-              className="task-input small"
+              className="w-full py-2 text-small bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted"
               onKeyDown={handleKeyDown}
             />
             <input
@@ -100,15 +108,15 @@ export function TaskItem({ task }: { task: Task }) {
               value={editCategory}
               onChange={(e) => setEditCategory(e.target.value)}
               placeholder="Category (optional)"
-              className="task-input small"
+              className="w-full py-2 text-small bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted"
               onKeyDown={handleKeyDown}
             />
           </div>
-          <div className="form-actions">
+          <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={handleCancel}
-              className="btn-cancel"
+              className="text-small text-muted bg-transparent border-none py-1.5 px-3 hover:text-stone-900"
             >
               Cancel
             </button>
@@ -116,7 +124,7 @@ export function TaskItem({ task }: { task: Task }) {
               type="button"
               onClick={handleSave}
               disabled={isPending || !editTitle.trim()}
-              className="btn-submit"
+              className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isPending ? "Saving..." : "Save"}
             </button>
@@ -128,12 +136,15 @@ export function TaskItem({ task }: { task: Task }) {
 
   return (
     <div
-      className={`task-item group ${isCompleted ? "completed" : ""} ${isPending ? "opacity-50" : ""}`}
+      className={cn(taskItemBase, "group", isCompleted && "opacity-60", isPending && "opacity-50")}
     >
       <button
         onClick={handleToggle}
         disabled={isPending}
-        className="checkbox-btn"
+        className={cn(
+          "w-5 h-5 rounded-full border-2 border-border flex items-center justify-center shrink-0 mt-0.5 transition-all duration-200 bg-transparent hover:border-accent",
+          isCompleted && "border-accent bg-accent text-white",
+        )}
         aria-label={isCompleted ? "Uncheck task" : "Complete task"}
       >
         {isCompleted && (
@@ -142,7 +153,7 @@ export function TaskItem({ task }: { task: Task }) {
             height="12"
             viewBox="0 0 12 12"
             fill="none"
-            className="check-icon"
+            className="w-3 h-3"
           >
             <path
               d="M2 6L5 9L10 3"
@@ -157,38 +168,38 @@ export function TaskItem({ task }: { task: Task }) {
 
       <div className="flex-1 min-w-0">
         <span
-          className={`task-title ${isCompleted ? "line-through opacity-50" : "cursor-pointer"}`}
+          className={cn("text-body leading-[1.4]", isCompleted ? "line-through opacity-50" : "cursor-pointer")}
           onClick={!isCompleted ? handleEdit : undefined}
         >
           {task.title}
         </span>
         {task.description && (
-          <p className="task-description">{task.description}</p>
+          <p className="text-small text-muted mt-0.5">{task.description}</p>
         )}
       </div>
 
       <div className="flex items-center gap-2">
         {isCarryOver && (
           <span
-            className="task-badge carryover"
+            className={badgeCarryOver}
             title={`Originally on ${formatShortDate(task.originalDate!)}`}
           >
             ↗ {formatShortDate(task.originalDate!)}
           </span>
         )}
-        {task.category && <span className="task-badge">{task.category}</span>}
+        {task.category && <span className={badge}>{task.category}</span>}
         {task.sourceType === "RECURRING" && (
-          <span className="task-badge recurring" title="Recurring task">↻</span>
+          <span className={badge} title="Recurring task">↻</span>
         )}
         <div className="flex items-center gap-0.5">
           {!isCompleted && (
-            <button onClick={handleEdit} disabled={isPending} className="task-action-btn" aria-label="Edit task">
+            <button onClick={handleEdit} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit task">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           )}
-          <button onClick={handleDelete} disabled={isPending} className="task-action-btn delete" aria-label="Delete task">
+          <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete task">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>

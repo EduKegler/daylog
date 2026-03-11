@@ -11,20 +11,20 @@ export function TaskList({
 }) {
   if (tasks.length === 0) {
     return (
-      <section className="task-section">
-        <h2 className="section-title">{title}</h2>
-        <p className="empty-message">{emptyMessage}</p>
+      <section className="mt-8">
+        <h2 className="text-small font-semibold uppercase tracking-wider text-muted mb-3 flex items-center gap-2">{title}</h2>
+        <p className="text-subtext text-muted py-4">{emptyMessage}</p>
       </section>
     );
   }
 
   return (
-    <section className="task-section">
-      <h2 className="section-title">
+    <section className="mt-8">
+      <h2 className="text-small font-semibold uppercase tracking-wider text-muted mb-3 flex items-center gap-2">
         {title}
-        <span className="section-count">{tasks.length}</span>
+        <span className="text-tag font-medium text-muted bg-border px-2 py-0.5 rounded-full">{tasks.length}</span>
       </h2>
-      <div className="task-list">
+      <div className="flex flex-col">
         {tasks.map((task) => (
           <TaskItem key={task.id} task={task} />
         ))}

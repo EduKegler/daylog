@@ -65,9 +65,9 @@ export function Text({
   const isMuted = muted ?? config.defaultMuted;
 
   const colorClass = accent
-    ? "text-[var(--color-accent)]"
+    ? "text-accent"
     : isMuted
-      ? "text-[var(--color-muted)]"
+      ? "text-muted"
       : "";
 
   return (

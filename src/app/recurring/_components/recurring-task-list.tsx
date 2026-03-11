@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { cn } from "@/lib/cn";
 import {
   toggleRecurringTask,
   deleteRecurringTask,
@@ -33,13 +34,20 @@ type RecurringTask = {
   isActive: boolean;
 };
 
+const taskItemBase = "flex items-start gap-3 py-3.5 border-b border-border transition-transform duration-200 hover:translate-x-0.5";
+const actionBtn = "flex items-center justify-center w-7 h-7 rounded-md text-border bg-transparent border-none transition-all duration-200 shrink-0 group-hover:text-muted";
+const actionBtnEdit = `${actionBtn} hover:text-muted hover:bg-border`;
+const actionBtnDelete = `${actionBtn} hover:text-red-600 hover:bg-red-50`;
+const input = "w-full py-2 text-body bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted";
+const inputSmall = "w-full py-2 text-small bg-transparent border-0 border-b border-border outline-none text-stone-900 transition-[border-color] duration-200 focus:border-b-accent placeholder:text-muted";
+
 export function RecurringTaskList({ tasks }: { tasks: RecurringTask[] }) {
   if (tasks.length === 0) {
-    return <p className="empty-message">No recurring tasks yet.</p>;
+    return <p className="text-subtext text-muted py-4">No recurring tasks yet.</p>;
   }
 
   return (
-    <div className="task-list mt-6">
+    <div className="flex flex-col mt-6">
       {tasks.map((task) => (
         <RecurringTaskItem key={task.id} task={task} />
       ))}
@@ -91,28 +99,30 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
 
   return (
     <div
-      className={`task-item group ${!task.isActive ? "opacity-50" : ""} ${isPending ? "opacity-30" : ""}`}
+      className={cn(taskItemBase, "group", !task.isActive && "opacity-50", isPending && "opacity-30")}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className="task-title cursor-pointer"
+            className="text-body leading-[1.4] cursor-pointer"
             onClick={() => setIsEditing(true)}
           >
             {task.title}
           </span>
           {task.category && (
-            <span className="task-badge">{task.category}</span>
+            <span className="text-tag font-medium px-2 py-0.5 rounded-full bg-border text-muted whitespace-nowrap">
+              {task.category}
+            </span>
           )}
         </div>
         {task.description && (
-          <p className="task-description">{task.description}</p>
+          <p className="text-small text-muted mt-0.5">{task.description}</p>
         )}
         <Text variant="small" muted className="mt-1">{label}</Text>
       </div>
 
       <div className="flex items-center gap-0.5">
-        <button onClick={() => setIsEditing(true)} disabled={isPending} className="task-action-btn" aria-label="Edit recurring task">
+        <button onClick={() => setIsEditing(true)} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit recurring task">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -120,15 +130,16 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
         <button
           onClick={handleToggle}
           disabled={isPending}
-          className={`px-3 py-1 text-small font-medium rounded-full transition-colors duration-200 ${
+          className={cn(
+            "px-3 py-1 text-small font-medium rounded-full transition-colors duration-200",
             task.isActive
-              ? "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]"
-              : "bg-[var(--color-border)] text-[var(--color-muted)] hover:bg-stone-300"
-          }`}
+              ? "bg-accent text-white hover:bg-accent-hover"
+              : "bg-border text-muted hover:bg-stone-300",
+          )}
         >
           {task.isActive ? "Active" : "Inactive"}
         </button>
-        <button onClick={handleDelete} disabled={isPending} className="task-action-btn delete" aria-label="Delete recurring task">
+        <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete recurring task">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
@@ -201,7 +212,7 @@ function RecurringTaskEditForm({
   }
 
   return (
-    <form action={handleSubmit} className="create-task-form">
+    <form action={handleSubmit} className="flex flex-col gap-3 py-4 border-b border-border">
       <div>
         <Text as="label" variant="label">
           Title
@@ -212,7 +223,7 @@ function RecurringTaskEditForm({
           defaultValue={task.title}
           required
           autoFocus
-          className="task-input"
+          className={input}
         />
         {errors.title && (
           <p className="text-small text-red-600 mt-1">{errors.title}</p>
@@ -228,11 +239,11 @@ function RecurringTaskEditForm({
           type="text"
           defaultValue={task.description ?? ""}
           placeholder="Additional details"
-          className="task-input"
+          className={input}
         />
       </div>
 
-      <div className="form-row">
+      <div className="flex gap-4">
         <div className="flex-1">
           <Text as="label" variant="label">
             Category
@@ -242,7 +253,7 @@ function RecurringTaskEditForm({
             type="text"
             defaultValue={task.category ?? ""}
             placeholder="Optional"
-            className="task-input small"
+            className={inputSmall}
           />
         </div>
 
@@ -253,7 +264,7 @@ function RecurringTaskEditForm({
           <select
             value={recurrenceType}
             onChange={(e) => setRecurrenceType(e.target.value)}
-            className="task-input small"
+            className={inputSmall}
           >
             <option value="DAILY">Every day</option>
             <option value="WEEKDAYS">Weekdays</option>
@@ -277,11 +288,12 @@ function RecurringTaskEditForm({
                 key={wd.value}
                 type="button"
                 onClick={() => toggleDay(wd.value)}
-                className={`px-2.5 py-1.5 text-small rounded-md transition-colors duration-200 ${
+                className={cn(
+                  "px-2.5 py-1.5 text-small rounded-md transition-colors duration-200",
                   selectedDays.includes(wd.value)
-                    ? "bg-[var(--color-accent)] text-white"
-                    : "bg-[var(--color-border)] text-[var(--color-muted)] hover:bg-stone-300"
-                }`}
+                    ? "bg-accent text-white"
+                    : "bg-border text-muted hover:bg-stone-300",
+                )}
               >
                 {wd.label}
               </button>
@@ -304,7 +316,7 @@ function RecurringTaskEditForm({
             max={31}
             value={dayOfMonth}
             onChange={(e) => setDayOfMonth(Number(e.target.value))}
-            className="task-input small"
+            className={inputSmall}
             style={{ maxWidth: "5rem" }}
           />
           {errors.recurrenceConfig && (
@@ -313,15 +325,15 @@ function RecurringTaskEditForm({
         </div>
       )}
 
-      <div className="form-actions">
+      <div className="flex justify-end gap-3">
         <button
           type="button"
           onClick={onCancel}
-          className="btn-cancel"
+          className="text-small text-muted bg-transparent border-none py-1.5 px-3 hover:text-stone-900"
         >
           Cancel
         </button>
-        <button type="submit" disabled={isPending} className="btn-submit">
+        <button type="submit" disabled={isPending} className="text-small font-medium text-white bg-accent border-none rounded-md py-1.5 px-4 transition-[background] duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed">
           {isPending ? "Saving..." : "Save"}
         </button>
       </div>
