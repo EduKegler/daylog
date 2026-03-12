@@ -42,7 +42,11 @@ export function useCreateTask() {
           id: `temp-${Date.now()}`,
           title: (formData.get("title") as string) ?? "",
           description: null,
-          category: (formData.get("category") as string) || null,
+          tags: (() => {
+            const tagIds = JSON.parse(formData.get("tagIds") as string || "[]") as string[];
+            const allTags = queryClient.getQueryData<import("./tags").Tag[]>(queryKeys.tags());
+            return allTags?.filter(t => tagIds.includes(t.id)) ?? [];
+          })(),
           sourceType: "MANUAL",
           status: "PENDING",
           originalDate: null,
@@ -142,7 +146,7 @@ export function useUpdateTask() {
     data: {
       title: string;
       description: string | null;
-      category: string | null;
+      tagIds: string[];
       scheduledDate?: string;
     };
   };
@@ -154,10 +158,12 @@ export function useUpdateTask() {
       const previous = queryClient.getQueryData<DailyTasksResponse>(queryKeys.daily());
 
       if (previous) {
+        const allTags = queryClient.getQueryData<import("./tags").Tag[]>(queryKeys.tags());
+        const tags = allTags?.filter(t => data.tagIds.includes(t.id)) ?? [];
         queryClient.setQueryData<DailyTasksResponse>(queryKeys.daily(), {
           ...previous,
           tasks: previous.tasks.map((t) =>
-            t.id === taskId ? { ...t, ...data } : t,
+            t.id === taskId ? { ...t, title: data.title, description: data.description, tags, scheduledDate: data.scheduledDate ?? t.scheduledDate } : t,
           ),
         });
       }

@@ -13,7 +13,7 @@ export type RecurringTask = {
   id: string;
   title: string;
   description: string | null;
-  category: string | null;
+  tags: Array<{ id: string; name: string; color: string }>;
   recurrenceType: string;
   recurrenceConfig: string | null;
   isActive: boolean;
@@ -44,7 +44,11 @@ export function useCreateRecurringTask() {
           id: `temp-${Date.now()}`,
           title: (formData.get("title") as string) ?? "",
           description: (formData.get("description") as string) || null,
-          category: (formData.get("category") as string) || null,
+          tags: (() => {
+            const tagIds = JSON.parse(formData.get("tagIds") as string || "[]") as string[];
+            const allTags = queryClient.getQueryData<import("./tags").Tag[]>(queryKeys.tags());
+            return allTags?.filter(t => tagIds.includes(t.id)) ?? [];
+          })(),
           recurrenceType: (formData.get("recurrenceType") as string) ?? "DAILY",
           recurrenceConfig: (formData.get("recurrenceConfig") as string) || null,
           isActive: true,
