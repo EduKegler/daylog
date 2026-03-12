@@ -15,7 +15,7 @@ export async function GET() {
       id: t.id,
       title: t.title,
       description: t.description,
-      category: t.category,
+      tags: t.tags,
       recurrenceType: t.recurrenceType,
       recurrenceConfig: t.recurrenceConfig,
       isActive: t.isActive,
