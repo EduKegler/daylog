@@ -47,6 +47,9 @@ export async function getOwnerDayState(ctx: OwnerContext): Promise<{
 export async function getRecurringTasks(filter: OwnerFilter) {
   return prisma.recurringTask.findMany({
     where: { ...filter },
+    include: {
+      tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" as const } },
+    },
     orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
   });
 }
@@ -54,6 +57,9 @@ export async function getRecurringTasks(filter: OwnerFilter) {
 export async function getActiveRecurringTasks(filter: OwnerFilter) {
   return prisma.recurringTask.findMany({
     where: { ...filter, isActive: true },
+    include: {
+      tags: { select: { id: true } },
+    },
   });
 }
 
@@ -72,6 +78,7 @@ export async function getDailyTasksForDate(filter: OwnerFilter, date: Date) {
       recurringTask: {
         select: { id: true, recurrenceType: true, recurrenceConfig: true },
       },
+      tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" as const } },
     },
     orderBy: [{ status: "asc" }, { createdAt: "asc" }],
   });
