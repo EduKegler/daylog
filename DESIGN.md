@@ -146,6 +146,43 @@ Small variant: trocar `text-body` por `text-small`
 
 Carry-over variant: `bg-amber-100 text-amber-800` (sobrescreve bg e text)
 
+### Tag Badges
+
+Arquivo: `src/app/components/tag-badge.tsx`
+
+Renders a tag with its pastel color. Colors use inline `style` from `TAG_COLORS` map (not Tailwind classes). Uses `text-xs` instead of `text-tag` because `tailwind-merge` strips unrecognized custom font-size tokens.
+
+`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap inline-flex items-center gap-1` + inline `style={{ background, color }}` from color map.
+
+Prop `onRemove` shows a 14×14 × button (SVG, opacity 0.6 → 1 on hover).
+
+**Tag color palette** (10 predefined pastel colors in `src/lib/tags/colors.ts`):
+
+| Key | Background | Text |
+|---|---|---|
+| `rose` | `#FECDD3` | `#9F1239` |
+| `orange` | `#FED7AA` | `#9A3412` |
+| `amber` | `#FDE68A` | `#854D0E` |
+| `lime` | `#D9F99D` | `#3F6212` |
+| `emerald` | `#A7F3D0` | `#065F46` |
+| `sky` | `#BAE6FD` | `#075985` |
+| `blue` | `#BFDBFE` | `#1E40AF` |
+| `violet` | `#E9D5FF` | `#6B21A8` |
+| `pink` | `#FBCFE8` | `#9D174D` |
+| `stone` | `#E7E5E4` | `#44403C` |
+
+### Tags Input
+
+Arquivo: `src/app/components/tags-input.tsx` (Client Component)
+
+Input for selecting/creating tags in task forms. Underline input container with tag chips + autocomplete dropdown.
+
+**Container**: `flex flex-wrap items-center gap-1.5 py-1.5 border-0 border-b border-border min-h-[36px]` + `focus-within:border-b-accent`
+
+**Dropdown**: `bg-white border border-border rounded-lg shadow-md z-20`. Items: color dot + name, highlighted match text. "Criar tag" option with inline color picker (10 circles).
+
+Max 5 tags per task. Keyboard: arrows, enter, backspace, escape.
+
 ### Tooltip
 
 Arquivo: `src/app/components/tooltip.tsx` (Client Component)
