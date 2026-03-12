@@ -36,15 +36,19 @@ export async function ensureRecurringInstances(
 
   if (toCreate.length === 0) return;
 
-  await prisma.dailyTask.createMany({
-    data: toCreate.map((rt) => ({
-      ...filter,
-      sourceType: "RECURRING" as const,
-      recurringTaskId: rt.id,
-      title: rt.title,
-      description: rt.description,
-      category: rt.category,
-      scheduledDate: dayStart,
-    })),
+  await prisma.$transaction(async (tx) => {
+    for (const rt of toCreate) {
+      await tx.dailyTask.create({
+        data: {
+          ...filter,
+          sourceType: "RECURRING" as const,
+          recurringTaskId: rt.id,
+          title: rt.title,
+          description: rt.description,
+          scheduledDate: dayStart,
+          tags: { connect: rt.tags.map((t: { id: string }) => ({ id: t.id })) },
+        },
+      });
+    }
   });
 }
