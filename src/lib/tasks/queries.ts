@@ -73,6 +73,7 @@ export async function getDailyTasksForDate(filter: OwnerFilter, date: Date) {
     where: {
       ...filter,
       scheduledDate: { gte: dayStart, lt: dayEnd },
+      status: { not: "DISMISSED" },
     },
     include: {
       recurringTask: {

@@ -149,6 +149,7 @@ describe("getDailyTasksForDate", () => {
       where: {
         userId: "user-1",
         scheduledDate: { gte: expectedStart, lt: expectedEnd },
+        status: { not: "DISMISSED" },
       },
       include: {
         recurringTask: {

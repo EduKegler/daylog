@@ -28,7 +28,7 @@ export async function completeTask(
   filter: OwnerFilter,
 ): Promise<void> {
   const { count } = await prisma.dailyTask.updateMany({
-    where: { id: taskId, ...filter, status: { not: "COMPLETED" } },
+    where: { id: taskId, ...filter, status: { notIn: ["COMPLETED", "DISMISSED"] } },
     data: { status: "COMPLETED", completedAt: new Date() },
   });
 
@@ -80,13 +80,47 @@ export async function updateDailyTask(
   });
 }
 
+export async function syncPendingRecurringInstances(
+  recurringTaskId: string,
+  data: { title: string; description: string | null; tagIds: string[] },
+): Promise<void> {
+  const { count } = await prisma.dailyTask.updateMany({
+    where: { recurringTaskId, status: "PENDING" },
+    data: { title: data.title, description: data.description },
+  });
+
+  if (count === 0) return;
+
+  const pendingInstances = await prisma.dailyTask.findMany({
+    where: { recurringTaskId, status: "PENDING" },
+    select: { id: true },
+  });
+
+  for (const instance of pendingInstances) {
+    await prisma.dailyTask.update({
+      where: { id: instance.id },
+      data: { tags: { set: data.tagIds.map((id) => ({ id })) } },
+    });
+  }
+}
+
 export async function deleteTask(
   taskId: string,
   filter: OwnerFilter,
 ): Promise<void> {
-  const { count } = await prisma.dailyTask.deleteMany({
+  const task = await prisma.dailyTask.findFirst({
     where: { id: taskId, ...filter },
+    select: { sourceType: true, recurringTaskId: true },
   });
 
-  if (count === 0) throw new Error("Task not found or unauthorized");
+  if (!task) throw new Error("Task not found or unauthorized");
+
+  if (task.sourceType === "RECURRING" && task.recurringTaskId !== null) {
+    await prisma.dailyTask.update({
+      where: { id: taskId },
+      data: { status: "DISMISSED" },
+    });
+  } else {
+    await prisma.dailyTask.delete({ where: { id: taskId } });
+  }
 }

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { resolveWriteContext, resolveOwnerContext, buildOwnerFilter } from "@/lib/auth/owner-context";
 import { validateRecurringTaskInput } from "./validation";
+import { syncPendingRecurringInstances } from "./mutations";
 import { checkGuestRecurringTaskLimit } from "@/lib/guest/rate-limiter";
 
 export type ActionResult = {
@@ -85,6 +86,12 @@ export async function updateRecurringTask(
       recurrenceType: result.data.recurrenceType,
       recurrenceConfig: result.data.recurrenceConfig,
     },
+  });
+
+  await syncPendingRecurringInstances(taskId, {
+    title: result.data.title,
+    description: result.data.description,
+    tagIds: result.data.tagIds,
   });
 
   return { success: true };

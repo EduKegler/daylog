@@ -40,6 +40,12 @@ The core domain logic — handles task carryover between days:
 2. `processRollover()` — moves pending manual tasks from yesterday to today (marks as carry-over), skips pending recurring tasks from yesterday
 3. `/api/cron/rollover` — POST endpoint (requires `CRON_SECRET` header) that runs rollover for all users daily
 
+### Recurring task editing & deletion
+
+- **Editing from daily view or /recurring**: updates the `RecurringTask` template, then `syncPendingRecurringInstances()` propagates title, description, and tags to all PENDING `DailyTask` instances
+- **Deleting a recurring instance**: soft-deletes by setting `status: "DISMISSED"` (preserves the `recurringTaskId` link so `ensureRecurringInstances` won't recreate it). Manual tasks are hard-deleted.
+- **DISMISSED status**: filtered out from daily view, history, and stats queries. Cannot be completed or edited.
+
 ### Key paths
 
 | Area | Path |

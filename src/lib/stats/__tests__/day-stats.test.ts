@@ -57,4 +57,17 @@ describe("computeDayStats", () => {
     expect(stats.pending).toBe(1);
     expect(stats.completionRate).toBeCloseTo(1 / 3);
   });
+
+  it("includes DISMISSED in total but not in completed or pending", () => {
+    const tasks = [
+      { status: "COMPLETED" as const },
+      { status: "DISMISSED" as const },
+      { status: "PENDING" as const },
+    ];
+    const stats = computeDayStats(tasks);
+    expect(stats.total).toBe(3);
+    expect(stats.completed).toBe(1);
+    expect(stats.pending).toBe(1);
+    expect(stats.completionRate).toBeCloseTo(1 / 3);
+  });
 });

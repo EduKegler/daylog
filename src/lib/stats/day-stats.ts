@@ -1,5 +1,5 @@
 type TaskForStats = {
-  status: "PENDING" | "COMPLETED" | "SKIPPED";
+  status: "PENDING" | "COMPLETED" | "SKIPPED" | "DISMISSED";
 };
 
 export type DayStats = {

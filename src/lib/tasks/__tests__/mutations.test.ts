@@ -5,8 +5,9 @@ const mockPrisma = vi.hoisted(() => ({
   dailyTask: {
     create: vi.fn(),
     updateMany: vi.fn(),
-    deleteMany: vi.fn(),
+    delete: vi.fn(),
     findFirst: vi.fn(),
+    findMany: vi.fn(),
     update: vi.fn(),
   },
   $transaction: vi.fn(async (cb: (tx: typeof mockPrisma) => Promise<unknown>) => cb(mockPrisma)),
@@ -20,6 +21,7 @@ import {
   createTask,
   updateDailyTask,
   deleteTask,
+  syncPendingRecurringInstances,
 } from "../mutations";
 
 const userFilter: OwnerFilter = { userId: "user-1" };
@@ -33,7 +35,7 @@ describe("completeTask", () => {
     await completeTask("task-1", userFilter);
 
     expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
-      where: { id: "task-1", userId: "user-1", status: { not: "COMPLETED" } },
+      where: { id: "task-1", userId: "user-1", status: { notIn: ["COMPLETED", "DISMISSED"] } },
       data: { status: "COMPLETED", completedAt: expect.any(Date) },
     });
   });
@@ -45,7 +47,7 @@ describe("completeTask", () => {
     await completeTask("task-1", guestFilter);
 
     expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
-      where: { id: "task-1", guestSessionId: "guest-1", status: { not: "COMPLETED" } },
+      where: { id: "task-1", guestSessionId: "guest-1", status: { notIn: ["COMPLETED", "DISMISSED"] } },
       data: { status: "COMPLETED", completedAt: expect.any(Date) },
     });
   });
@@ -267,21 +269,128 @@ describe("updateDailyTask", () => {
 describe("deleteTask", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("deletes task owned by user", async () => {
-    mockPrisma.dailyTask.deleteMany.mockResolvedValue({ count: 1 });
+  it("physically deletes a manual task", async () => {
+    mockPrisma.dailyTask.findFirst.mockResolvedValue({
+      sourceType: "MANUAL",
+      recurringTaskId: null,
+    });
+    mockPrisma.dailyTask.delete.mockResolvedValue({ id: "task-1" });
 
     await deleteTask("task-1", userFilter);
 
-    expect(mockPrisma.dailyTask.deleteMany).toHaveBeenCalledWith({
+    expect(mockPrisma.dailyTask.findFirst).toHaveBeenCalledWith({
       where: { id: "task-1", userId: "user-1" },
+      select: { sourceType: true, recurringTaskId: true },
     });
+    expect(mockPrisma.dailyTask.delete).toHaveBeenCalledWith({
+      where: { id: "task-1" },
+    });
+    expect(mockPrisma.dailyTask.update).not.toHaveBeenCalled();
   });
 
-  it("throws when task not found (count === 0)", async () => {
-    mockPrisma.dailyTask.deleteMany.mockResolvedValue({ count: 0 });
+  it("soft-deletes a recurring task instance (sets status to DISMISSED)", async () => {
+    mockPrisma.dailyTask.findFirst.mockResolvedValue({
+      sourceType: "RECURRING",
+      recurringTaskId: "rec-1",
+    });
+    mockPrisma.dailyTask.update.mockResolvedValue({ id: "task-1" });
+
+    await deleteTask("task-1", userFilter);
+
+    expect(mockPrisma.dailyTask.findFirst).toHaveBeenCalledWith({
+      where: { id: "task-1", userId: "user-1" },
+      select: { sourceType: true, recurringTaskId: true },
+    });
+    expect(mockPrisma.dailyTask.update).toHaveBeenCalledWith({
+      where: { id: "task-1" },
+      data: { status: "DISMISSED" },
+    });
+    expect(mockPrisma.dailyTask.delete).not.toHaveBeenCalled();
+  });
+
+  it("physically deletes an orphaned recurring task (recurringTaskId is null)", async () => {
+    mockPrisma.dailyTask.findFirst.mockResolvedValue({
+      sourceType: "RECURRING",
+      recurringTaskId: null,
+    });
+    mockPrisma.dailyTask.delete.mockResolvedValue({ id: "task-1" });
+
+    await deleteTask("task-1", userFilter);
+
+    expect(mockPrisma.dailyTask.delete).toHaveBeenCalledWith({
+      where: { id: "task-1" },
+    });
+    expect(mockPrisma.dailyTask.update).not.toHaveBeenCalled();
+  });
+
+  it("throws when task not found", async () => {
+    mockPrisma.dailyTask.findFirst.mockResolvedValue(null);
 
     await expect(deleteTask("bad-id", userFilter)).rejects.toThrow(
       "Task not found or unauthorized",
     );
+  });
+});
+
+describe("syncPendingRecurringInstances", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("updates title and description on all pending instances", async () => {
+    mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 2 });
+    mockPrisma.dailyTask.findMany.mockResolvedValue([
+      { id: "dt-1" },
+      { id: "dt-2" },
+    ]);
+    mockPrisma.dailyTask.update.mockResolvedValue({});
+
+    await syncPendingRecurringInstances("rec-1", {
+      title: "New title",
+      description: "New desc",
+      tagIds: ["tag-1"],
+    });
+
+    expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
+      where: { recurringTaskId: "rec-1", status: "PENDING" },
+      data: { title: "New title", description: "New desc" },
+    });
+  });
+
+  it("updates tags on each pending instance individually", async () => {
+    mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 2 });
+    mockPrisma.dailyTask.findMany.mockResolvedValue([
+      { id: "dt-1" },
+      { id: "dt-2" },
+    ]);
+    mockPrisma.dailyTask.update.mockResolvedValue({});
+
+    await syncPendingRecurringInstances("rec-1", {
+      title: "New title",
+      description: null,
+      tagIds: ["tag-1", "tag-2"],
+    });
+
+    expect(mockPrisma.dailyTask.update).toHaveBeenCalledTimes(2);
+    expect(mockPrisma.dailyTask.update).toHaveBeenCalledWith({
+      where: { id: "dt-1" },
+      data: { tags: { set: [{ id: "tag-1" }, { id: "tag-2" }] } },
+    });
+    expect(mockPrisma.dailyTask.update).toHaveBeenCalledWith({
+      where: { id: "dt-2" },
+      data: { tags: { set: [{ id: "tag-1" }, { id: "tag-2" }] } },
+    });
+  });
+
+  it("skips findMany and tag updates when no pending instances exist", async () => {
+    mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
+
+    await syncPendingRecurringInstances("rec-1", {
+      title: "New title",
+      description: null,
+      tagIds: ["tag-1"],
+    });
+
+    expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalled();
+    expect(mockPrisma.dailyTask.findMany).not.toHaveBeenCalled();
+    expect(mockPrisma.dailyTask.update).not.toHaveBeenCalled();
   });
 });

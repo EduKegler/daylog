@@ -31,4 +31,10 @@ describe("canEditDailyTask", () => {
       canEditDailyTask({ status: "SKIPPED", sourceType: "MANUAL" }),
     ).toBe(false);
   });
+
+  it("disallows editing a dismissed task", () => {
+    expect(
+      canEditDailyTask({ status: "DISMISSED", sourceType: "RECURRING" }),
+    ).toBe(false);
+  });
 });

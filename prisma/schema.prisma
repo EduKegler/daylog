@@ -96,6 +96,7 @@ enum TaskStatus {
   PENDING
   COMPLETED
   SKIPPED
+  DISMISSED
 }
 
 model RecurringTask {

@@ -96,7 +96,7 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
     <div
       className={cn(taskItemBase, "group", !task.isActive && "opacity-50", isPending && "opacity-30")}
     >
-      <div className="flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
             className="text-body leading-[1.4] cursor-pointer"

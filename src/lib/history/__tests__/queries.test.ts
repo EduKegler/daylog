@@ -117,7 +117,7 @@ describe("getHistory", () => {
     expect(result.days[0].date).toEqual(threeDaysAgo);
   });
 
-  it("excludes current day: groupBy filters by lt beforeDate", async () => {
+  it("excludes current day and DISMISSED tasks: groupBy filters by lt beforeDate", async () => {
     mockPrisma.dailyTask.groupBy.mockResolvedValue([]);
 
     await getHistory(userFilter, today, 0, 7);
@@ -127,11 +127,29 @@ describe("getHistory", () => {
       where: {
         userId: "user-1",
         scheduledDate: { lt: today },
+        status: { not: "DISMISSED" },
       },
       orderBy: { scheduledDate: "desc" },
       skip: 0,
       take: 8,
     });
+  });
+
+  it("excludes DISMISSED tasks from findMany", async () => {
+    mockPrisma.dailyTask.groupBy.mockResolvedValue([
+      { scheduledDate: yesterday },
+    ]);
+    mockPrisma.dailyTask.findMany.mockResolvedValue([]);
+
+    await getHistory(userFilter, today, 0, 7);
+
+    expect(mockPrisma.dailyTask.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: { not: "DISMISSED" },
+        }),
+      }),
+    );
   });
 
   it("date with no matching tasks: returns empty task list and zero stats", async () => {

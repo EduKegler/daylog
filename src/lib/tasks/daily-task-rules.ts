@@ -1,5 +1,5 @@
 type DailyTaskInfo = {
-  status: "PENDING" | "COMPLETED" | "SKIPPED";
+  status: "PENDING" | "COMPLETED" | "SKIPPED" | "DISMISSED";
   sourceType: "MANUAL" | "RECURRING";
 };
 

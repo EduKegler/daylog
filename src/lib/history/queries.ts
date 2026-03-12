@@ -18,7 +18,7 @@ export async function getHistory(
   // Query 1: distinct dates paginated directly in the database
   const groupedDates = await prisma.dailyTask.groupBy({
     by: ["scheduledDate"],
-    where: { ...filter, scheduledDate: { lt: beforeDate } },
+    where: { ...filter, scheduledDate: { lt: beforeDate }, status: { not: "DISMISSED" } },
     orderBy: { scheduledDate: "desc" },
     skip: page * pageSize,
     take: pageSize + 1,
@@ -38,6 +38,7 @@ export async function getHistory(
     where: {
       ...filter,
       scheduledDate: { in: paginatedDates },
+      status: { not: "DISMISSED" },
     },
     include: { tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" } } },
     orderBy: [{ status: "asc" }, { createdAt: "asc" }],
