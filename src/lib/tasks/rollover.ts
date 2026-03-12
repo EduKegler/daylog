@@ -6,22 +6,6 @@ export type RolloverResult = {
   carriedOver: number;
 };
 
-function buildLastProcessedDateUpdate(
-  ctx: OwnerContext,
-  today: Date,
-) {
-  if (ctx.type === "user") {
-    return prisma.user.update({
-      where: { id: ctx.userId },
-      data: { lastProcessedDate: today },
-    });
-  }
-  return prisma.guestSession.update({
-    where: { id: ctx.guestSessionId },
-    data: { lastProcessedDate: today },
-  });
-}
-
 export async function processRollover(
   ctx: OwnerContext,
   lastProcessedDate: Date | null,
@@ -31,7 +15,17 @@ export async function processRollover(
 
   // Primeiro acesso: apenas marca o dia
   if (lastProcessedDate === null) {
-    await buildLastProcessedDateUpdate(ctx, today);
+    if (ctx.type === "user") {
+      await prisma.user.update({
+        where: { id: ctx.userId },
+        data: { lastProcessedDate: today },
+      });
+    } else {
+      await prisma.guestSession.update({
+        where: { id: ctx.guestSessionId },
+        data: { lastProcessedDate: today },
+      });
+    }
     return { carriedOver: 0 };
   }
 
@@ -48,35 +42,55 @@ export async function processRollover(
       sourceType: "MANUAL",
       status: "PENDING",
     },
+    include: { tags: { select: { id: true } } },
   });
 
   if (pendingManual.length === 0) {
-    await buildLastProcessedDateUpdate(ctx, today);
+    if (ctx.type === "user") {
+      await prisma.user.update({
+        where: { id: ctx.userId },
+        data: { lastProcessedDate: today },
+      });
+    } else {
+      await prisma.guestSession.update({
+        where: { id: ctx.guestSessionId },
+        data: { lastProcessedDate: today },
+      });
+    }
     return { carriedOver: 0 };
   }
 
-  // Build carry-overs preserving originalDate
-  const carryOvers = pendingManual.map((task) => ({
-    ...filter,
-    sourceType: "MANUAL" as const,
-    title: task.title,
-    description: task.description,
-    category: task.category,
-    scheduledDate: today,
-    originalDate: task.originalDate ?? task.scheduledDate,
-  }));
-
   // Atomic transaction: create carry-overs + mark sources as SKIPPED + update lastProcessedDate
-  await prisma.$transaction([
-    prisma.dailyTask.createMany({ data: carryOvers }),
-    prisma.dailyTask.updateMany({
-      where: {
-        id: { in: pendingManual.map((t) => t.id) },
-      },
+  await prisma.$transaction(async (tx) => {
+    for (const task of pendingManual) {
+      await tx.dailyTask.create({
+        data: {
+          ...filter,
+          sourceType: "MANUAL" as const,
+          title: task.title,
+          description: task.description,
+          scheduledDate: today,
+          originalDate: task.originalDate ?? task.scheduledDate,
+          tags: { connect: task.tags.map((t) => ({ id: t.id })) },
+        },
+      });
+    }
+    await tx.dailyTask.updateMany({
+      where: { id: { in: pendingManual.map((t) => t.id) } },
       data: { status: "SKIPPED" },
-    }),
-    buildLastProcessedDateUpdate(ctx, today),
-  ]);
+    });
+    if (ctx.type === "user") {
+      await tx.user.update({
+        where: { id: ctx.userId },
+        data: { lastProcessedDate: today },
+      });
+    } else {
+      await tx.guestSession.update({
+        where: { id: ctx.guestSessionId },
+        data: { lastProcessedDate: today },
+      });
+    }
+  });
 
-  return { carriedOver: carryOvers.length };
+  return { carriedOver: pendingManual.length };
 }
