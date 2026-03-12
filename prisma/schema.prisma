@@ -24,6 +24,7 @@ model User {
   sessions       Session[]
   recurringTasks RecurringTask[]
   dailyTasks     DailyTask[]
+  tags           Tag[]
 }
 
 model Account {
@@ -74,6 +75,7 @@ model GuestSession {
 
   recurringTasks RecurringTask[]
   dailyTasks     DailyTask[]
+  tags           Tag[]
 }
 
 // ─── Domain Models ─────────────────────────────
@@ -112,6 +114,7 @@ model RecurringTask {
   user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
   guestSession GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: Cascade)
   dailyTasks   DailyTask[]
+  tags         Tag[]
 
   @@index([userId, isActive])
   @@index([guestSessionId, isActive])
@@ -136,8 +139,27 @@ model DailyTask {
   user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   guestSession  GuestSession?  @relation(fields: [guestSessionId], references: [id], onDelete: Cascade)
   recurringTask RecurringTask? @relation(fields: [recurringTaskId], references: [id], onDelete: SetNull)
+  tags          Tag[]
 
   @@index([userId, scheduledDate])
   @@index([guestSessionId, scheduledDate])
   @@unique([recurringTaskId, scheduledDate])
+}
+
+model Tag {
+  id             String   @id @default(cuid())
+  userId         String?
+  guestSessionId String?
+  name           String
+  color          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: Cascade)
+  dailyTasks     DailyTask[]
+  recurringTasks RecurringTask[]
+
+  @@index([userId])
+  @@index([guestSessionId])
 }
