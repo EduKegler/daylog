@@ -14,6 +14,7 @@ export async function getUpcomingTasks(
 ): Promise<UpcomingDay[]> {
   const tasks = await prisma.dailyTask.findMany({
     where: { ...filter, scheduledDate: { gt: afterDate } },
+    include: { tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" } } },
     orderBy: [{ scheduledDate: "asc" }, { createdAt: "asc" }],
     take: limit,
   });

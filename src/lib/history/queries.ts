@@ -39,6 +39,7 @@ export async function getHistory(
       ...filter,
       scheduledDate: { in: paginatedDates },
     },
+    include: { tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" } } },
     orderBy: [{ status: "asc" }, { createdAt: "asc" }],
   });
 

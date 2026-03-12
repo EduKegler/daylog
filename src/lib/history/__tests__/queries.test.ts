@@ -43,6 +43,7 @@ describe("getHistory", () => {
         status: "COMPLETED",
         scheduledDate: yesterday,
         sourceType: "MANUAL",
+        tags: [],
       },
       {
         id: "t2",
@@ -51,6 +52,7 @@ describe("getHistory", () => {
         status: "PENDING",
         scheduledDate: yesterday,
         sourceType: "RECURRING",
+        tags: [],
       },
       {
         id: "t3",
@@ -59,6 +61,7 @@ describe("getHistory", () => {
         status: "COMPLETED",
         scheduledDate: twoDaysAgo,
         sourceType: "MANUAL",
+        tags: [],
       },
     ]);
 
@@ -87,8 +90,8 @@ describe("getHistory", () => {
       { scheduledDate: threeDaysAgo },
     ]);
     mockPrisma.dailyTask.findMany.mockResolvedValue([
-      { id: "t1", status: "PENDING", scheduledDate: yesterday },
-      { id: "t2", status: "COMPLETED", scheduledDate: twoDaysAgo },
+      { id: "t1", status: "PENDING", scheduledDate: yesterday, tags: [] },
+      { id: "t2", status: "COMPLETED", scheduledDate: twoDaysAgo, tags: [] },
     ]);
 
     const result = await getHistory(userFilter, today, 0, 2);
@@ -104,7 +107,7 @@ describe("getHistory", () => {
       { scheduledDate: threeDaysAgo },
     ]);
     mockPrisma.dailyTask.findMany.mockResolvedValue([
-      { id: "t3", status: "PENDING", scheduledDate: threeDaysAgo },
+      { id: "t3", status: "PENDING", scheduledDate: threeDaysAgo, tags: [] },
     ]);
 
     const result = await getHistory(userFilter, today, 1, 2);
@@ -138,7 +141,7 @@ describe("getHistory", () => {
       { scheduledDate: twoDaysAgo },
     ]);
     mockPrisma.dailyTask.findMany.mockResolvedValue([
-      { id: "t1", status: "COMPLETED", scheduledDate: yesterday },
+      { id: "t1", status: "COMPLETED", scheduledDate: yesterday, tags: [] },
     ]);
 
     const result = await getHistory(userFilter, today, 0, 7);
