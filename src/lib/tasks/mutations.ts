@@ -5,20 +5,20 @@ import { startOfDay, startOfNextDay } from "./queries";
 export type CreateTaskInput = {
   title: string;
   description?: string;
-  category?: string;
+  tagIds: string[];
   scheduledDate: Date;
 } & OwnerFilter;
 
 export async function createTask(input: CreateTaskInput) {
-  const { title, description, category, scheduledDate, ...ownerFilter } = input;
+  const { title, description, tagIds, scheduledDate, ...ownerFilter } = input;
   return prisma.dailyTask.create({
     data: {
       ...ownerFilter,
       sourceType: "MANUAL",
       title,
       description: description || null,
-      category: category || null,
       scheduledDate: startOfDay(scheduledDate),
+      tags: { connect: tagIds.map((id) => ({ id })) },
     },
   });
 }
@@ -59,28 +59,25 @@ export async function uncompleteTask(
 export async function updateDailyTask(
   taskId: string,
   filter: OwnerFilter,
-  data: {
-    title: string;
-    description: string | null;
-    category: string | null;
-    scheduledDate?: Date;
-  },
+  data: { title?: string; description?: string | null; tagIds?: string[]; scheduledDate?: Date },
 ): Promise<void> {
-  const updateData: Record<string, unknown> = {
-    title: data.title,
-    description: data.description,
-    category: data.category,
-  };
-  if (data.scheduledDate) {
-    updateData.scheduledDate = startOfDay(data.scheduledDate);
-  }
+  await prisma.$transaction(async (tx) => {
+    const task = await tx.dailyTask.findFirst({ where: { id: taskId, ...filter } });
+    if (!task) return;
 
-  const { count } = await prisma.dailyTask.updateMany({
-    where: { id: taskId, ...filter },
-    data: updateData,
+    const updateData: Record<string, unknown> = {};
+    if (data.title !== undefined) updateData.title = data.title;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.scheduledDate !== undefined) updateData.scheduledDate = startOfDay(data.scheduledDate);
+
+    await tx.dailyTask.update({
+      where: { id: taskId },
+      data: {
+        ...updateData,
+        ...(data.tagIds !== undefined ? { tags: { set: data.tagIds.map((id) => ({ id })) } } : {}),
+      },
+    });
   });
-
-  if (count === 0) throw new Error("Task not found or unauthorized");
 }
 
 export async function deleteTask(

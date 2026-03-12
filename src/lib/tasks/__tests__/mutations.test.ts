@@ -6,7 +6,10 @@ const mockPrisma = vi.hoisted(() => ({
     create: vi.fn(),
     updateMany: vi.fn(),
     deleteMany: vi.fn(),
+    findFirst: vi.fn(),
+    update: vi.fn(),
   },
+  $transaction: vi.fn(async (cb: (tx: typeof mockPrisma) => Promise<unknown>) => cb(mockPrisma)),
 }));
 
 vi.mock("@/lib/db/prisma", () => ({ prisma: mockPrisma }));
@@ -121,6 +124,7 @@ describe("createTask", () => {
     await createTask({
       userId: "user-1",
       title: "Buy coffee",
+      tagIds: [],
       scheduledDate: new Date(),
     });
 
@@ -130,8 +134,8 @@ describe("createTask", () => {
         sourceType: "MANUAL",
         title: "Buy coffee",
         description: null,
-        category: null,
         scheduledDate: today,
+        tags: { connect: [] },
       },
     });
   });
@@ -144,7 +148,7 @@ describe("createTask", () => {
     await createTask({
       userId: "user-1",
       title: "Dentist",
-      category: "Health",
+      tagIds: ["tag-1"],
       scheduledDate: futureDate,
     });
 
@@ -154,8 +158,8 @@ describe("createTask", () => {
         sourceType: "MANUAL",
         title: "Dentist",
         description: null,
-        category: "Health",
         scheduledDate: expected,
+        tags: { connect: [{ id: "tag-1" }] },
       },
     });
   });
@@ -166,6 +170,7 @@ describe("createTask", () => {
     await createTask({
       guestSessionId: "guest-1",
       title: "Guest task",
+      tagIds: [],
       scheduledDate: new Date("2026-03-11T00:00:00Z"),
     });
 
@@ -175,66 +180,87 @@ describe("createTask", () => {
         sourceType: "MANUAL",
         title: "Guest task",
         description: null,
-        category: null,
         scheduledDate: new Date("2026-03-11T00:00:00Z"),
+        tags: { connect: [] },
       },
     });
   });
 });
 
 describe("updateDailyTask", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPrisma.$transaction = vi.fn(async (cb: (tx: typeof mockPrisma) => Promise<unknown>) => cb(mockPrisma));
+  });
 
   it("updates task with basic data", async () => {
-    mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.dailyTask.findFirst.mockResolvedValue({ id: "task-1" });
+    mockPrisma.dailyTask.update.mockResolvedValue({ id: "task-1" });
 
     await updateDailyTask("task-1", userFilter, {
       title: "Updated title",
       description: "New desc",
-      category: "Work",
     });
 
-    expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
+    expect(mockPrisma.dailyTask.findFirst).toHaveBeenCalledWith({
       where: { id: "task-1", userId: "user-1" },
+    });
+    expect(mockPrisma.dailyTask.update).toHaveBeenCalledWith({
+      where: { id: "task-1" },
       data: {
         title: "Updated title",
         description: "New desc",
-        category: "Work",
       },
     });
   });
 
   it("updates task with scheduledDate (calls startOfDay)", async () => {
-    mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.dailyTask.findFirst.mockResolvedValue({ id: "task-1" });
+    mockPrisma.dailyTask.update.mockResolvedValue({ id: "task-1" });
 
     await updateDailyTask("task-1", userFilter, {
       title: "Moved task",
       description: null,
-      category: null,
       scheduledDate: new Date("2026-03-20T14:30:00Z"),
     });
 
-    expect(mockPrisma.dailyTask.updateMany).toHaveBeenCalledWith({
-      where: { id: "task-1", userId: "user-1" },
+    expect(mockPrisma.dailyTask.update).toHaveBeenCalledWith({
+      where: { id: "task-1" },
       data: {
         title: "Moved task",
         description: null,
-        category: null,
         scheduledDate: new Date("2026-03-20T00:00:00Z"),
       },
     });
   });
 
-  it("throws when task not found (count === 0)", async () => {
-    mockPrisma.dailyTask.updateMany.mockResolvedValue({ count: 0 });
+  it("updates task with tagIds", async () => {
+    mockPrisma.dailyTask.findFirst.mockResolvedValue({ id: "task-1" });
+    mockPrisma.dailyTask.update.mockResolvedValue({ id: "task-1" });
 
-    await expect(
-      updateDailyTask("bad-id", userFilter, {
-        title: "No task",
-        description: null,
-        category: null,
-      }),
-    ).rejects.toThrow("Task not found or unauthorized");
+    await updateDailyTask("task-1", userFilter, {
+      title: "Tagged task",
+      tagIds: ["tag-1", "tag-2"],
+    });
+
+    expect(mockPrisma.dailyTask.update).toHaveBeenCalledWith({
+      where: { id: "task-1" },
+      data: {
+        title: "Tagged task",
+        tags: { set: [{ id: "tag-1" }, { id: "tag-2" }] },
+      },
+    });
+  });
+
+  it("does nothing when task not found", async () => {
+    mockPrisma.dailyTask.findFirst.mockResolvedValue(null);
+
+    await updateDailyTask("bad-id", userFilter, {
+      title: "No task",
+      description: null,
+    });
+
+    expect(mockPrisma.dailyTask.update).not.toHaveBeenCalled();
   });
 });
 
