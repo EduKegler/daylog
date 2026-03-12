@@ -8,14 +8,14 @@ export type RecurrenceTypeValue =
 export type OneTimeEditData = {
   title: string;
   description: string | null;
-  category: string | null;
+  tags: Array<{ id: string; name: string; color: string }>;
   scheduledDate: string;
 };
 
 export type RecurringEditData = {
   title: string;
   description: string | null;
-  category: string | null;
+  tags: Array<{ id: string; name: string; color: string }>;
   recurrenceType: string;
   recurrenceConfig: string | null;
 };

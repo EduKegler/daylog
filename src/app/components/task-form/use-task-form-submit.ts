@@ -13,7 +13,7 @@ type SubmitParams = {
   taskId?: string;
   title: string;
   description: string;
-  category: string;
+  tagIds: string[];
   scheduledDate: string;
   recurrenceType: RecurrenceTypeValue;
   selectedDays: number[];
@@ -62,7 +62,7 @@ export function useTaskFormSubmit(): {
       const formData = new FormData();
       formData.set("title", params.title);
       formData.set("description", params.description);
-      formData.set("category", params.category);
+      formData.set("tagIds", JSON.stringify(params.tagIds));
       formData.set("scheduledDate", params.scheduledDate);
 
       createTask.mutate(formData, {
@@ -81,7 +81,7 @@ export function useTaskFormSubmit(): {
       const formData = new FormData();
       formData.set("title", params.title);
       formData.set("description", params.description);
-      formData.set("category", params.category);
+      formData.set("tagIds", JSON.stringify(params.tagIds));
       formData.set("recurrenceType", params.recurrenceType);
       const config = buildRecurrenceConfig(
         params.recurrenceType,
@@ -111,7 +111,7 @@ export function useTaskFormSubmit(): {
           data: {
             title: params.title.trim(),
             description: params.description.trim() || null,
-            category: params.category.trim() || null,
+            tagIds: params.tagIds,
             scheduledDate: params.scheduledDate,
           },
         },
@@ -133,7 +133,7 @@ export function useTaskFormSubmit(): {
       const formData = new FormData();
       formData.set("title", params.title);
       formData.set("description", params.description);
-      formData.set("category", params.category);
+      formData.set("tagIds", JSON.stringify(params.tagIds));
       formData.set("recurrenceType", params.recurrenceType);
       const config = buildRecurrenceConfig(
         params.recurrenceType,

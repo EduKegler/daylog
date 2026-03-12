@@ -10,6 +10,7 @@ import { useTaskFormSubmit } from "./use-task-form-submit";
 import { FieldError } from "@/app/components/field-error";
 import { CharCounter } from "@/app/components/char-counter";
 import { FIELD_LIMITS } from "@/lib/tasks/validation";
+import { TagsInput } from "@/app/components/tags-input";
 import type {
   TaskFormProps,
   TaskType,
@@ -58,8 +59,8 @@ export function TaskForm(props: TaskFormProps): React.ReactElement {
     mode === "edit" ? props.initialData.title : "";
   const initialDescription =
     mode === "edit" ? (props.initialData.description ?? "") : "";
-  const initialCategory =
-    mode === "edit" ? (props.initialData.category ?? "") : "";
+  const initialTagIds =
+    mode === "edit" ? props.initialData.tags.map(t => t.id) : [];
 
   const initialScheduledDate =
     mode === "edit" && props.taskType === "one-time"
@@ -79,7 +80,7 @@ export function TaskForm(props: TaskFormProps): React.ReactElement {
   const [taskType, setTaskType] = useState<TaskType>(defaultType);
   const [title, setTitle] = useState(initialTitle);
   const [description, setDescription] = useState(initialDescription);
-  const [category, setCategory] = useState(initialCategory);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(initialTagIds);
   const [scheduledDate, setScheduledDate] = useState(initialScheduledDate);
   const [recurrenceType, setRecurrenceType] =
     useState<RecurrenceTypeValue>(initialRecurrenceType);
@@ -102,7 +103,7 @@ export function TaskForm(props: TaskFormProps): React.ReactElement {
       taskId,
       title: title.trim(),
       description: description.trim(),
-      category: category.trim(),
+      tagIds: selectedTagIds,
       scheduledDate,
       recurrenceType,
       selectedDays,
@@ -140,8 +141,7 @@ export function TaskForm(props: TaskFormProps): React.ReactElement {
     (recurrenceType === "MONTHLY" && daysOfMonth.length > 0);
   const isWithinLimits =
     trimmedTitle.length <= FIELD_LIMITS.title &&
-    description.length <= FIELD_LIMITS.description &&
-    category.length <= FIELD_LIMITS.category;
+    description.length <= FIELD_LIMITS.description;
   const isFormValid =
     trimmedTitle.length > 0 && isWithinLimits && hasRequiredRecurrenceConfig;
 
@@ -173,16 +173,7 @@ export function TaskForm(props: TaskFormProps): React.ReactElement {
       />
       <CharCounter current={description.length} max={FIELD_LIMITS.description} />
 
-      <div>
-        <input
-          type="text"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          placeholder="Category (optional)"
-          className={inputSmall}
-        />
-        <FieldError message={errors.category} />
-      </div>
+      <TagsInput selectedTagIds={selectedTagIds} onChange={setSelectedTagIds} />
 
       <div className="flex gap-4 items-end">
         <div className="flex-1">
