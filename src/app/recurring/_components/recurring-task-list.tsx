@@ -15,6 +15,7 @@ import { Text } from "@/app/components/text";
 import { EmptyState } from "@/app/components/empty-state";
 import { NoRecurringIllustration } from "@/app/components/empty-state-illustrations";
 import { TaskForm } from "@/app/components/task-form/task-form";
+import { TagBadge } from "@/app/components/tag-badge";
 
 const taskItemBase = "flex items-start gap-3 py-3.5 border-b border-border transition-transform duration-200 hover:translate-x-0.5";
 const actionBtn = "flex items-center justify-center w-7 h-7 rounded-md text-border bg-transparent border-none transition-all duration-200 shrink-0 group-hover:text-muted";
@@ -81,7 +82,7 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
         initialData={{
           title: task.title,
           description: task.description,
-          category: task.category,
+          tags: task.tags,
           recurrenceType: task.recurrenceType,
           recurrenceConfig: task.recurrenceConfig,
         }}
@@ -103,11 +104,9 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
           >
             {task.title}
           </span>
-          {task.category && (
-            <span className="text-tag font-medium px-2 py-0.5 rounded-full bg-border text-muted whitespace-nowrap">
-              {task.category}
-            </span>
-          )}
+          {task.tags.map(tag => (
+            <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+          ))}
         </div>
         {task.description && (
           <Text variant="small" muted className="mt-0.5">{task.description}</Text>

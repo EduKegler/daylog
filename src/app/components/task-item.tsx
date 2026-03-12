@@ -12,12 +12,13 @@ import {
 } from "@/lib/queries/daily";
 import { TaskForm } from "./task-form/task-form";
 import { Tooltip } from "./tooltip";
+import { TagBadge } from "./tag-badge";
 
 export type Task = {
   id: string;
   title: string;
   description: string | null;
-  category: string | null;
+  tags: Array<{ id: string; name: string; color: string }>;
   sourceType: "MANUAL" | "RECURRING";
   status: "PENDING" | "COMPLETED" | "SKIPPED";
   originalDate: string | null;
@@ -82,7 +83,7 @@ export function TaskItem({ task }: { task: Task }) {
               initialData={{
                 title: task.title,
                 description: task.description,
-                category: task.category,
+                tags: task.tags,
                 recurrenceType: recurrenceType,
                 recurrenceConfig: task.recurrenceConfig,
               }}
@@ -97,7 +98,7 @@ export function TaskItem({ task }: { task: Task }) {
               initialData={{
                 title: task.title,
                 description: task.description,
-                category: task.category,
+                tags: task.tags,
                 scheduledDate: task.scheduledDate,
               }}
               onSuccess={() => setIsEditing(false)}
@@ -163,7 +164,9 @@ export function TaskItem({ task }: { task: Task }) {
             </span>
           </Tooltip>
         )}
-        {task.category && <span className={badge}>{task.category}</span>}
+        {task.tags.map(tag => (
+          <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+        ))}
         {task.sourceType === "RECURRING" && (
           <Tooltip content="Recurring task">
             <span className={badge} tabIndex={0}>↻</span>

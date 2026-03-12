@@ -1,6 +1,7 @@
 import { cn } from "@/lib/cn";
 import { Text } from "@/app/components/text";
 import { Tooltip } from "@/app/components/tooltip";
+import { TagBadge } from "@/app/components/tag-badge";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -86,9 +87,9 @@ export function HistoryDayCard({ day, open, onOpenChange }: HistoryDayCardProps)
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {task.category && (
-                    <span className={badge}>{task.category}</span>
-                  )}
+                  {task.tags?.map(tag => (
+                    <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+                  ))}
                   {task.sourceType === "RECURRING" && (
                     <Tooltip content="Recurring task">
                       <span className={badge} tabIndex={0}>
