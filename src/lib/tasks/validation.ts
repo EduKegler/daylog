@@ -10,8 +10,9 @@ type ValidationResult<T> =
 export const FIELD_LIMITS = {
   title: 75,
   description: 450,
-  category: 50,
 } as const;
+
+export const MAX_TAGS_PER_TASK = 5;
 
 const commonFieldsSchema = z.object({
   title: z
@@ -26,12 +27,6 @@ const commonFieldsSchema = z.object({
     .max(
       FIELD_LIMITS.description,
       `Description must be at most ${FIELD_LIMITS.description} characters`,
-    ),
-  category: z
-    .string()
-    .max(
-      FIELD_LIMITS.category,
-      `Category must be at most ${FIELD_LIMITS.category} characters`,
     ),
 });
 
@@ -51,7 +46,7 @@ function issuesToRecord(
 export type RecurringTaskInput = {
   title: string;
   description: string | null;
-  category: string | null;
+  tagIds: string[];
   recurrenceType: RecurrenceType;
   recurrenceConfig: string | null;
 };
@@ -59,17 +54,14 @@ export type RecurringTaskInput = {
 export function validateCommonFields(data: {
   title?: string;
   description?: string;
-  category?: string;
 }): {
   title: string;
   description: string | null;
-  category: string | null;
   errors: Record<string, string>;
 } {
   const trimmed = {
     title: (data.title ?? "").trim(),
     description: (data.description ?? "").trim(),
-    category: (data.category ?? "").trim(),
   };
 
   const result = commonFieldsSchema.safeParse(trimmed);
@@ -78,7 +70,6 @@ export function validateCommonFields(data: {
     return {
       title: result.data.title,
       description: result.data.description || null,
-      category: result.data.category || null,
       errors: {},
     };
   }
@@ -86,7 +77,6 @@ export function validateCommonFields(data: {
   return {
     title: trimmed.title,
     description: trimmed.description || null,
-    category: trimmed.category || null,
     errors: issuesToRecord(result.error.issues),
   };
 }
@@ -94,11 +84,17 @@ export function validateCommonFields(data: {
 export function validateRecurringTaskInput(data: {
   title?: string;
   description?: string;
-  category?: string;
+  tagIds?: string[];
   recurrenceType?: string;
   recurrenceConfig?: string;
 }): ValidationResult<RecurringTaskInput> {
-  const { title, description, category, errors } = validateCommonFields(data);
+  const { title, description, errors } = validateCommonFields(data);
+
+  // TagIds
+  const tagIds = data.tagIds ?? [];
+  if (tagIds.length > MAX_TAGS_PER_TASK) {
+    errors.tags = `Maximum ${MAX_TAGS_PER_TASK} tags per task`;
+  }
 
   // RecurrenceType
   const recurrenceType = data.recurrenceType as RecurrenceType;
@@ -126,7 +122,7 @@ export function validateRecurringTaskInput(data: {
     data: {
       title,
       description,
-      category,
+      tagIds,
       recurrenceType,
       recurrenceConfig: normalizeConfig(recurrenceType, data.recurrenceConfig ?? null),
     },
@@ -222,17 +218,23 @@ function normalizeConfig(type: RecurrenceType, configStr: string | null): string
 export type TaskInput = {
   title: string;
   description: string | null;
-  category: string | null;
+  tagIds: string[];
   scheduledDate: Date;
 };
 
 export function validateTaskInput(data: {
   title?: string;
   description?: string;
-  category?: string;
+  tagIds?: string[];
   scheduledDate?: string;
 }): ValidationResult<TaskInput> {
-  const { title, description, category, errors } = validateCommonFields(data);
+  const { title, description, errors } = validateCommonFields(data);
+
+  // TagIds
+  const tagIds = data.tagIds ?? [];
+  if (tagIds.length > MAX_TAGS_PER_TASK) {
+    errors.tags = `Maximum ${MAX_TAGS_PER_TASK} tags per task`;
+  }
 
   // ScheduledDate
   const dateStr = data.scheduledDate ?? "";
@@ -247,6 +249,6 @@ export function validateTaskInput(data: {
 
   return {
     success: true,
-    data: { title, description, category, scheduledDate },
+    data: { title, description, tagIds, scheduledDate },
   };
 }

@@ -21,13 +21,13 @@ describe("validateRecurringTaskInput", () => {
     const result = validateRecurringTaskInput({
       title: "Complete task",
       description: "A description",
-      category: "Work",
+      tagIds: [],
       recurrenceType: "DAILY",
     });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.description).toBe("A description");
-      expect(result.data.category).toBe("Work");
+      expect(result.data.tagIds).toEqual([]);
     }
   });
 
@@ -84,20 +84,29 @@ describe("validateRecurringTaskInput", () => {
     if (!result.success) expect(result.errors.description).toContain("450");
   });
 
-  // Category validation
-  it("accepts empty category", () => {
-    const result = validateRecurringTaskInput({ ...validInput, category: "" });
+  // TagIds validation
+  it("accepts empty tagIds array", () => {
+    const result = validateRecurringTaskInput({ ...validInput, tagIds: [] });
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.category).toBeNull();
+    if (result.success) expect(result.data.tagIds).toEqual([]);
   });
 
-  it("rejects category > 50 characters", () => {
+  it("accepts up to 5 tag IDs", () => {
     const result = validateRecurringTaskInput({
       ...validInput,
-      category: "a".repeat(51),
+      tagIds: ["id1", "id2", "id3", "id4", "id5"],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.tagIds).toHaveLength(5);
+  });
+
+  it("rejects more than 5 tag IDs", () => {
+    const result = validateRecurringTaskInput({
+      ...validInput,
+      tagIds: ["id1", "id2", "id3", "id4", "id5", "id6"],
     });
     expect(result.success).toBe(false);
-    if (!result.success) expect(result.errors.category).toContain("50");
+    if (!result.success) expect(result.errors.tags).toBeDefined();
   });
 
   // RecurrenceType validation
@@ -349,14 +358,35 @@ describe("validateTaskInput", () => {
     if (!result.success) expect(result.errors.description).toContain("450");
   });
 
-  it("rejects category > 50 characters", () => {
+  // TagIds validation
+  it("accepts empty tagIds array", () => {
     const result = validateTaskInput({
       title: "Task",
-      category: "a".repeat(51),
+      tagIds: [],
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.tagIds).toEqual([]);
+  });
+
+  it("accepts up to 5 tag IDs", () => {
+    const result = validateTaskInput({
+      title: "Task",
+      tagIds: ["id1", "id2", "id3", "id4", "id5"],
+      scheduledDate: "2026-03-09",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.tagIds).toHaveLength(5);
+  });
+
+  it("rejects more than 5 tag IDs", () => {
+    const result = validateTaskInput({
+      title: "Task",
+      tagIds: ["id1", "id2", "id3", "id4", "id5", "id6"],
       scheduledDate: "2026-03-09",
     });
     expect(result.success).toBe(false);
-    if (!result.success) expect(result.errors.category).toContain("50");
+    if (!result.success) expect(result.errors.tags).toBeDefined();
   });
 
   it("rejects invalid date", () => {
@@ -378,13 +408,13 @@ describe("validateTaskInput", () => {
     const result = validateTaskInput({
       title: "Task",
       description: "",
-      category: "",
+      tagIds: [],
       scheduledDate: "2026-03-09",
     });
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.description).toBeNull();
-      expect(result.data.category).toBeNull();
+      expect(result.data.tagIds).toEqual([]);
     }
   });
 });
