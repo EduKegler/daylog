@@ -15,10 +15,12 @@ export async function createTaskAction(formData: FormData): Promise<ActionResult
       return { success: false, errors: { _form: "Guest daily task limit reached" } };
     }
 
+    const tagIds = JSON.parse(formData.get("tagIds") as string || "[]") as string[];
+
     const result = validateTaskInput({
       title: formData.get("title") as string,
       description: formData.get("description") as string,
-      category: formData.get("category") as string,
+      tagIds,
       scheduledDate: formData.get("scheduledDate") as string,
     });
 
@@ -30,7 +32,7 @@ export async function createTaskAction(formData: FormData): Promise<ActionResult
       ...filter,
       title: result.data.title,
       description: result.data.description ?? undefined,
-      category: result.data.category ?? undefined,
+      tagIds: result.data.tagIds,
       scheduledDate: result.data.scheduledDate,
     });
 
@@ -58,7 +60,7 @@ export async function updateTaskAction(
   data: {
     title: string;
     description: string | null;
-    category: string | null;
+    tagIds: string[];
     scheduledDate?: string;
   },
 ): Promise<ActionResult> {
@@ -70,7 +72,7 @@ export async function updateTaskAction(
     const result = validateTaskInput({
       title: data.title,
       description: data.description ?? undefined,
-      category: data.category ?? undefined,
+      tagIds: data.tagIds,
       scheduledDate: data.scheduledDate,
     });
 
@@ -81,21 +83,20 @@ export async function updateTaskAction(
     await updateDailyTask(taskId, filter, {
       title: result.data.title,
       description: result.data.description,
-      category: result.data.category,
+      tagIds: result.data.tagIds,
       scheduledDate: result.data.scheduledDate,
     });
   } else {
-    const { title, description, category, errors } = validateCommonFields({
+    const { title, description, errors } = validateCommonFields({
       title: data.title,
       description: data.description ?? undefined,
-      category: data.category ?? undefined,
     });
 
     if (Object.keys(errors).length > 0) {
       return { success: false, errors };
     }
 
-    await updateDailyTask(taskId, filter, { title, description, category });
+    await updateDailyTask(taskId, filter, { title, description, tagIds: data.tagIds });
   }
 
   return { success: true };

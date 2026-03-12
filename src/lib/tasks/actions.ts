@@ -18,10 +18,12 @@ export async function createRecurringTask(formData: FormData): Promise<ActionRes
     return { success: false, errors: { _form: "Guest recurring task limit reached" } };
   }
 
+  const tagIds = JSON.parse(formData.get("tagIds") as string || "[]") as string[];
+
   const result = validateRecurringTaskInput({
     title: formData.get("title") as string,
     description: formData.get("description") as string,
-    category: formData.get("category") as string,
+    tagIds,
     recurrenceType: formData.get("recurrenceType") as string,
     recurrenceConfig: formData.get("recurrenceConfig") as string,
   });
@@ -35,7 +37,7 @@ export async function createRecurringTask(formData: FormData): Promise<ActionRes
       ...filter,
       title: result.data.title,
       description: result.data.description,
-      category: result.data.category,
+      tags: { connect: result.data.tagIds.map((id) => ({ id })) },
       recurrenceType: result.data.recurrenceType,
       recurrenceConfig: result.data.recurrenceConfig,
     },
@@ -60,10 +62,12 @@ export async function updateRecurringTask(
     return { success: false, errors: { _form: "Task not found" } };
   }
 
+  const tagIds = JSON.parse(formData.get("tagIds") as string || "[]") as string[];
+
   const result = validateRecurringTaskInput({
     title: formData.get("title") as string,
     description: formData.get("description") as string,
-    category: formData.get("category") as string,
+    tagIds,
     recurrenceType: formData.get("recurrenceType") as string,
     recurrenceConfig: formData.get("recurrenceConfig") as string,
   });
@@ -77,7 +81,7 @@ export async function updateRecurringTask(
     data: {
       title: result.data.title,
       description: result.data.description,
-      category: result.data.category,
+      tags: { set: result.data.tagIds.map((id) => ({ id })) },
       recurrenceType: result.data.recurrenceType,
       recurrenceConfig: result.data.recurrenceConfig,
     },
