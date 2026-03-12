@@ -94,6 +94,9 @@ describe("getRecurringTasks", () => {
 
     expect(mockPrisma.recurringTask.findMany).toHaveBeenCalledWith({
       where: { userId: "user-1" },
+      include: {
+        tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" } },
+      },
       orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
     });
   });
@@ -105,6 +108,9 @@ describe("getRecurringTasks", () => {
 
     expect(mockPrisma.recurringTask.findMany).toHaveBeenCalledWith({
       where: { guestSessionId: "guest-1" },
+      include: {
+        tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" } },
+      },
       orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
     });
   });
@@ -120,6 +126,9 @@ describe("getActiveRecurringTasks", () => {
 
     expect(mockPrisma.recurringTask.findMany).toHaveBeenCalledWith({
       where: { userId: "user-1", isActive: true },
+      include: {
+        tags: { select: { id: true } },
+      },
     });
   });
 });
@@ -145,6 +154,7 @@ describe("getDailyTasksForDate", () => {
         recurringTask: {
           select: { id: true, recurrenceType: true, recurrenceConfig: true },
         },
+        tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" } },
       },
       orderBy: [{ status: "asc" }, { createdAt: "asc" }],
     });
