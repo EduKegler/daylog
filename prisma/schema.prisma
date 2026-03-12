@@ -104,7 +104,6 @@ model RecurringTask {
   guestSessionId   String?
   title            String
   description      String?
-  category         String?
   recurrenceType   RecurrenceType
   recurrenceConfig String?
   isActive         Boolean        @default(true)
@@ -128,7 +127,6 @@ model DailyTask {
   recurringTaskId String?
   title           String
   description     String?
-  category        String?
   scheduledDate   DateTime
   status          TaskStatus @default(PENDING)
   completedAt     DateTime?

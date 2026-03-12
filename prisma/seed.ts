@@ -25,7 +25,6 @@ async function main() {
     data: {
       userId: user.id,
       title: "Review emails",
-      category: "Work",
       recurrenceType: "DAILY",
     },
   });
@@ -35,7 +34,6 @@ async function main() {
       userId: user.id,
       title: "Standup meeting",
       description: "Daily team meeting",
-      category: "Work",
       recurrenceType: "WEEKDAYS",
     },
   });
@@ -45,7 +43,6 @@ async function main() {
       userId: user.id,
       title: "Weekly review",
       description: "Review the week's progress",
-      category: "Personal",
       recurrenceType: "SPECIFIC_WEEKDAYS",
       recurrenceConfig: JSON.stringify({ days: [5] }),
     },
@@ -55,7 +52,6 @@ async function main() {
     data: {
       userId: user.id,
       title: "Pay bills",
-      category: "Finance",
       recurrenceType: "MONTHLY",
       recurrenceConfig: JSON.stringify({ daysOfMonth: [10] }),
     },
@@ -74,7 +70,6 @@ async function main() {
         userId: user.id,
         sourceType: "RECURRING",
         title: "Review emails",
-        category: "Work",
         scheduledDate: today,
         status: "PENDING",
       },
@@ -82,7 +77,6 @@ async function main() {
         userId: user.id,
         sourceType: "MANUAL",
         title: "Buy coffee",
-        category: "Personal",
         scheduledDate: today,
         status: "PENDING",
       },
