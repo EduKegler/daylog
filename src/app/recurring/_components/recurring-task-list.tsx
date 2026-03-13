@@ -96,47 +96,50 @@ function RecurringTaskItem({ task }: { task: RecurringTask }) {
     <div
       className={cn(taskItemBase, "group", !task.isActive && "opacity-50", isPending && "opacity-30")}
     >
-      <div className="flex flex-col flex-1 min-w-0">
-        <div className="flex items-center gap-2">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start gap-2">
           <span
-            className="text-body leading-[1.4] cursor-pointer"
+            className="text-body leading-[1.4] flex-1 min-w-0 cursor-pointer"
             onClick={() => setIsEditing(true)}
           >
             {task.title}
           </span>
-          {task.tags.map(tag => (
-            <TagBadge key={tag.id} name={tag.name} color={tag.color} />
-          ))}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button onClick={() => setIsEditing(true)} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit recurring task">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              onClick={handleToggle}
+              disabled={isPending}
+              className={cn(
+                "px-3 py-1 text-small font-medium rounded-full transition-colors duration-200",
+                task.isActive
+                  ? "bg-accent text-white hover:bg-accent-hover"
+                  : "bg-border text-muted hover:bg-stone-300",
+              )}
+            >
+              {task.isActive ? "Active" : "Inactive"}
+            </button>
+            <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete recurring task">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
         </div>
         {task.description && (
           <Text variant="small" muted className="mt-0.5">{task.description}</Text>
         )}
+        {task.tags.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap mt-1">
+            {task.tags.map(tag => (
+              <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+            ))}
+          </div>
+        )}
         <Text variant="small" muted className="mt-1">{label}</Text>
-      </div>
-
-      <div className="flex items-center gap-0.5">
-        <button onClick={() => setIsEditing(true)} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit recurring task">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <button
-          onClick={handleToggle}
-          disabled={isPending}
-          className={cn(
-            "px-3 py-1 text-small font-medium rounded-full transition-colors duration-200",
-            task.isActive
-              ? "bg-accent text-white hover:bg-accent-hover"
-              : "bg-border text-muted hover:bg-stone-300",
-          )}
-        >
-          {task.isActive ? "Active" : "Inactive"}
-        </button>
-        <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete recurring task">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </button>
       </div>
     </div>
   );

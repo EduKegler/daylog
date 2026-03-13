@@ -74,48 +74,57 @@ export function HistoryDayCard({ day, open, onOpenChange }: HistoryDayCardProps)
 
         <CollapsibleContent>
           <div className="flex flex-col mt-3">
-            {day.tasks.map((task) => (
-              <div key={task.id} className="flex items-start gap-3 py-2 border-b border-border">
-                <StatusIcon status={task.status} />
+            {day.tasks.map((task) => {
+              const hasBadges =
+                (task.tags && task.tags.length > 0) ||
+                task.sourceType === "RECURRING" ||
+                (task.status === "SKIPPED" && task.originalDate === null) ||
+                (task.originalDate && task.originalDate !== task.scheduledDate);
 
-                <div className="flex-1 min-w-0">
-                  <span
-                    className={cn("text-body leading-[1.4]", task.status === "COMPLETED" && "line-through opacity-50")}
-                  >
-                    {task.title}
-                  </span>
-                </div>
+              return (
+                <div key={task.id} className="flex items-start gap-3 py-2 border-b border-border">
+                  <StatusIcon status={task.status} />
 
-                <div className="flex items-center gap-2">
-                  {task.tags?.map(tag => (
-                    <TagBadge key={tag.id} name={tag.name} color={tag.color} />
-                  ))}
-                  {task.sourceType === "RECURRING" && (
-                    <Tooltip content="Recurring task">
-                      <span className={badge} tabIndex={0}>
-                        ↻
-                      </span>
-                    </Tooltip>
-                  )}
-                  {task.status === "SKIPPED" &&
-                    task.originalDate === null && (
-                      <Tooltip content="Carried over to the next day">
-                        <span className={badgeCarryOver} tabIndex={0}>
-                          ↗
-                        </span>
-                      </Tooltip>
+                  <div className="flex-1 min-w-0">
+                    <span
+                      className={cn("text-body leading-[1.4]", task.status === "COMPLETED" && "line-through opacity-50")}
+                    >
+                      {task.title}
+                    </span>
+                    {hasBadges && (
+                      <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                        {task.tags?.map(tag => (
+                          <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+                        ))}
+                        {task.sourceType === "RECURRING" && (
+                          <Tooltip content="Recurring task">
+                            <span className={badge} tabIndex={0}>
+                              ↻
+                            </span>
+                          </Tooltip>
+                        )}
+                        {task.status === "SKIPPED" &&
+                          task.originalDate === null && (
+                            <Tooltip content="Carried over to the next day">
+                              <span className={badgeCarryOver} tabIndex={0}>
+                                ↗
+                              </span>
+                            </Tooltip>
+                          )}
+                        {task.originalDate &&
+                          task.originalDate !== task.scheduledDate && (
+                            <Tooltip content={`Originally on ${formatShortDate(task.originalDate)}`}>
+                              <span className={badgeCarryOver} tabIndex={0}>
+                                ↗ {formatShortDate(task.originalDate)}
+                              </span>
+                            </Tooltip>
+                          )}
+                      </div>
                     )}
-                  {task.originalDate &&
-                    task.originalDate !== task.scheduledDate && (
-                      <Tooltip content={`Originally on ${formatShortDate(task.originalDate)}`}>
-                        <span className={badgeCarryOver} tabIndex={0}>
-                          ↗ {formatShortDate(task.originalDate)}
-                        </span>
-                      </Tooltip>
-                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CollapsibleContent>
       </section>

@@ -144,52 +144,55 @@ export function TaskItem({ task }: { task: Task }) {
         </button>
       </Tooltip>
 
-      <div className="flex flex-col flex-1 min-w-0">
-        <span
-          className={cn("text-body leading-[1.4]", isCompleted ? "line-through opacity-50" : canEdit ? "cursor-pointer" : "")}
-          onClick={canEdit ? handleEdit : undefined}
-        >
-          {task.title}
-        </span>
-        {task.description && (
-          <Text variant="small" muted className="mt-0.5">{task.description}</Text>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2">
-        {isCarryOver && task.originalDate && (
-          <Tooltip content={`Carried over from ${formatShortDate(task.originalDate)}`}>
-            <span className={badgeCarryOver} tabIndex={0}>
-              ↗ {formatShortDate(task.originalDate)}
-            </span>
-          </Tooltip>
-        )}
-        {task.tags.map(tag => (
-          <TagBadge key={tag.id} name={tag.name} color={tag.color} />
-        ))}
-        {task.sourceType === "RECURRING" && (
-          <Tooltip content="Recurring task">
-            <span className={badge} tabIndex={0}>↻</span>
-          </Tooltip>
-        )}
-        <div className="flex items-center gap-0.5">
-          {canEdit && (
-            <Tooltip content="Edit task">
-              <button onClick={handleEdit} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit task">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start gap-2">
+          <span
+            className={cn("text-body leading-[1.4] flex-1 min-w-0", isCompleted ? "line-through opacity-50" : canEdit ? "cursor-pointer" : "")}
+            onClick={canEdit ? handleEdit : undefined}
+          >
+            {task.title}
+          </span>
+          <div className="flex items-center gap-0.5 shrink-0">
+            {canEdit && (
+              <Tooltip content="Edit task">
+                <button onClick={handleEdit} disabled={isPending} className={actionBtnEdit} data-action-btn aria-label="Edit task">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+              </Tooltip>
+            )}
+            <Tooltip content="Delete task">
+              <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete task">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M8.5 2.5L11.5 5.5M1.5 12.5L2.25 9.75L10 2C10.83 1.17 12.17 1.17 13 2C13.83 2.83 13.83 4.17 13 5L5.25 12.75L1.5 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
               </button>
             </Tooltip>
-          )}
-          <Tooltip content="Delete task">
-            <button onClick={handleDelete} disabled={isPending} className={actionBtnDelete} data-action-btn aria-label="Delete task">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M3 3L11 11M11 3L3 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          </Tooltip>
+          </div>
         </div>
+        {task.description && (
+          <Text variant="small" muted className="mt-0.5">{task.description}</Text>
+        )}
+        {(isCarryOver || task.tags.length > 0 || task.sourceType === "RECURRING") && (
+          <div className="flex items-center gap-1.5 flex-wrap mt-1">
+            {isCarryOver && task.originalDate && (
+              <Tooltip content={`Carried over from ${formatShortDate(task.originalDate)}`}>
+                <span className={badgeCarryOver} tabIndex={0}>
+                  ↗ {formatShortDate(task.originalDate)}
+                </span>
+              </Tooltip>
+            )}
+            {task.tags.map(tag => (
+              <TagBadge key={tag.id} name={tag.name} color={tag.color} />
+            ))}
+            {task.sourceType === "RECURRING" && (
+              <Tooltip content="Recurring task">
+                <span className={badge} tabIndex={0}>↻</span>
+              </Tooltip>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export function WeekdayToggles({
   onToggle: (day: number) => void;
 }): React.ReactElement {
   return (
-    <div className="flex gap-1">
+    <div className="flex flex-wrap gap-1">
       {WEEKDAYS.map((wd) => (
         <button
           key={wd.value}

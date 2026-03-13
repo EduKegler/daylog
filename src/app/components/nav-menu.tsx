@@ -20,7 +20,7 @@ export async function NavMenu({
   const user = await getOptionalUser();
 
   return (
-    <nav className="flex items-center gap-3 sm:gap-4">
+    <nav className="flex items-center flex-wrap gap-x-3 gap-y-1 sm:gap-x-4">
       {navLinks.map((link) => (
         <Link
           key={link.href}
