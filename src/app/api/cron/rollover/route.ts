@@ -3,7 +3,7 @@ import { processCronRollover } from "@/lib/tasks/cron-rollover";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
   const expected = process.env.CRON_SECRET;
 
