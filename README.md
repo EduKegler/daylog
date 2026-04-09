@@ -1,29 +1,34 @@
 # Daylog
 
-Personal daily task manager with support for recurring tasks, automatic rollover, and history.
+Personal daily task manager with support for recurring tasks, tags, automatic rollover, guest mode, and history.
 
 ## Stack
 
-- **Next.js 15** — App Router, Server Components, Server Actions
-- **TypeScript**
+- **Next.js 16** — App Router, Server Components, Server Actions
+- **TypeScript** (strict mode)
 - **Tailwind CSS 4**
-- **Prisma 7** + SQLite
-- **NextAuth** (Auth.js v5)
+- **Prisma 7** — PrismaPg adapter + PostgreSQL (Supabase)
+- **NextAuth** (Auth.js v5) — Google OAuth, JWT strategy
+- **React Query** (TanStack Query v5) — client-side SWR cache
+- **Zod** — runtime validation at system boundaries
 
 ## Architecture
 
 - **Server Components** for pages (dashboard, history, recurring)
 - **Client Components** for interaction (forms, toggles, buttons)
-- **Server Actions** for mutations (create task, complete, toggle)
-- **Prisma** as ORM with local SQLite
+- **Server Actions** for mutations (create, edit, complete, toggle)
+- **React Query** hooks for data fetching via API routes, with optimistic updates
+- **Prisma** as ORM with PostgreSQL
 
 ## Data Model
 
 ### Entities
 
 - **User** — authentication via OAuth (Google)
+- **GuestSession** — anonymous session with 30-day TTL, data claimed on login
 - **RecurringTask** — recurring task template (DAILY, WEEKDAYS, SPECIFIC_WEEKDAYS, MONTHLY)
 - **DailyTask** — concrete task instance for a specific day
+- **Tag** — colored label, assignable to both daily and recurring tasks
 
 ### Task Status
 
@@ -32,6 +37,7 @@ Personal daily task manager with support for recurring tasks, automatic rollover
 | `PENDING` | Task awaiting completion |
 | `COMPLETED` | Task completed |
 | `SKIPPED` | Recurring task skipped during rollover (was left pending on the previous day) |
+| `DISMISSED` | Soft-deleted recurring instance (filtered from all views) |
 
 ### Source types
 
@@ -45,6 +51,12 @@ Personal daily task manager with support for recurring tasks, automatic rollover
 3. Pending **recurring** tasks are marked as `SKIPPED` (since a new instance will be generated)
 4. New recurring instances are created via `ensureRecurringInstances`
 
+Registered users are processed by a daily cron job (`/api/cron/rollover`). Guests get lazy rollover on page load.
+
+## Guest mode
+
+Unauthenticated users can use the app immediately. Guest sessions are stored with a 30-day TTL. When a guest logs in via Google OAuth, their data is atomically transferred to the authenticated account.
+
 ## Running locally
 
 ```bash
@@ -52,54 +64,50 @@ Personal daily task manager with support for recurring tasks, automatic rollover
 git clone <repo-url> && cd daylog
 
 # Install dependencies
-npm install
+pnpm install
 
 # Set up environment variables
 cp .env.example .env
-# Edit .env with your OAuth credentials and secret
+# Edit .env with your OAuth credentials, CRON_SECRET, and DATABASE_URL (PostgreSQL)
 
 # Create the database and run migrations
-npx prisma migrate dev
+pnpm prisma migrate dev
 
 # Start the development server
-npm run dev
+pnpm dev
 ```
 
-## Migrations and seed
+## Migrations
 
 ```bash
 # Create a new migration
-npx prisma migrate dev --name migration-name
+pnpm prisma migrate dev --name migration-name
 
-# Seed (if available)
-npx prisma db seed
+# Apply migrations in production
+pnpm prisma migrate deploy
 ```
 
 ## Tests
 
 ```bash
 # Watch mode
-npm test
+pnpm test
 
 # Run once
-npm run test:run
+pnpm test:run
 
 # With coverage
-npx vitest run --coverage
+pnpm vitest run --coverage
 ```
 
-## MVP Limitations
+## Limitations
 
-- UX optimized for single-user (no multi-tenant)
 - No notifications (push/email)
-- No mobile-first design
 - No drag-and-drop for reordering tasks
 - No subtasks or task dependencies
 
 ## Next steps
 
-- Edit manual tasks
-- Notes/comments per task
 - Streak and metrics visualization
 - Themes (dark/light mode)
-- PWA for offline use
+- PWA with offline support (service worker)

@@ -273,9 +273,9 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
             /* Color picker view — creating a new tag */
             <div className="px-3 py-3">
               <p className="text-small font-medium text-stone-900 mb-1">
-                Nova tag: &ldquo;{inputValue.trim()}&rdquo;
+                New tag: &ldquo;{inputValue.trim()}&rdquo;
               </p>
-              <p className="text-small text-muted mb-2">Escolha uma cor:</p>
+              <p className="text-small text-muted mb-2">Choose a color:</p>
               <TagColorPicker selectedColor={selectedColor} onSelect={setSelectedColor} />
               <div className="flex items-center gap-2 mt-3">
                 <button
@@ -284,7 +284,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                   onClick={cancelSubMode}
                   className="text-small text-muted hover:text-stone-900 cursor-pointer transition-colors duration-200"
                 >
-                  Voltar
+                  Back
                 </button>
                 <button
                   type="button"
@@ -293,14 +293,14 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                   onClick={handleCreate}
                   className="text-small font-medium text-white bg-accent border-none rounded-md py-1 px-3.5 disabled:opacity-60 cursor-pointer"
                 >
-                  {isCreatingTag ? "Criando\u2026" : "Criar"}
+                  {isCreatingTag ? "Creating\u2026" : "Create"}
                 </button>
               </div>
             </div>
           ) : editingTag ? (
             /* Edit tag view */
             <div className="px-3 py-3">
-              <p className="text-small font-medium text-stone-900 mb-2">Editar tag</p>
+              <p className="text-small font-medium text-stone-900 mb-2">Edit tag</p>
               <input
                 type="text"
                 value={editingName}
@@ -308,7 +308,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                 className="w-full text-small bg-transparent border-0 border-b border-border focus:border-b-accent outline-none py-1 mb-2 text-stone-900"
                 autoFocus
               />
-              <p className="text-small text-muted mb-2">Cor:</p>
+              <p className="text-small text-muted mb-2">Color:</p>
               <TagColorPicker selectedColor={selectedColor} onSelect={setSelectedColor} />
               <div className="flex items-center gap-2 mt-3">
                 <button
@@ -317,7 +317,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                   onClick={cancelSubMode}
                   className="text-small text-muted hover:text-stone-900 cursor-pointer transition-colors duration-200"
                 >
-                  Voltar
+                  Back
                 </button>
                 <button
                   type="button"
@@ -326,7 +326,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                   onClick={handleUpdate}
                   className="text-small font-medium text-white bg-accent border-none rounded-md py-1 px-3.5 disabled:opacity-60 cursor-pointer"
                 >
-                  {isUpdatingTag ? "Salvando\u2026" : "Salvar"}
+                  {isUpdatingTag ? "Saving\u2026" : "Save"}
                 </button>
                 <button
                   type="button"
@@ -334,7 +334,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                   onClick={handleDelete}
                   className="text-small text-red-600 hover:text-red-700 cursor-pointer transition-colors duration-200 ml-auto"
                 >
-                  Excluir
+                  Delete
                 </button>
               </div>
             </div>
@@ -343,7 +343,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
             <>
               {filteredTags.length === 0 && !showCreateOption && (
                 <p className="px-3 py-2 text-small text-muted">
-                  Nenhuma tag encontrada
+                  No tags found
                 </p>
               )}
 
@@ -381,7 +381,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                         e.stopPropagation();
                         enterEditMode(tag);
                       }}
-                      aria-label={`Editar tag ${tag.name}`}
+                      aria-label={`Edit tag ${tag.name}`}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
@@ -408,7 +408,7 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
                   >
                     <span className="text-accent font-medium">+</span>
                     <span className="text-stone-900">
-                      Criar tag &ldquo;{inputValue.trim()}&rdquo;
+                      Create tag &ldquo;{inputValue.trim()}&rdquo;
                     </span>
                   </div>
                 </>
@@ -418,8 +418,8 @@ export function TagsInput({ selectedTagIds, onChange }: TagsInputProps): React.R
               <div className="px-3 py-2 border-t border-border">
                 <p className="text-xs text-muted">
                   {filteredTags.length === 0 && !showCreateOption
-                    ? "Digite o nome da nova tag"
-                    : "Digite para criar uma nova tag"}
+                    ? "Type the new tag name"
+                    : "Type to create a new tag"}
                 </p>
               </div>
             </>
