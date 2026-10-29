@@ -2,6 +2,10 @@
 
 Personal daily task manager with support for recurring tasks, tags, automatic rollover, guest mode, and history.
 
+**[Open Daylog →](https://daylog.kegler.dev)**
+
+![Daylog home with today's progress, pending and completed tasks](docs/screenshot.webp)
+
 ## Stack
 
 - **Next.js 16** — App Router, Server Components, Server Actions
